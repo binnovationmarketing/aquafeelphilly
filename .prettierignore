@@ -1,0 +1,7 @@
+dist/
+node_modules/
+coverage/
+*.sql
+package-lock.json
+.env
+.env*

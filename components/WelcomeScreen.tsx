@@ -1,0 +1,203 @@
+
+import React, { useState } from 'react';
+import { Lock, ChevronRight, ArrowLeft, Loader2, Mail, MapPin, User, Globe, Phone } from 'lucide-react';
+import AquaFeelLogo from './AquaFeelLogo';
+import { Language, translations } from '../utils/i18n';
+import { motion, AnimatePresence } from 'framer-motion';
+import { supabase } from '../lib/supabase';
+import { toast } from 'sonner';
+
+// Workaround for framer-motion type mismatch
+const MotionDiv = motion.div as any;
+
+interface WelcomeScreenProps {
+  onComplete: (clientName: string, spouseName: string, lang: Language, email: string, zip: string, phone: string) => void;
+  onBack: () => void;
+}
+
+export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onComplete, onBack }) => {
+  const [step, setStep] = useState<'lang' | 'form'>('lang');
+  const [lang, setLang] = useState<Language>('pt');
+  const [name, setName] = useState('');
+  const [spouse, setSpouse] = useState('');
+  const [email, setEmail] = useState('');
+  const [phone, setPhone] = useState('');
+  const [zip, setZip] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+
+  const t = translations[lang].welcome;
+
+  const saveLeadToSupabase = async (data: any) => {
+    try {
+      // Get current analyst session for ownership tracking
+      const { data: { user: analyst } } = await supabase.auth.getUser();
+
+      const { error } = await supabase
+        .from('clients')
+        .insert([{
+          name: data.name,
+          spouse_name: data.spouse,
+          email: data.email,
+          phone: data.phone,
+          zip_code: data.zip,
+          lang: data.lang,
+          status: 'LEAD',
+          analyst: analyst?.email || 'System',
+          analyst_id: analyst?.id,
+          created_at: new Date().toISOString(),
+          source: 'VIP_WEBAPP'
+        }]);
+
+      if (error) throw error;
+    } catch (e) {
+      console.error('Failed to save lead to Supabase', e);
+    }
+  };
+
+  const handleSubmit = async () => {
+    if (!name.trim()) {
+      toast.error(t.error || 'Nome é obrigatório.');
+      return;
+    }
+
+    if (!email.trim() || !email.includes('@')) {
+      toast.error(t.errorEmail || 'Email válido é obrigatório.');
+      return;
+    }
+
+    if (!phone.trim()) {
+      toast.error(lang === 'pt' ? 'Telefone é obrigatório.' : lang === 'es' ? 'Teléfono es obligatorio.' : 'Phone number is required.');
+      return;
+    }
+
+    if (!zip.trim()) {
+      toast.error(t.error || 'ZIP code é obrigatório.');
+      return;
+    }
+
+    // Validate US ZIP code (5 digits)
+    if (!/^\d{5}$/.test(zip.trim())) {
+      toast.error(lang === 'pt' ? 'ZIP code inválido. Use 5 dígitos (ex: 19103).' : lang === 'es' ? 'ZIP code inválido. Use 5 dígitos.' : 'Invalid ZIP code. Use 5 digits (e.g. 19103).');
+      return;
+    }
+
+    setIsLoading(true);
+
+    const leadData = { name: name.trim(), spouse: spouse.trim(), lang, email: email.trim(), phone: phone.trim(), zip: zip.trim() };
+
+    try {
+      await saveLeadToSupabase(leadData);
+      await new Promise(r => setTimeout(r, 800));
+      toast.success(lang === 'pt' ? 'Bem-vindo! Preparando sua proposta...' : lang === 'es' ? '¡Bienvenido! Preparando tu propuesta...' : 'Welcome! Preparing your proposal...');
+      onComplete(name.trim(), spouse.trim(), lang, email.trim(), zip.trim(), phone.trim());
+    } catch (err) {
+      console.error(err);
+      // Still proceed even if Supabase save fails
+      onComplete(name.trim(), spouse.trim(), lang, email.trim(), zip.trim(), phone.trim());
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  return (
+    <div className="fixed inset-0 z-[100] bg-[#020d1a] flex flex-col items-center justify-center p-4 md:p-8 overflow-hidden">
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(14,165,233,0.1),transparent_70%)] pointer-events-none"></div>
+
+      <div className="mb-12 shrink-0 z-20 w-full flex justify-center">
+        <AquaFeelLogo width="240px" variant="white" className="drop-shadow-[0_0_30px_rgba(0,174,239,0.3)]" />
+      </div>
+
+      <AnimatePresence mode="wait">
+        <MotionDiv
+          key={step}
+          initial={{ opacity: 0, scale: 0.9, y: 20 }}
+          animate={{ opacity: 1, scale: 1, y: 0 }}
+          exit={{ opacity: 0, scale: 1.1, y: -20 }}
+          transition={{ duration: 0.4, ease: "easeOut" }}
+          className="max-w-md w-full bg-white/5 backdrop-blur-3xl border border-white/10 rounded-[2.5rem] p-8 md:p-10 shadow-2xl relative z-10"
+        >
+          {step === 'lang' ? (
+            <div className="flex flex-col items-center">
+              <button
+                onClick={onBack}
+                className="absolute top-6 left-6 text-slate-500 hover:text-white transition-all text-[10px] uppercase font-black flex items-center gap-1 group"
+              >
+                <ArrowLeft size={14} /> Back to Dashboard
+              </button>
+
+              <div className="bg-aqua-600/20 p-4 rounded-full mb-6 border border-aqua-500/20 mt-4">
+                <Globe className="text-aqua-400" size={32} />
+              </div>
+              <h2 className="text-white font-black text-xl md:text-2xl uppercase tracking-tighter mb-8 text-center">
+                Select Language
+              </h2>
+              <div className="grid gap-4 w-full">
+                {[
+                  { id: 'pt' as Language, label: 'Português 🇧🇷', flag: 'br', primary: true },
+                  { id: 'en' as Language, label: 'English 🇺🇸', flag: 'us', primary: false },
+                  { id: 'es' as Language, label: 'Español 🇪🇸', flag: 'es', primary: false }
+                ].map((item) => (
+                  <button
+                    key={item.id}
+                    onClick={() => { setLang(item.id); setStep('form'); }}
+                    className={`flex items-center gap-4 border p-5 rounded-2xl transition-all group w-full text-left active:scale-[0.98] ${item.primary
+                      ? 'bg-aqua-600/20 hover:bg-aqua-600/30 border-aqua-500/50 ring-1 ring-aqua-500/30'
+                      : 'bg-white/5 hover:bg-white/10 border-white/10 hover:border-aqua-500/30'
+                      }`}
+                  >
+                    <img src={`https://flagcdn.com/w80/${item.flag}.png`} alt="" className="w-8 h-5 object-cover rounded shadow-sm border border-white/10" />
+                    <span className="font-bold text-white text-lg flex-1">{item.label}</span>
+                    <ChevronRight className="text-slate-600 group-hover:text-aqua-400 transition-colors" size={20} />
+                  </button>
+                ))}
+              </div>
+            </div>
+          ) : (
+            <div className="flex flex-col w-full">
+              <button onClick={() => setStep('lang')} className="mb-6 text-slate-500 hover:text-white transition-all text-[10px] uppercase font-black flex items-center gap-1 group w-fit">
+                <ArrowLeft size={14} /> {t.backButton}
+              </button>
+
+              <div className="text-center mb-8">
+                <div className="flex items-center justify-center gap-2 mb-2">
+                  <Lock size={18} className="text-emerald-500" />
+                  <h1 className="text-lg font-black text-white uppercase tracking-tight">{t.restricted}</h1>
+                </div>
+                <p className="text-slate-400 text-xs font-medium tracking-wide">{t.identify}</p>
+              </div>
+
+              <div className="space-y-4">
+                {[
+                  { val: name, set: setName, icon: User, label: t.placeholderName },
+                  { val: spouse, set: setSpouse, icon: User, label: t.placeholderSpouse },
+                  { val: email, set: setEmail, icon: Mail, label: t.placeholderEmail, type: 'email' },
+                  { val: phone, set: setPhone, icon: Phone, label: lang === 'pt' ? 'Telefone *' : lang === 'es' ? 'Teléfono *' : 'Phone *', type: 'tel' },
+                  { val: zip, set: setZip, icon: MapPin, label: t.placeholderZip }
+                ].map((f, i) => (
+                  <div key={i} className="relative">
+                    <f.icon className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500" size={18} />
+                    <input
+                      type={f.type || 'text'} value={f.val} onChange={(e) => f.set(e.target.value)}
+                      className="w-full bg-black/40 border border-white/10 rounded-2xl pl-12 pr-4 py-4 text-white focus:ring-2 focus:ring-aqua-500 outline-none text-base transition-all placeholder-slate-700"
+                      placeholder={f.label}
+                    />
+                  </div>
+                ))}
+
+
+
+
+                <button
+                  onClick={handleSubmit} disabled={isLoading}
+                  className="w-full bg-aqua-600 hover:bg-aqua-500 text-white font-black py-5 rounded-2xl shadow-xl flex items-center justify-center gap-3 transition-all active:scale-[0.98] disabled:opacity-50 mt-4 border border-white/10"
+                >
+                  {isLoading ? <Loader2 className="animate-spin" size={24} /> : <span className="uppercase tracking-widest text-sm">{t.accessButton}</span>}
+                </button>
+              </div>
+            </div>
+          )}
+        </MotionDiv>
+      </AnimatePresence>
+    </div>
+  );
+};

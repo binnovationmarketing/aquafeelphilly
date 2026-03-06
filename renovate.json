@@ -1,0 +1,66 @@
+{
+    "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+    "extends": [
+        "config:base",
+        ":dependencyDashboard",
+        ":semanticCommits",
+        ":automergeMinor"
+    ],
+    "schedule": [
+        "before 4am on Monday"
+    ],
+    "timezone": "America/New_York",
+    "labels": [
+        "dependencies"
+    ],
+    "packageRules": [
+        {
+            "matchUpdateTypes": [
+                "minor",
+                "patch"
+            ],
+            "matchCurrentVersion": "!/^0/",
+            "automerge": true
+        },
+        {
+            "matchDepTypes": [
+                "devDependencies"
+            ],
+            "automerge": true
+        },
+        {
+            "groupName": "React ecosystem",
+            "matchPackageNames": [
+                "react",
+                "react-dom",
+                "@types/react",
+                "@types/react-dom"
+            ]
+        },
+        {
+            "groupName": "Testing tools",
+            "matchPackageNames": [
+                "vitest",
+                "@vitest/coverage-v8",
+                "@testing-library/react",
+                "@testing-library/jest-dom",
+                "@testing-library/user-event",
+                "jsdom"
+            ]
+        },
+        {
+            "groupName": "ESLint & Prettier",
+            "matchPackageNames": [
+                "eslint",
+                "@eslint/js",
+                "typescript-eslint",
+                "eslint-plugin-react",
+                "eslint-plugin-react-hooks",
+                "eslint-config-prettier",
+                "eslint-plugin-prettier",
+                "prettier",
+                "globals"
+            ]
+        }
+    ]
+}
