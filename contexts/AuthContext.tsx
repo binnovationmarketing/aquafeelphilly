@@ -74,7 +74,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [profile, setProfile] = useState<AnalystProfile | null>(null);
   const [loading, setLoading] = useState(true);
 
-  const fetchProfile = async (userId: string): Promise<void> => {
+  const fetchProfile = async (userId: string): Promise<boolean> => {
     const { data, error } = await supabase
       .from('analysts')
       .select('*')
@@ -82,15 +82,26 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       .single();
 
     if (error) {
+      // PGRST116 = 0 rows found → user is authenticated but has no profile.
+      // Sign them out cleanly instead of hanging on a blank dashboard.
+      if (error.code === 'PGRST116') {
+        console.warn('No analyst profile found for user — signing out.');
+        await supabase.auth.signOut();
+        setUser(null);
+        setSession(null);
+        setProfile(null);
+        return false;
+      }
       console.error('Error fetching analyst profile:', error);
-      return;
+      return false;
     }
     if (data) setProfile(data as AnalystProfile);
+    return true;
   };
 
   useEffect(() => {
-    // Safety net — never hang on loading forever
-    const timeout = setTimeout(() => setLoading(false), 6000);
+    // Safety net — never hang longer than 3s (down from 6s)
+    const timeout = setTimeout(() => setLoading(false), 3000);
 
     supabase.auth.getSession()
       .then(async ({ data: { session } }) => {
