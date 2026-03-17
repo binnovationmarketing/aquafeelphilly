@@ -11,21 +11,12 @@ function AuthListenerHandler({ children }: { children: React.ReactNode }) {
   const navigate = useNavigate();
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (session?.user && window.location.hash.includes('type=recovery')) {
-        navigate('/recovery');
-      }
-    });
-
+    // Only listen for password-recovery deep-link events.
+    // Session restoration is handled by AuthContext via onAuthStateChange(INITIAL_SESSION).
     const { data: authListener } = supabase.auth.onAuthStateChange((event) => {
-      if (event === 'PASSWORD_RECOVERY') {
-        navigate('/recovery');
-      }
+      if (event === 'PASSWORD_RECOVERY') navigate('/recovery');
     });
-
-    return () => {
-      authListener.subscription.unsubscribe();
-    };
+    return () => { authListener.subscription.unsubscribe(); };
   }, [navigate]);
 
   return <>{children}</>;

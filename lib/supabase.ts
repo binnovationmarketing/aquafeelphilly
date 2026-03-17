@@ -29,11 +29,11 @@ export const supabase = createClient(
   supabaseAnonKey ?? 'placeholder-key',
   {
     auth: {
-      // Do NOT persist session in localStorage — forces re-login on each browser session
-      persistSession: false,
-      // Detect session from URL hash (required for Google/Apple OAuth redirects)
+      // Persist session so users don't re-login on every page visit
+      persistSession: true,
+      autoRefreshToken: true,
+      // Detect session from URL hash (required for OAuth redirects)
       detectSessionInUrl: true,
-      // Store key namespace
       storageKey: 'aq_session',
     },
   }

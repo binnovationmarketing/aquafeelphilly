@@ -115,25 +115,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   useEffect(() => {
-    // Safety net — never hang longer than 3s (down from 6s)
-    const timeout = setTimeout(() => setLoading(false), 3000);
+    // Safety net — never hang longer than 1.5s before showing UI
+    const timeout = setTimeout(() => setLoading(false), 1500);
 
-    supabase.auth.getSession()
-      .then(async ({ data: { session } }) => {
-        setSession(session);
-        setUser(session?.user ?? null);
-        if (session?.user) {
-          try { await fetchProfile(session.user.id); } catch (_) {}
-        }
-      })
-      .catch(() => {})
-      .finally(() => {
-        clearTimeout(timeout);
-        setLoading(false);
-      });
-
+    // onAuthStateChange fires INITIAL_SESSION immediately with the persisted
+    // session from localStorage (when persistSession:true). No separate
+    // getSession() call needed — that was causing a double DB round-trip.
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (_event, session) => {
+      async (event, session) => {
         setSession(session);
         setUser(session?.user ?? null);
         if (session?.user) {
@@ -141,6 +130,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         } else {
           setProfile(null);
         }
+        clearTimeout(timeout);
         setLoading(false);
       }
     );
@@ -169,9 +159,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setUser(null);
     setSession(null);
     await supabase.auth.signOut();
-    // Clear ALL browser storage to prevent stale session auto-login
-    localStorage.clear();
-    sessionStorage.clear();
+    // Only remove the supabase session key, not all localStorage
+    localStorage.removeItem('aq_session');
   };
 
   const refreshProfile = async () => {
