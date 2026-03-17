@@ -25,7 +25,7 @@ export const RecommendationsPanel: React.FC = () => {
   
   // New Referral Modal
   const [isAddMode, setIsAddMode] = useState<string | null>(null);
-  const [newRef, setNewRef] = useState({ name: '', phone: '', email: '' });
+  const [newRef, setNewRef] = useState({ name: '', phone: '', email: '', address: '' });
 
   useEffect(() => {
     fetchData();
@@ -86,8 +86,8 @@ export const RecommendationsPanel: React.FC = () => {
       const { data, error } = await supabase.from('tasks').insert({
         client_id: clientId,
         analyst_id: user.id,
-        title: `Recomendação: ${newRef.name} (${newRef.phone})`,
-        notes: `Email: ${newRef.email}`,
+        title: `Recomendação: ${newRef.name}`,
+        notes: `Tel: ${newRef.phone}${newRef.email ? ` | Email: ${newRef.email}` : ''}${newRef.address ? ` | Endereço: ${newRef.address}` : ''}`,
         status: 'PENDING',
         type: 'REFERRAL',
         scheduled_for: new Date().toISOString().split('T')[0]
@@ -97,7 +97,7 @@ export const RecommendationsPanel: React.FC = () => {
 
       toast.success('Recomendação adicionada!', { id: toastId });
       setIsAddMode(null);
-      setNewRef({ name: '', phone: '', email: '' });
+      setNewRef({ name: '', phone: '', email: '', address: '' });
       fetchData();
     } catch (err: any) {
       toast.error('Erro ao adicionar: ' + err.message, { id: toastId });
@@ -239,27 +239,34 @@ export const RecommendationsPanel: React.FC = () => {
                         <div className="absolute -left-12 w-12 h-px bg-slate-300"></div>
                         <div className="bg-aqua-50 border border-aqua-200 rounded-2xl p-5 flex-1 shadow-inner">
                           <h6 className="text-xs font-black uppercase tracking-widest text-aqua-800 mb-3">Nova Recomendação</h6>
-                          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-3">
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-3">
                             <input
                               type="text"
                               placeholder="Nome do indicado"
                               value={newRef.name}
                               onChange={e => setNewRef({ ...newRef, name: e.target.value })}
-                              className="text-sm border border-aqua-200 rounded-lg px-3 py-2 outline-none focus:border-aqua-500 w-full"
+                              className="text-sm border border-aqua-100 rounded-xl px-4 py-3 outline-none focus:border-aqua-500 w-full bg-white/50"
                             />
                             <input
                               type="tel"
                               placeholder="Telefone"
                               value={newRef.phone}
                               onChange={e => setNewRef({ ...newRef, phone: e.target.value })}
-                              className="text-sm border border-aqua-200 rounded-lg px-3 py-2 outline-none focus:border-aqua-500 w-full"
+                              className="text-sm border border-aqua-100 rounded-xl px-4 py-3 outline-none focus:border-aqua-500 w-full bg-white/50"
                             />
                             <input
                               type="email"
                               placeholder="E-mail (Opcional)"
                               value={newRef.email}
                               onChange={e => setNewRef({ ...newRef, email: e.target.value })}
-                              className="text-sm border border-aqua-200 rounded-lg px-3 py-2 outline-none focus:border-aqua-500 w-full"
+                              className="text-sm border border-aqua-100 rounded-xl px-4 py-3 outline-none focus:border-aqua-500 w-full bg-white/50"
+                            />
+                            <input
+                              type="text"
+                              placeholder="Endereço Completo"
+                              value={newRef.address}
+                              onChange={e => setNewRef({ ...newRef, address: e.target.value })}
+                              className="text-sm border border-aqua-100 rounded-xl px-4 py-3 outline-none focus:border-aqua-500 w-full bg-white/50"
                             />
                           </div>
                           <div className="flex gap-2 justify-end">
