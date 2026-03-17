@@ -6,28 +6,41 @@ import { Session, User } from '@supabase/supabase-js';
 export type AnalystRole =
   | 'admin'
   | 'ambassador'
+  | 'master'
   | 'director_sr'
   | 'director_jr'
   | 'manager_sr'
   | 'manager_jr'
-  | 'analyst';
+  | 'mentor_sr'
+  | 'mentor_jr'
+  | 'analyst_sr'
+  | 'analyst_jr'
+  | 'analyst'; // legacy fallback
 
 export const MANAGER_ROLES: AnalystRole[] = [
   'admin',
   'ambassador',
+  'master',
   'director_sr',
   'director_jr',
   'manager_sr',
   'manager_jr',
+  'mentor_sr',
+  'mentor_jr',
 ];
 
 export const ROLE_LABELS: Record<AnalystRole, string> = {
   admin:       'Admin',
   ambassador:  'Embaixador',
+  master:      'Master',
   director_sr: 'Diretor Sênior',
   director_jr: 'Diretor Jr.',
   manager_sr:  'Gerente Sênior',
   manager_jr:  'Gerente Jr.',
+  mentor_sr:   'Mentor Sênior',
+  mentor_jr:   'Mentor Jr.',
+  analyst_sr:  'Analista Sênior',
+  analyst_jr:  'Analista Jr.',
   analyst:     'Analista',
 };
 

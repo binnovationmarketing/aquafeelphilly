@@ -16,6 +16,8 @@ import { toast } from 'sonner';
 import { ShareProposalModal } from './ShareProposalModal';
 import { MarketingService } from '../lib/marketing';
 import { Task } from '../types';
+import { CommissionPanel } from './CommissionPanel';
+import { HierarchyRole, ROLE_LABELS_PT } from '../utils/commissions';
 
 interface DashboardMetrics {
   totalLeads: number;
@@ -40,7 +42,7 @@ interface Lead {
 }
 
 export const AnalystDashboard: React.FC<{ onNewProposal: () => void }> = ({ onNewProposal }) => {
-  const { user, signOut } = useAuth();
+  const { user, profile, signOut } = useAuth();
   const [metrics, setMetrics] = useState<DashboardMetrics | null>(null);
   const [loading, setLoading] = useState(true);
   const [allLeads, setAllLeads] = useState<Lead[]>([]);
@@ -50,7 +52,7 @@ export const AnalystDashboard: React.FC<{ onNewProposal: () => void }> = ({ onNe
   const [selectedLead, setSelectedLead] = useState<Lead | null>(null);
   const [showAllLeads, setShowAllLeads] = useState(false);
   const [shareTarget, setShareTarget] = useState<{ id: string; name: string } | null>(null);
-  const [activeTab, setActiveTab] = useState<'OVERVIEW' | 'TASKS'>('OVERVIEW');
+  const [activeTab, setActiveTab] = useState<'OVERVIEW' | 'TASKS' | 'COMMISSIONS'>('OVERVIEW');
   const [isScheduling, setIsScheduling] = useState(false);
   const [executingTask, setExecutingTask] = useState<Task | null>(null);
   const [generatedDraft, setGeneratedDraft] = useState('');
@@ -304,6 +306,12 @@ export const AnalystDashboard: React.FC<{ onNewProposal: () => void }> = ({ onNe
             <span className="hidden md:inline-block h-6 w-px bg-slate-200"></span>
             <div className="hidden md:flex bg-slate-100 p-1 rounded-xl">
               <button
+                onClick={() => setActiveTab('COMMISSIONS')}
+                className={`px-4 py-1.5 text-sm font-bold rounded-lg transition-all flex items-center gap-2 ${activeTab === 'COMMISSIONS' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+              >
+                💰 Comissões
+              </button>
+              <button
                 onClick={() => setActiveTab('OVERVIEW')}
                 className={`px-4 py-1.5 text-sm font-bold rounded-lg transition-all ${activeTab === 'OVERVIEW' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
               >
@@ -325,7 +333,9 @@ export const AnalystDashboard: React.FC<{ onNewProposal: () => void }> = ({ onNe
           <div className="flex items-center gap-4">
             <div className="text-right hidden sm:block">
               <p className="text-sm font-bold text-slate-900">{user?.email}</p>
-              <p className="text-xs text-slate-500 uppercase tracking-wider">Analyst</p>
+              <p className="text-xs text-slate-500 uppercase tracking-wider">
+                {profile?.role ? (ROLE_LABELS_PT[profile.role as HierarchyRole] ?? profile.role) : 'Analista'}
+              </p>
             </div>
             <button
               onClick={signOut}
@@ -368,7 +378,14 @@ export const AnalystDashboard: React.FC<{ onNewProposal: () => void }> = ({ onNe
         </div>
 
 
-        {activeTab === 'OVERVIEW' ? (
+        {activeTab === 'COMMISSIONS' ? (
+          <CommissionPanel
+            role={(profile?.role as HierarchyRole) || 'analyst_jr'}
+            personalSales={metrics?.totalSales || 0}
+            teamSales={0}
+            teamAnalysts={[]}
+          />
+        ) : activeTab === 'OVERVIEW' ? (
           <>
             {/* KPI Cards */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
