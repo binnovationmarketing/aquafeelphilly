@@ -17,6 +17,7 @@ import { ShareProposalModal } from './ShareProposalModal';
 import { MarketingService } from '../lib/marketing';
 import { Task } from '../types';
 import { CommissionPanel } from './CommissionPanel';
+import { RecommendationsPanel } from './RecommendationsPanel';
 import { HierarchyRole, ROLE_LABELS_PT } from '../utils/commissions';
 
 interface DashboardMetrics {
@@ -28,6 +29,7 @@ interface DashboardMetrics {
   monthlyGoal: number;
   leadsByStatus: { name: string; value: number }[];
   salesTrend: { name: string; sales: number }[];
+  teamTotalSales?: number;
 }
 
 interface Lead {
@@ -52,7 +54,7 @@ export const AnalystDashboard: React.FC<{ onNewProposal: () => void }> = ({ onNe
   const [selectedLead, setSelectedLead] = useState<Lead | null>(null);
   const [showAllLeads, setShowAllLeads] = useState(false);
   const [shareTarget, setShareTarget] = useState<{ id: string; name: string } | null>(null);
-  const [activeTab, setActiveTab] = useState<'OVERVIEW' | 'TASKS' | 'COMMISSIONS'>('OVERVIEW');
+  const [activeTab, setActiveTab] = useState<'OVERVIEW' | 'RECOMMENDATIONS' | 'COMMISSIONS'>('OVERVIEW');
   const [isScheduling, setIsScheduling] = useState(false);
   const [executingTask, setExecutingTask] = useState<Task | null>(null);
   const [generatedDraft, setGeneratedDraft] = useState('');
@@ -61,6 +63,7 @@ export const AnalystDashboard: React.FC<{ onNewProposal: () => void }> = ({ onNe
     type: 'MESSAGE' as 'CALL' | 'MESSAGE' | 'EMAIL' | 'VISIT',
     notes: ''
   });
+  const [monthlyEarnings, setMonthlyEarnings] = useState({ personal: 0, team: 0, total: 0 });
 
   useEffect(() => {
     fetchDashboardData();
@@ -200,6 +203,29 @@ export const AnalystDashboard: React.FC<{ onNewProposal: () => void }> = ({ onNe
         .eq('status', 'PENDING')
         .order('scheduled_for', { ascending: true });
 
+      // Fetch this month's commissions
+      const firstDayOfMonth = new Date(today.getFullYear(), today.getMonth(), 1).toISOString();
+      const { data: monthCommissions } = await supabase
+        .from('commissions_log')
+        .select('amount, commission_type')
+        .eq('beneficiary_id', user.id)
+        .gte('created_at', firstDayOfMonth);
+
+      let pEarn = 0, tEarn = 0;
+      monthCommissions?.forEach((c: any) => {
+        if (c.commission_type === 'personal') pEarn += Number(c.amount);
+        else tEarn += Number(c.amount);
+      });
+      setMonthlyEarnings({ personal: pEarn, team: tEarn, total: pEarn + tEarn });
+
+      // Fetch downline sales dynamically
+      const { data: downline } = await supabase
+        .from('analyst_performance')
+        .select('total_sales')
+        .eq('sponsored_by', user.id);
+      
+      const teamTotalSales = downline?.reduce((sum, a) => sum + (a.total_sales || 0), 0) || 0;
+
       setMetrics({
         totalLeads,
         totalSales,
@@ -208,7 +234,8 @@ export const AnalystDashboard: React.FC<{ onNewProposal: () => void }> = ({ onNe
         activePresentations: presentations.length,
         monthlyGoal: 10,
         leadsByStatus,
-        salesTrend: trendData
+        salesTrend: trendData,
+        teamTotalSales
       });
 
       setAllLeads(clients);
@@ -360,13 +387,10 @@ export const AnalystDashboard: React.FC<{ onNewProposal: () => void }> = ({ onNe
                 Overview & Leads
               </button>
               <button
-                onClick={() => setActiveTab('TASKS')}
-                className={`px-4 py-1.5 text-sm font-bold rounded-lg transition-all flex items-center gap-2 ${activeTab === 'TASKS' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+                onClick={() => setActiveTab('RECOMMENDATIONS')}
+                className={`px-4 py-1.5 text-sm font-bold rounded-lg transition-all flex items-center gap-2 ${activeTab === 'RECOMMENDATIONS' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
               >
-                Today's Tasks
-                {pendingTasks.length > 0 && (
-                  <span className="bg-red-500 text-white text-[10px] px-1.5 py-0.5 rounded-full">{pendingTasks.length}</span>
-                )}
+                Painel das Recomendações
               </button>
             </div>
             <h1 className="md:hidden text-lg font-bold text-slate-700">Analyst Dashboard</h1>
@@ -424,7 +448,8 @@ export const AnalystDashboard: React.FC<{ onNewProposal: () => void }> = ({ onNe
           <CommissionPanel
             role={(profile?.role as HierarchyRole) || 'analyst_jr'}
             personalSales={metrics?.totalSales || 0}
-            teamSales={0}
+            teamSales={metrics?.teamTotalSales || 0}
+            monthlyEarnings={monthlyEarnings}
             teamAnalysts={[]}
           />
         ) : activeTab === 'OVERVIEW' ? (
@@ -626,78 +651,9 @@ export const AnalystDashboard: React.FC<{ onNewProposal: () => void }> = ({ onNe
               )}
             </div>
           </>
-        ) : (
-          <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
-            <div className="p-6 border-b border-slate-100 bg-slate-50/50">
-              <h3 className="text-lg font-bold text-slate-800">Your Pending Tasks</h3>
-              <p className="text-sm text-slate-500">Stay on top of your follow-ups to close more deals.</p>
-            </div>
-            <div className="divide-y divide-slate-100">
-              {pendingTasks.map((task) => {
-                const client = allLeads.find(l => l.id === task.client_id);
-                const isOverdue = new Date(task.scheduled_for) < new Date();
-
-                return (
-                  <div key={task.id} className={`p-6 flex flex-col sm:flex-row gap-6 items-start sm:items-center justify-between hover:bg-slate-50 transition-colors ${isOverdue ? 'bg-red-50/10' : ''}`}>
-                    <div className="flex gap-4 items-start">
-                      <div className={`p-3 rounded-xl ${task.type === 'MESSAGE' ? 'bg-blue-100 text-blue-600' : task.type === 'CALL' ? 'bg-emerald-100 text-emerald-600' : 'bg-amber-100 text-amber-600'}`}>
-                        {task.type === 'MESSAGE' ? <MessageSquare size={24} /> : task.type === 'CALL' ? <Phone size={24} /> : <CalendarCheck size={24} />}
-                      </div>
-                      <div>
-                        <div className="flex items-center gap-2 mb-1">
-                          <h4 className="font-bold text-slate-900">{task.title}</h4>
-                          {isOverdue && <span className="text-[10px] uppercase font-bold text-red-500 bg-red-100 px-2 py-0.5 rounded-full tracking-wider">Overdue</span>}
-                        </div>
-                        <p className="text-sm font-medium text-slate-700 mb-1">{client ? client.name : 'Unknown Client'}</p>
-                        {task.notes && <p className="text-xs text-slate-500 line-clamp-2 max-w-lg">Goal: {task.notes}</p>}
-                        <div className="flex items-center gap-4 mt-2 text-xs text-slate-400 font-medium">
-                          <span className="flex items-center gap-1"><Clock size={12} /> {new Date(task.scheduled_for).toLocaleString([], { dateStyle: 'short', timeStyle: 'short' })}</span>
-                        </div>
-                      </div>
-                    </div>
-
-                    <button
-                      onClick={async () => {
-                        if (task.type === 'MESSAGE' || task.type === 'EMAIL') {
-                          setExecutingTask(task);
-                          const tid = toast.loading('Gerando mensagem com Inteligência Artificial...');
-                          const draft = await MarketingService.generateFollowUpMessage(
-                            client?.name || 'Cliente',
-                            client?.status || 'LEAD',
-                            task.notes || 'Fazer follow-up para tentar fechar a venda.'
-                          );
-                          setGeneratedDraft(draft);
-                          toast.dismiss(tid);
-                        } else {
-                          // Just mark done for calls/visits
-                          try {
-                            await supabase.from('tasks').update({ status: 'COMPLETED' }).eq('id', task.id);
-                            toast.success('Tarefa concluída!');
-                            fetchDashboardData();
-                          } catch (e) { }
-                        }
-                      }}
-                      className="w-full sm:w-auto flex items-center justify-center gap-2 bg-slate-900 hover:bg-slate-800 text-white px-5 py-2.5 rounded-xl text-sm font-bold shadow-sm transition-all"
-                    >
-                      <Play size={16} />
-                      {task.type === 'MESSAGE' ? 'Generate AI Draft' : 'Mark Done'}
-                    </button>
-                  </div>
-                );
-              })}
-
-              {pendingTasks.length === 0 && (
-                <div className="p-12 text-center text-slate-500">
-                  <div className="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <CheckCircle2 size={32} className="text-emerald-500" />
-                  </div>
-                  <h3 className="text-lg font-bold text-slate-900 mb-1">All caught up!</h3>
-                  <p className="text-sm">You have no pending tasks. Great job!</p>
-                </div>
-              )}
-            </div>
-          </div>
-        )}
+        ) : activeTab === 'RECOMMENDATIONS' ? (
+          <RecommendationsPanel />
+        ) : null}
 
       </main>
 

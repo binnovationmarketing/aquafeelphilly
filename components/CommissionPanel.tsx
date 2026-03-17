@@ -33,6 +33,8 @@ interface CommissionPanelProps {
   teamSales: number;
   /** List of direct downline analysts (for manager view) */
   teamAnalysts?: AnalystStat[];
+  /** Expected monthly earnings fetched from log */
+  monthlyEarnings?: { personal: number; team: number; total: number };
 }
 
 /* ─────────────────── Helpers ─────────────────── */
@@ -42,48 +44,48 @@ const fmt = (n: number) =>
 /* ─────────────────── Sub-components ─────────────────── */
 
 /** Personal earnings summary card */
-const EarningsCard: React.FC<{ role: HierarchyRole; sales: number; teamSales: number }> = ({ role, sales, teamSales }) => {
+const EarningsCard: React.FC<{ role: HierarchyRole; monthlyEarnings?: { personal: number; team: number; total: number } }> = ({ role, monthlyEarnings }) => {
   const personalCommission = calcPersonalCommission(role);
-  const totalPersonalEarned = personalCommission * sales;
-  const isRecruit = RECRUITMENT_BONUS_ROLES.includes(role);
-  const bonusEarned = isRecruit
-    ? calcRecruitmentBonus(role, teamSales)
-    : calcDifferentialBonus(role, 'analyst_sr') * teamSales; // avg differential vs analyst_sr
   const colors = ROLE_COLORS[role];
+  
+  const personal = monthlyEarnings?.personal || 0;
+  const team = monthlyEarnings?.team || 0;
+  const total = monthlyEarnings?.total || 0;
 
   return (
     <div className={`relative overflow-hidden rounded-2xl border ${colors.border} ${colors.bg} p-6`}>
       <div className="absolute top-0 right-0 w-32 h-32 opacity-5">
         <DollarSign size={128} />
       </div>
-      <div className="flex items-start justify-between mb-4">
+      <div className="flex items-start justify-between mb-4 flex-col sm:flex-row gap-4">
         <div>
           <span className={`text-[10px] font-black uppercase tracking-widest ${colors.text} opacity-70`}>
-            Cargo Atual
+            Desempenho no Mês Atual
           </span>
-          <h3 className={`text-2xl font-black ${colors.text}`}>{ROLE_LABELS_PT[role]}</h3>
+          <h3 className={`text-4xl font-black ${colors.text} tracking-tight mt-1`}>{fmt(total)}</h3>
         </div>
-        <span className={`px-3 py-1 rounded-full text-xs font-black ${colors.badge}`}>
-          {fmt(personalCommission)}/venda
-        </span>
+        <div className="text-left sm:text-right flex flex-col items-start sm:items-end w-full sm:w-auto">
+          <span className={`px-4 py-1.5 rounded-full text-xs font-black mb-1 ${colors.badge} shadow-sm border ${colors.border}`}>
+            {ROLE_LABELS_PT[role]}
+          </span>
+          <span className={`text-[10px] uppercase font-black tracking-widest ${colors.text} opacity-60`}>
+            Bônus Base: {fmt(personalCommission)}/venda
+          </span>
+        </div>
       </div>
 
-      <div className="grid grid-cols-2 gap-4 mt-4">
+      <div className="grid grid-cols-2 gap-4 mt-6 p-4 rounded-xl bg-white/40 border border-white/20 backdrop-blur-sm">
         <div>
-          <p className="text-xs text-slate-500 font-semibold mb-1">Ganhos Pessoais</p>
-          <p className={`text-xl font-black ${colors.text}`}>{fmt(totalPersonalEarned)}</p>
-          <p className="text-[10px] text-slate-400">{sales} venda{sales !== 1 ? 's' : ''} × {fmt(personalCommission)}</p>
+          <p className="flex items-center gap-1.5 text-[10px] text-slate-500 font-bold mb-1 uppercase tracking-widest">
+            <TrendingUp size={12} className={colors.text} /> Suas Vendas
+          </p>
+          <p className={`text-xl font-black text-slate-800`}>{fmt(personal)}</p>
         </div>
         <div>
-          <p className="text-xs text-slate-500 font-semibold mb-1">
-            {isRecruit ? 'Bônus Recrutamento' : 'Bônus Diferencial'}
+          <p className="flex items-center gap-1.5 text-[10px] text-slate-500 font-bold mb-1 uppercase tracking-widest">
+            <Users size={12} className="text-indigo-500" /> Bônus Equipe
           </p>
-          <p className={`text-xl font-black ${isRecruit ? 'text-emerald-600' : 'text-indigo-600'}`}>
-            {fmt(bonusEarned)}
-          </p>
-          <p className="text-[10px] text-slate-400">
-            {isRecruit ? `${teamSales} × $200` : `${teamSales} vendas da equipe`}
-          </p>
+          <p className={`text-xl font-black text-indigo-700`}>{fmt(team)}</p>
         </div>
       </div>
     </div>
@@ -289,7 +291,7 @@ const TeamLeaderboard: React.FC<{ analysts: AnalystStat[]; myRole: HierarchyRole
 
 /* ─────────────────── Main Export ─────────────────── */
 export const CommissionPanel: React.FC<CommissionPanelProps> = ({
-  role, personalSales, teamSales, teamAnalysts = []
+  role, personalSales, teamSales, teamAnalysts = [], monthlyEarnings
 }) => {
   const isManager = !RECRUITMENT_BONUS_ROLES.includes(role);
 
@@ -297,7 +299,7 @@ export const CommissionPanel: React.FC<CommissionPanelProps> = ({
     <div className="space-y-6">
       {/* Row 1: Earnings + Next Level */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <EarningsCard role={role} sales={personalSales} teamSales={teamSales} />
+        <EarningsCard role={role} monthlyEarnings={monthlyEarnings} />
         <NextLevelCard role={role} personalSales={personalSales} teamSales={teamSales} />
       </div>
 
