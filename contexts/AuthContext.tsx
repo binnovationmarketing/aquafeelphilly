@@ -68,6 +68,8 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
+const INACTIVITY_MS = 30 * 60 * 1000; // 30 minutes
+
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [session, setSession] = useState<Session | null>(null);
   const [user, setUser] = useState<User | null>(null);
@@ -136,9 +138,27 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     };
   }, []);
 
+  // 30-min inactivity auto-logout
+  useEffect(() => {
+    if (!user) return;
+    let timer = setTimeout(() => signOut(), INACTIVITY_MS);
+    const reset = () => { clearTimeout(timer); timer = setTimeout(() => signOut(), INACTIVITY_MS); };
+    ['mousemove', 'keydown', 'click', 'touchstart', 'scroll'].forEach(e => window.addEventListener(e, reset, { passive: true }));
+    return () => {
+      clearTimeout(timer);
+      ['mousemove', 'keydown', 'click', 'touchstart', 'scroll'].forEach(e => window.removeEventListener(e, reset));
+    };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user]);
+
   const signOut = async () => {
     setProfile(null);
+    setUser(null);
+    setSession(null);
     await supabase.auth.signOut();
+    // Clear ALL browser storage to prevent stale session auto-login
+    localStorage.clear();
+    sessionStorage.clear();
   };
 
   const refreshProfile = async () => {

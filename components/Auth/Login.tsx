@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../../lib/supabase';
-import { Lock, Mail, Loader2, ArrowLeft } from 'lucide-react';
+import { Lock, Mail, Loader2, ArrowLeft, Chrome, Apple } from 'lucide-react';
 import AquaFeelLogo from '../AquaFeelLogo';
 import { Signup } from './Signup';
 import { toast } from 'sonner';
@@ -52,6 +52,22 @@ export const Login: React.FC = () => {
     } catch (err: any) {
       toast.error(friendlyError(err.message));
     } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleOAuth = async (provider: 'google' | 'apple') => {
+    setLoading(true);
+    try {
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider,
+        options: {
+          redirectTo: `${window.location.origin}/dashboard/analyst`,
+        },
+      });
+      if (error) throw error;
+    } catch (err: any) {
+      toast.error(friendlyError(err.message));
       setLoading(false);
     }
   };
@@ -184,12 +200,43 @@ export const Login: React.FC = () => {
               <ArrowLeft size={12} /> Back to Login
             </button>
           ) : (
-            <button
-              onClick={() => setMode('signup')}
-              className="text-xs text-slate-400 hover:text-white font-bold uppercase tracking-wide transition-colors flex items-center justify-center gap-2 mx-auto"
-            >
-              Don't have an account? <span className="text-aqua-400 underline decoration-2 underline-offset-2 ml-1">Sign up</span>
-            </button>
+            <>
+              {/* Social Login Divider */}
+              <div className="relative flex items-center gap-3 py-1">
+                <div className="flex-1 border-t border-white/10" />
+                <span className="text-xs text-slate-500 font-semibold tracking-wider uppercase">or continue with</span>
+                <div className="flex-1 border-t border-white/10" />
+              </div>
+
+              {/* Google */}
+              <button
+                type="button"
+                onClick={() => handleOAuth('google')}
+                disabled={loading}
+                className="w-full flex items-center justify-center gap-3 py-3 px-4 rounded-2xl border border-white/10 bg-white/5 hover:bg-white/10 text-white text-sm font-bold transition-all hover:border-white/20 active:scale-[0.98]"
+              >
+                <Chrome size={18} className="text-blue-400" />
+                Continue with Google
+              </button>
+
+              {/* Apple */}
+              <button
+                type="button"
+                onClick={() => handleOAuth('apple')}
+                disabled={loading}
+                className="w-full flex items-center justify-center gap-3 py-3 px-4 rounded-2xl border border-white/10 bg-white/5 hover:bg-white/10 text-white text-sm font-bold transition-all hover:border-white/20 active:scale-[0.98]"
+              >
+                <Apple size={18} className="text-slate-300" />
+                Continue with Apple
+              </button>
+
+              <button
+                onClick={() => setMode('signup')}
+                className="text-xs text-slate-400 hover:text-white font-bold uppercase tracking-wide transition-colors flex items-center justify-center gap-2 mx-auto pt-2"
+              >
+                Don&apos;t have an account? <span className="text-aqua-400 underline decoration-2 underline-offset-2 ml-1">Sign up</span>
+              </button>
+            </>
           )}
         </div>
       </div>

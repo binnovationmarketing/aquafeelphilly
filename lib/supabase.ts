@@ -26,6 +26,16 @@ if (missingVars.length > 0) {
 
 export const supabase = createClient(
   supabaseUrl ?? 'https://placeholder.supabase.co',
-  supabaseAnonKey ?? 'placeholder-key'
+  supabaseAnonKey ?? 'placeholder-key',
+  {
+    auth: {
+      // Do NOT persist session in localStorage — forces re-login on each browser session
+      persistSession: false,
+      // Detect session from URL hash (required for Google/Apple OAuth redirects)
+      detectSessionInUrl: true,
+      // Store key namespace
+      storageKey: 'aq_session',
+    },
+  }
 );
 
