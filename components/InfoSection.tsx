@@ -29,6 +29,19 @@ export const InfoSection: React.FC<InfoSectionProps> = ({ lang, zipCode }) => {
           </p>
         </div>
 
+        {/* YouTube Video Section */}
+        <div className="mb-16 rounded-2xl overflow-hidden shadow-2xl border border-slate-200 bg-black aspect-video relative">
+          <iframe
+            className="absolute inset-0 w-full h-full"
+            src="https://www.youtube.com/embed/Dxl3FVgzPO4?si=1fW-uAHRo_5TIsy-&rel=0"
+            title="A Verdade Sobre a Água (The Truth About Water)"
+            frameBorder="0"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+            referrerPolicy="strict-origin-when-cross-origin"
+            allowFullScreen
+          ></iframe>
+        </div>
+
         <div className="grid md:grid-cols-2 gap-8 mb-12">
           {/* Card 1 */}
           <div className="bg-slate-50 p-6 rounded-2xl border border-slate-100 transform transition-all duration-500 hover:scale-105 hover:shadow-2xl hover:bg-white hover:border-red-100 cursor-default group">

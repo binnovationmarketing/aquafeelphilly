@@ -25,6 +25,7 @@ import { supabase } from '../lib/supabase';
 import { useAuth } from '../contexts/AuthContext';
 import { CommissionPanel, AnalystStat } from './CommissionPanel';
 import { HierarchyRole } from '../utils/commissions';
+import { HierarchyManager } from './HierarchyManager';
 import {
   BarChart,
   Bar,
@@ -301,6 +302,35 @@ export const ManagerDashboard: React.FC<{ onExit: () => void }> = ({ onExit }) =
     return <ClientDashboard onClose={() => { setCurrentView('DASHBOARD'); setIsMobileMenuOpen(false); }} />;
   }
 
+  if (currentView === 'HIERARCHY') {
+    return (
+      <div className="min-h-screen bg-slate-50 flex relative">
+        <aside className="hidden md:flex flex-col w-64 bg-[#020d1a] text-white border-r border-white/5">
+          <div className="p-6 border-b border-white/5 flex justify-center">
+            <AquaFeelLogo width="140px" variant="white" />
+          </div>
+          <nav className="p-4 space-y-1">
+            {[['DASHBOARD','Dashboard'],['HIERARCHY','🌳 Hierarquia'],['COMMISSIONS','💰 Comissões'],['CLIENTS','Clientes'],['MARKETING','Marketing']].map(([k,l]) => (
+              <button key={k} onClick={() => setCurrentView(k)} className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-xs font-bold border transition-all ${currentView === k ? 'bg-white/10 text-white border-white/10' : 'text-slate-400 border-transparent hover:bg-white/5'}`}>{l}</button>
+            ))}
+          </nav>
+          <div className="mt-auto p-4 border-t border-white/5">
+            <button onClick={handleLogout} className="flex items-center gap-2 text-slate-400 hover:text-white text-xs font-bold uppercase tracking-widest transition-colors w-full"><LogOut size={14} /> Sair</button>
+          </div>
+        </aside>
+        <main className="flex-1 overflow-auto h-screen">
+          <header className="bg-white border-b border-slate-200 px-6 py-5 flex items-center justify-between sticky top-0 z-20">
+            <h2 className="text-xl font-black text-slate-900">🌳 Hierarquia da Equipe</h2>
+            <button onClick={() => setCurrentView('DASHBOARD')} className="text-sm text-slate-500 hover:text-slate-900 font-bold">← Voltar</button>
+          </header>
+          <div className="p-8">
+            <HierarchyManager />
+          </div>
+        </main>
+      </div>
+    );
+  }
+
   if (currentView === 'COMMISSIONS') {
     const myRole = (profile?.role as HierarchyRole) || 'manager_jr';
     const mySales = teamAnalysts.find(a => a.id === user?.id)?.totalSales ?? 0;
@@ -385,6 +415,12 @@ export const ManagerDashboard: React.FC<{ onExit: () => void }> = ({ onExit }) =
               className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-xs font-bold border transition-all ${currentView === 'CLIENTS' ? 'bg-white/10 text-white border-white/10' : 'text-slate-400 border-transparent hover:bg-white/5'}`}
             >
               <UserCheck size={16} /> Gestão de Clientes
+            </button>
+            <button
+              onClick={() => { setCurrentView('HIERARCHY'); setIsMobileMenuOpen(false); }}
+              className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-xs font-bold border transition-all ${currentView === 'HIERARCHY' ? 'bg-white/10 text-white border-white/10' : 'text-slate-400 border-transparent hover:bg-white/5'}`}
+            >
+              🌳 Hierarquia
             </button>
             <button
               onClick={() => { setCurrentView('COMMISSIONS'); setIsMobileMenuOpen(false); }}

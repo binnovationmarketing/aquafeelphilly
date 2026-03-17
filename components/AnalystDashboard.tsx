@@ -122,6 +122,31 @@ export const AnalystDashboard: React.FC<{ onNewProposal: () => void }> = ({ onNe
     };
   }, [user]);
 
+  // ── Supabase Realtime: notify this analyst (as leader) when downline closes a sale ──
+  useEffect(() => {
+    if (!user) return;
+    const ch = supabase
+      .channel('commission-notifications')
+      .on('postgres_changes', {
+          event: 'INSERT', schema: 'public', table: 'commissions_log',
+          filter: `beneficiary_id=eq.${user.id}`,
+        },
+        (payload) => {
+          const row = payload.new as any;
+          if (row.commission_type === 'personal') return; // personal shown separately
+          const emoji = row.commission_type === 'recruitment' ? '💰' : '🏆';
+          const label = row.commission_type === 'recruitment' ? 'Bônus Recrutamento' : 'Bônus Diferencial';
+          toast.success(`${emoji} ${label}: +$${Number(row.amount).toLocaleString()}`, {
+            description: 'Uma venda foi fechada na sua equipe!',
+            duration: 10000,
+          });
+          fetchDashboardData();
+        }
+      )
+      .subscribe();
+    return () => { supabase.removeChannel(ch); };
+  }, [user]);
+
   const fetchDashboardData = async () => {
     if (!user) return;
 
@@ -217,6 +242,23 @@ export const AnalystDashboard: React.FC<{ onNewProposal: () => void }> = ({ onNe
     } catch (error) {
       console.error('Error scheduling task:', error);
       toast.error('Erro ao agendar tarefa.');
+    }
+  };
+
+  const handleCloseSale = async (lead: Lead) => {
+    if (!user) return;
+    if (!window.confirm(`Confirmar fechamento de venda para ${lead.name}?`)) return;
+    try {
+      const { error } = await supabase
+        .from('clients')
+        .update({ status: 'SALE' })
+        .eq('id', lead.id);
+      if (error) throw error;
+      toast.success(`✅ Venda fechada! Comissões calculadas automaticamente.`, { duration: 8000 });
+      setSelectedLead(null);
+      fetchDashboardData();
+    } catch (err: any) {
+      toast.error(`Erro ao fechar venda: ${err.message}`);
     }
   };
 
@@ -737,6 +779,15 @@ export const AnalystDashboard: React.FC<{ onNewProposal: () => void }> = ({ onNe
               </div>
             ) : (
               <div className="mt-6 pt-4 border-t border-slate-100 flex flex-col gap-3">
+                {/* ── Close Sale CTA —  only shown for non-sale statuses ── */}
+                {!['SALE','INSTALLED','ACTIVE'].includes(selectedLead.status) && (
+                  <button
+                    onClick={() => handleCloseSale(selectedLead)}
+                    className="w-full py-3 text-sm font-black bg-gradient-to-r from-emerald-500 to-teal-500 text-white rounded-xl hover:from-emerald-400 hover:to-teal-400 transition-all shadow-lg shadow-emerald-500/20 flex items-center justify-center gap-2"
+                  >
+                    ✅ Fechar Venda — Calcular Comissões
+                  </button>
+                )}
                 <button
                   onClick={() => setIsScheduling(true)}
                   className="w-full py-3 text-sm font-bold bg-slate-50 border border-slate-200 text-slate-700 rounded-xl hover:bg-slate-100 transition-colors flex items-center justify-center gap-2"
