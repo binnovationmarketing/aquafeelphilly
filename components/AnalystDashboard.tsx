@@ -49,7 +49,7 @@ export const AnalystDashboard: React.FC<{ onNewProposal: () => void }> = ({ onNe
   const [statusFilter, setStatusFilter] = useState<string>('ALL');
   const [selectedLead, setSelectedLead] = useState<Lead | null>(null);
   const [showAllLeads, setShowAllLeads] = useState(false);
-  const [shareTarget, setShareTarget] = useState<{ name: string; zip: string } | null>(null);
+  const [shareTarget, setShareTarget] = useState<{ id: string; name: string } | null>(null);
   const [activeTab, setActiveTab] = useState<'OVERVIEW' | 'TASKS'>('OVERVIEW');
   const [isScheduling, setIsScheduling] = useState(false);
   const [executingTask, setExecutingTask] = useState<Task | null>(null);
@@ -62,6 +62,62 @@ export const AnalystDashboard: React.FC<{ onNewProposal: () => void }> = ({ onNe
 
   useEffect(() => {
     fetchDashboardData();
+  }, [user]);
+
+  // ── Supabase Realtime: notify analyst when a client opens their proposal ──
+  useEffect(() => {
+    if (!user) return;
+
+    const channel = supabase
+      .channel('proposal-views')
+      .on(
+        'postgres_changes',
+        {
+          event:  'UPDATE',
+          schema: 'public',
+          table:  'clients',
+          filter: `analyst_id=eq.${user.id}`,
+        },
+        (payload) => {
+          const updated = payload.new as any;
+          const old     = payload.old as any;
+
+          // Detect first proposal open (proposal_opened_at just got set)
+          if (!old.proposal_opened_at && updated.proposal_opened_at) {
+            toast(`👀 ${updated.name} abriu sua proposta agora!`, {
+              description: 'Ótimo momento para um follow-up — entre em contato em até 5 min.',
+              duration: 12000,
+              action: {
+                label: 'Ver lead',
+                onClick: () => {
+                  setSelectedLead(updated);
+                  setShowAllLeads(true);
+                },
+              },
+            });
+          }
+
+          // Detect re-opens (view_count incremented)
+          if (
+            old.view_count !== undefined &&
+            updated.view_count > (old.view_count || 0) &&
+            old.proposal_opened_at
+          ) {
+            toast(`🔁 ${updated.name} revisitou a proposta`, {
+              description: `Visualizações: ${updated.view_count}`,
+              duration: 8000,
+            });
+          }
+
+          // Refresh leads list to show updated engagement data
+          fetchDashboardData();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, [user]);
 
   const fetchDashboardData = async () => {
@@ -294,10 +350,7 @@ export const AnalystDashboard: React.FC<{ onNewProposal: () => void }> = ({ onNe
             <button
               onClick={() => {
                 const latest = allLeads[0];
-                setShareTarget({
-                  name: latest?.name || '',
-                  zip: latest?.zip_code || ''
-                });
+                if (latest) setShareTarget({ id: latest.id, name: latest.name });
               }}
               className="flex items-center justify-center gap-2 border border-aqua-200 bg-aqua-50 hover:bg-aqua-100 text-aqua-700 px-5 py-3 rounded-xl font-bold text-sm transition-all"
             >
@@ -476,7 +529,7 @@ export const AnalystDashboard: React.FC<{ onNewProposal: () => void }> = ({ onNe
                         <td className="px-6 py-4 text-right">
                           <div className="flex items-center justify-end gap-3">
                             <button
-                              onClick={() => setShareTarget({ name: lead.name, zip: lead.zip_code || '' })}
+                              onClick={() => setShareTarget({ id: lead.id, name: lead.name })}
                               className="p-1.5 text-slate-400 hover:text-aqua-600 hover:bg-aqua-50 rounded-lg transition-colors"
                               title="Compartilhar proposta"
                             >
@@ -738,8 +791,8 @@ export const AnalystDashboard: React.FC<{ onNewProposal: () => void }> = ({ onNe
         <ShareProposalModal
           isOpen={true}
           onClose={() => setShareTarget(null)}
+          clientId={shareTarget.id}
           clientName={shareTarget.name}
-          clientZip={shareTarget.zip}
         />
       )}
     </div>

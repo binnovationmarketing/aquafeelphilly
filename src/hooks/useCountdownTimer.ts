@@ -1,62 +1,68 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 
 interface TimeLeft {
-    hours: number;
-    minutes: number;
-    seconds: number;
+  hours: number;
+  minutes: number;
+  seconds: number;
 }
 
-export function useCountdownTimer(storageKey: string, expirationHours: number = 48) {
-    const [expirationDate, setExpirationDate] = useState<Date | null>(null);
-    const [isExpired, setIsExpired] = useState(false);
-    const [timeLeft, setTimeLeft] = useState<TimeLeft>({ hours: 0, minutes: 0, seconds: 0 });
+/**
+ * Server-anchored 48-hour countdown timer.
+ *
+ * `proposalOpenedAt` is the ISO timestamp stored in Supabase (`proposal_opened_at`).
+ * Because it originates on the server it cannot be reset by clearing cookies,
+ * switching browsers, or sharing the link with another person.
+ *
+ * Falls back to the current time when `proposalOpenedAt` is null (e.g. legacy
+ * flows without a server-side anchor).
+ */
+export function useCountdownTimer(
+  proposalOpenedAt: string | null,
+  expirationHours: number = 48
+) {
+  const [expirationDate, setExpirationDate] = useState<Date | null>(null);
+  const [isExpired, setIsExpired] = useState(false);
+  const [timeLeft, setTimeLeft] = useState<TimeLeft>({ hours: 0, minutes: 0, seconds: 0 });
 
-    // Initialize Timer Source
-    useEffect(() => {
-        const storedStartDate = localStorage.getItem(storageKey);
-        let startDate: Date;
+  // Track previous anchor so we only recompute when it actually changes
+  const prevAnchorRef = useRef<string | null>(null);
 
-        if (storedStartDate) {
-            const parsedDate = new Date(parseInt(storedStartDate));
-            const now = new Date();
-            const diffInDays = (now.getTime() - parsedDate.getTime()) / (1000 * 60 * 60 * 24);
-            // Reset if older than 15 days
-            startDate = diffInDays > 15 ? new Date() : parsedDate;
-        } else {
-            startDate = new Date();
-        }
+  useEffect(() => {
+    // Only re-derive if the anchor changed
+    if (proposalOpenedAt === prevAnchorRef.current && expirationDate) return;
+    prevAnchorRef.current = proposalOpenedAt;
 
-        localStorage.setItem(storageKey, startDate.getTime().toString());
-        const expDate = new Date(startDate.getTime() + (expirationHours * 60 * 60 * 1000));
-        setExpirationDate(expDate);
-    }, [storageKey, expirationHours]);
+    const startDate = proposalOpenedAt
+      ? new Date(proposalOpenedAt)
+      : new Date(); // fallback: start from now
 
-    // Handle Tick Update
-    useEffect(() => {
-        if (!expirationDate) return;
+    const expDate = new Date(startDate.getTime() + expirationHours * 60 * 60 * 1000);
+    setExpirationDate(expDate);
+  }, [proposalOpenedAt, expirationHours]);
 
-        const updateTimer = () => {
-            const now = new Date();
-            const difference = expirationDate.getTime() - now.getTime();
+  useEffect(() => {
+    if (!expirationDate) return;
 
-            if (difference <= 0) {
-                setIsExpired(true);
-                setTimeLeft({ hours: 0, minutes: 0, seconds: 0 });
-            } else {
-                setIsExpired(false);
-                setTimeLeft({
-                    hours: Math.floor((difference / (1000 * 60 * 60))),
-                    minutes: Math.floor((difference / 1000 / 60) % 60),
-                    seconds: Math.floor((difference / 1000) % 60),
-                });
-            }
-        };
+    const tick = () => {
+      const diff = expirationDate.getTime() - Date.now();
 
-        updateTimer();
-        const interval = setInterval(updateTimer, 1000);
+      if (diff <= 0) {
+        setIsExpired(true);
+        setTimeLeft({ hours: 0, minutes: 0, seconds: 0 });
+      } else {
+        setIsExpired(false);
+        setTimeLeft({
+          hours:   Math.floor(diff / (1000 * 60 * 60)),
+          minutes: Math.floor((diff / (1000 * 60)) % 60),
+          seconds: Math.floor((diff / 1000) % 60),
+        });
+      }
+    };
 
-        return () => clearInterval(interval);
-    }, [expirationDate]);
+    tick();
+    const interval = setInterval(tick, 1000);
+    return () => clearInterval(interval);
+  }, [expirationDate]);
 
-    return { expirationDate, isExpired, timeLeft };
+  return { expirationDate, isExpired, timeLeft };
 }
