@@ -33,11 +33,10 @@ export const InfoSection: React.FC<InfoSectionProps> = ({ lang, zipCode }) => {
         <div className="mb-16 rounded-2xl overflow-hidden shadow-2xl border border-slate-200 bg-black aspect-video relative">
           <iframe
             className="absolute inset-0 w-full h-full"
-            src="https://www.youtube.com/embed/Dxl3FVgzPO4?si=1fW-uAHRo_5TIsy-&rel=0"
+            src="https://www.youtube-nocookie.com/embed/Dxl3FVgzPO4?rel=0&modestbranding=1"
             title="A Verdade Sobre a Água (The Truth About Water)"
             frameBorder="0"
             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-            referrerPolicy="strict-origin-when-cross-origin"
             allowFullScreen
           ></iframe>
         </div>
@@ -62,31 +61,59 @@ export const InfoSection: React.FC<InfoSectionProps> = ({ lang, zipCode }) => {
              </div>
           </div>
 
-          {/* Card 2 */}
-          <div className="bg-slate-50 p-6 rounded-2xl border border-slate-100 transform transition-all duration-500 hover:scale-105 hover:shadow-2xl hover:bg-white hover:border-blue-100 cursor-default group">
-             <div className="flex items-center gap-3 mb-4">
-                <div className="bg-blue-100 p-3 rounded-full text-blue-600 group-hover:bg-blue-600 group-hover:text-white transition-colors duration-300">
-                    <Microscope size={24} />
+          {/* Visual Health Alert Card */}
+          <div className="bg-slate-50 p-6 rounded-2xl border border-slate-100 shadow-lg relative overflow-hidden group">
+             {/* Background glow */}
+             <div className="absolute top-0 right-0 w-64 h-64 bg-red-500/5 rounded-full blur-3xl group-hover:bg-red-500/10 transition-colors duration-700"></div>
+             
+             <div className="flex items-center gap-3 mb-6 relative z-10">
+                <div className="bg-red-100 p-3 rounded-full text-red-600 animate-pulse">
+                    <AlertOctagon size={24} />
                 </div>
-                <h3 className="font-bold text-xl text-slate-800">{t.analysisTitle}</h3>
+                <div>
+                  <h3 className="font-black text-xl text-slate-900 tracking-tight">O Ciclo Invisível</h3>
+                  <p className="text-xs font-bold text-red-500 uppercase tracking-widest mt-0.5">Top 10 Danos da Água (EUA)</p>
+                </div>
              </div>
-             <p className="text-slate-600 mb-6 text-sm leading-relaxed">
-                {t.analysisBody}
-             </p>
-             <ul className="space-y-2">
-                <li className="flex items-start gap-2 text-sm text-slate-700">
-                    <AlertOctagon size={16} className="text-red-500 mt-1 shrink-0" />
-                    <span>{t.virus}</span>
-                </li>
-                <li className="flex items-start gap-2 text-sm text-slate-700">
-                    <AlertOctagon size={16} className="text-red-500 mt-1 shrink-0" />
-                    <span>{t.heavyMetals}</span>
-                </li>
-                <li className="flex items-start gap-2 text-sm text-slate-700">
-                    <AlertOctagon size={16} className="text-red-500 mt-1 shrink-0" />
-                    <span>{t.chlorine}</span>
-                </li>
-             </ul>
+             
+             <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 relative z-10">
+               {/* Daily Routine Icons */}
+               <div className="space-y-4">
+                 <p className="text-[10px] font-black uppercase text-slate-400 tracking-widest">Sua Rotina Diária Exposta:</p>
+                 <div className="grid grid-cols-2 gap-3">
+                   {[
+                     { icon: '🪥', label: 'Escovar Dentes' },
+                     { icon: '🧖‍♀️', label: 'Lavar o Rosto' },
+                     { icon: '🚿', label: 'Tomar Banho' },
+                     { icon: '🍳', label: 'Cozinhar' },
+                     { icon: '🍎', label: 'Lavar Alimentos' },
+                     { icon: '👕', label: 'Lavar Roupa' },
+                   ].map((item, i) => (
+                     <div key={i} className="flex items-center gap-2 bg-white p-2 rounded-xl shadow-sm border border-slate-100 hover:border-red-200 transition-colors group/item cursor-default">
+                       <span className="text-xl group-hover/item:scale-110 transition-transform">{item.icon}</span>
+                       <span className="text-[10px] font-bold text-slate-600 leading-tight">{item.label}</span>
+                     </div>
+                   ))}
+                 </div>
+               </div>
+
+               {/* Contaminants List */}
+               <div className="bg-red-50/50 p-4 rounded-xl border border-red-100">
+                 <p className="text-[10px] items-center flex gap-1 font-black uppercase text-red-600 tracking-widest mb-3">
+                    <Microscope size={12} /> Contaminantes Reais:
+                 </p>
+                 <div className="flex flex-wrap gap-1.5">
+                    {['Arsênico', 'Cromo-6', 'Cloramina', 'Cloro', 'Hexavalentes', 'Chumbo', 'Alumínio', 'Benzeno', 'Bromo', 'Tálio', 'Ferro'].map((toxic, i) => (
+                      <span key={i} className="bg-white text-[10px] font-bold px-2 py-1 rounded-md text-slate-700 shadow-sm border border-red-100/50">
+                        {toxic}
+                      </span>
+                    ))}
+                 </div>
+                 <p className="text-xs text-slate-500 mt-4 font-medium leading-relaxed">
+                   Mesmo fervendo a água, você <strong>concentra</strong> os metais pesados, e a pele absorve toxinas rapidamente no banho quente.
+                 </p>
+               </div>
+             </div>
           </div>
         </div>
       </div>

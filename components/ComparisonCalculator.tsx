@@ -183,9 +183,13 @@ export const ComparisonCalculator: React.FC<ComparisonCalculatorProps> = ({
                 </div>
               </div>
 
-              <ul className="text-xs text-slate-500 space-y-3 font-medium mt-6 px-2">
-                <li className="flex gap-3 items-center"><div className="w-1.5 h-1.5 rounded-full bg-slate-300"></div>Água contaminada e produtos químicos</li>
-                <li className="flex gap-3 items-center"><div className="w-1.5 h-1.5 rounded-full bg-slate-300"></div>Sem retorno financeiro a longo prazo</li>
+              <ul className="text-xs text-slate-500 space-y-3 font-bold mt-6 px-2">
+                <li className="flex gap-3 items-start"><span className="shrink-0 pt-0.5">⚠️</span> <span>Água contaminada por plásticos e produtos químicos</span></li>
+                <li className="flex gap-3 items-start"><span className="shrink-0 pt-0.5">💸</span> <span>Sem retorno financeiro a longo prazo</span></li>
+                <li className="flex gap-3 items-start"><span className="shrink-0 pt-0.5">♾️</span> <span>Gasto por toda a vida</span></li>
+                <li className="flex gap-3 items-start"><span className="shrink-0 pt-0.5">🚫</span> <span>Nada de retorno financeiro</span></li>
+                <li className="flex gap-3 items-start"><span className="shrink-0 pt-0.5">🏥</span> <span>Nenhum retorno de saúde</span></li>
+                <li className="flex gap-3 items-start"><span className="shrink-0 pt-0.5">📈</span> <span>Produtos cada vez mais caros</span></li>
               </ul>
             </div>
           </div>
