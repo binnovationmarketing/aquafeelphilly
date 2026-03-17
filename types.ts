@@ -10,7 +10,7 @@ export interface PaymentOption {
   isCash?: boolean;
 }
 
-export type ClientStatus = 'LEAD' | 'PRESENTATION' | 'SALE' | 'NO SALE' | 'LOST' | 'CONTACTED' | 'SCHEDULED' | 'INSTALLED' | 'MAINTENANCE' | 'ACTIVE' | 'QUALIFIED';
+export type ClientStatus = 'LEAD' | 'PRESENTATION' | 'SALE' | 'NO SALE' | 'LOST' | 'CONTACTED' | 'SCHEDULED' | 'INSTALLED' | 'MAINTENANCE' | 'ACTIVE' | 'QUALIFIED' | 'PENDING' | 'NOT INTERESTED' | 'RESCHEDULE';
 
 export interface ClientObservation {
   id?: string;

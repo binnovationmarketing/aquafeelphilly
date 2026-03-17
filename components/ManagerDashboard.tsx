@@ -87,7 +87,8 @@ export const ManagerDashboard: React.FC<{ onExit: () => void }> = ({ onExit }) =
       const { data: clientsData, error: clientsError } = await supabase
         .from('clients')
         .select('*')
-        .order('created_at', { ascending: false });
+        .order('created_at', { ascending: false })
+        .limit(500);
 
       if (clientsError) throw clientsError;
 
@@ -126,36 +127,22 @@ export const ManagerDashboard: React.FC<{ onExit: () => void }> = ({ onExit }) =
 
   const fetchTeamAnalysts = async () => {
     try {
-      const { data: analystsData } = await supabase
-        .from('analysts')
-        .select('id, email, first_name, last_name, full_name, role')
+      const { data: performanceData, error } = await supabase
+        .from('analyst_performance')
+        .select('*')
         .eq('active', true);
 
-      if (!analystsData) return;
+      if (error) throw error;
+      if (!performanceData) return;
 
-      const stats = await Promise.all(analystsData.map(async (a) => {
-        const { count: saleCount } = await supabase
-          .from('clients')
-          .select('id', { count: 'exact', head: true })
-          .or(`analyst.eq.${a.email},analyst_id.eq.${a.id}`)
-          .in('status', ['SALE', 'INSTALLED', 'ACTIVE']);
-
-        const { count: totalCount } = await supabase
-          .from('clients')
-          .select('id', { count: 'exact', head: true })
-          .or(`analyst.eq.${a.email},analyst_id.eq.${a.id}`);
-
-        const totalSales = saleCount ?? 0;
-        const totalLeads = totalCount ?? 0;
-        return {
-          id: a.id,
-          name: a.full_name || `${a.first_name ?? ''} ${a.last_name ?? ''}`.trim() || a.email,
-          role: (a.role as HierarchyRole) || 'analyst_jr',
-          totalSales,
-          totalLeads,
-          conversionRate: totalLeads > 0 ? (totalSales / totalLeads) * 100 : 0,
-        } as AnalystStat;
-      }));
+      const stats = performanceData.map((p: any) => ({
+        id: p.id,
+        name: p.display_name,
+        role: (p.role as HierarchyRole) || 'analyst_jr',
+        totalSales: p.total_sales,
+        totalLeads: p.total_leads,
+        conversionRate: p.conversion_rate,
+      } as AnalystStat));
 
       setTeamAnalysts(stats);
     } catch (err) {

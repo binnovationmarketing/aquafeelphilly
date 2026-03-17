@@ -10,7 +10,8 @@ import { FAQ } from './FAQ';
 import { AnalystModal } from './AnalystModal';
 import { Sidebar } from './Sidebar';
 import AquaFeelLogo from './AquaFeelLogo';
-import { Phone, Lock, ChevronRight, Clock } from 'lucide-react';
+import { Phone, Lock, ChevronRight, Clock, X, Save, FileText, Send, Calendar } from 'lucide-react';
+import { toast } from 'sonner';
 import { translations, Language } from '../utils/i18n';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
@@ -30,6 +31,12 @@ export function ProposalView() {
   const [isAnalystModalOpen, setIsAnalystModalOpen] = useState(false);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const setClientData = useAppStore((state: any) => state.setClientData);
+
+  // Save Modal State
+  const [isSaveModalOpen, setIsSaveModalOpen] = useState(false);
+  const [saveFormData, setSaveFormData] = useState({ phone: '', email: '', status: 'PENDING' });
+  const [proposalCalcData, setProposalCalcData] = useState<any>(null);
+  const [isSavingProposal, setIsSavingProposal] = useState(false);
 
   // 1. Load client data + server-side timer anchor
   const { isLoaded, clientData, proposalOpenedAt } = useProposalInit();
@@ -63,6 +70,77 @@ export function ProposalView() {
     observer.observe(footer);
     return () => observer.disconnect();
   }, [isLoaded, recordCtaReached]);
+
+  const handleConfirmSave = async () => {
+    if (!clientData?.id || !proposalCalcData) return;
+    setIsSavingProposal(true);
+    try {
+      const rangeToScore: Record<string, number> = {
+        'RANGE1': 740, 'RANGE2': 690, 'RANGE3': 660, 'RANGE4': 600,
+      };
+
+      const { error } = await supabase
+        .from('clients')
+        .update({
+          phone: saveFormData.phone,
+          email: saveFormData.email,
+          status: saveFormData.status,
+          water_consumption: proposalCalcData.waterMonthly,
+          cleaning_consumption: proposalCalcData.cleaningMonthly,
+          credit_score: rangeToScore[proposalCalcData.creditRange] || null,
+        })
+        .eq('id', clientData.id);
+
+      if (error) throw error;
+
+      if (saveFormData.status === 'RESCHEDULE') {
+        const followDate = new Date();
+        followDate.setDate(followDate.getDate() + 2);
+        
+        // Use insert without throwing if error to avoid breaking the proposal flow
+        await supabase.from('tasks').insert({
+          client_id: clientData.id,
+          analyst_id: clientData.analyst || '', // Or we should get the ID if email is stored
+          title: `Follow-up Automático (Reagendado) - ${clientData.name}`,
+          type: 'MESSAGE',
+          status: 'PENDING',
+          scheduled_for: followDate.toISOString().split('T')[0]
+        });
+      }
+
+      setClientData({
+        ...clientData,
+        phone: saveFormData.phone,
+        email: saveFormData.email,
+        status: saveFormData.status as any,
+        waterConsumption: proposalCalcData.waterMonthly,
+        cleaningConsumption: proposalCalcData.cleaningMonthly,
+        creditScore: rangeToScore[proposalCalcData.creditRange] || undefined,
+      });
+
+      const encodedMsg = encodeURIComponent(`Olá ${clientData.name}! Aqui está a sua proposta da Aquafeel Solutions: ${window.location.origin}/proposal?id=${clientData.id}&lang=${clientData.lang}`);
+      const phoneDigits = saveFormData.phone.replace(/\D/g, '');
+      const waLink = `https://wa.me/${phoneDigits}?text=${encodedMsg}`;
+
+      toast.success(
+        <div className="flex flex-col gap-2">
+          <span>Proposta Salva! ✅</span>
+          {phoneDigits && (
+            <a href={waLink} target="_blank" rel="noopener noreferrer" className="bg-emerald-500 text-white px-3 py-2 flex items-center justify-center gap-2 rounded-lg font-bold text-xs mt-2 hover:bg-emerald-600">
+              <Send size={14} /> Enviar no WhatsApp
+            </a>
+          )}
+        </div>,
+        { duration: 8000 }
+      );
+      
+      setIsSaveModalOpen(false);
+    } catch (err: any) {
+      toast.error('Erro ao guardar proposta: ' + err.message);
+    } finally {
+      setIsSavingProposal(false);
+    }
+  };
 
   if (!isLoaded || !expirationDate || !clientData) return null;
 
@@ -148,34 +226,14 @@ export function ProposalView() {
                 isExpired={isExpired}
                 onSaveProposal={async (data) => {
                   if (!clientData.id) return;
-
-                  // Record engagement: calculator was used
                   recordCalculatorUsed(data.creditRange);
-
-                  const rangeToScore: Record<string, number> = {
-                    'RANGE1': 740, 'RANGE2': 690, 'RANGE3': 660, 'RANGE4': 600,
-                  };
-
-                  const { error } = await supabase
-                    .from('clients')
-                    .update({
-                      water_consumption:    data.waterMonthly,
-                      cleaning_consumption: data.cleaningMonthly,
-                      credit_score:         rangeToScore[data.creditRange] || null,
-                    })
-                    .eq('id', clientData.id);
-
-                  if (error) {
-                    console.error('Error saving proposal:', error);
-                    throw error;
-                  }
-
-                  setClientData({
-                    ...clientData,
-                    waterConsumption:    data.waterMonthly,
-                    cleaningConsumption: data.cleaningMonthly,
-                    creditScore:         rangeToScore[data.creditRange] || undefined,
+                  setProposalCalcData(data);
+                  setSaveFormData({
+                    phone: clientData.phone || '',
+                    email: clientData.email || '',
+                    status: 'PENDING'
                   });
+                  setIsSaveModalOpen(true);
                 }}
               />
             </div>
@@ -269,6 +327,83 @@ export function ProposalView() {
         lang={lang}
         clientName={name}
       />
+
+      {/* Save Proposal Modal */}
+      {isSaveModalOpen && (
+        <div className="fixed inset-0 bg-black/50 z-[200] flex items-center justify-center p-4 backdrop-blur-sm animate-in fade-in duration-200">
+          <div className="bg-white rounded-2xl max-w-sm w-full shadow-2xl overflow-hidden animate-in slide-in-from-bottom-8">
+            <div className="px-6 py-4 flex items-center justify-between border-b border-slate-100">
+              <h3 className="font-black text-slate-800 flex items-center justify-center gap-2">
+                <FileText size={18} className="text-aqua-600" /> Confirmar Proposta
+              </h3>
+              <button disabled={isSavingProposal} onClick={() => setIsSaveModalOpen(false)} className="text-slate-400 hover:text-slate-600 p-1">
+                <X size={20} />
+              </button>
+            </div>
+            
+            <div className="p-6 space-y-4">
+              <div>
+                <label className="block text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1">Status do Lead</label>
+                <select
+                  value={saveFormData.status}
+                  onChange={(e) => setSaveFormData({ ...saveFormData, status: e.target.value })}
+                  className="w-full text-sm font-bold border border-slate-200 rounded-xl px-3 py-3 outline-none focus:border-aqua-500 bg-slate-50 text-slate-700 hover:bg-white transition-colors"
+                >
+                  <option value="PENDING">PENDING (Aguardando Decisão)</option>
+                  <option value="SALE">SALE (Fechado/Vendido)</option>
+                  <option value="NO SALE">NO SALE (Não Fechou)</option>
+                  <option value="NOT INTERESTED">NOT INTERESTED (Não tem interesse)</option>
+                  <option value="RESCHEDULE">RESCHEDULE (Reagendar para depois)</option>
+                </select>
+                {saveFormData.status === 'RESCHEDULE' && (
+                  <p className="text-[10px] text-amber-600 font-bold mt-2 flex items-center gap-1">
+                    <Calendar size={12} /> Tarefa de follow-up será criada (Daqui a 2 dias).
+                  </p>
+                )}
+              </div>
+              
+              <div className="space-y-3 pt-2 border-t border-slate-100">
+                <div>
+                  <label className="block text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1">Telefone (WhatsApp)</label>
+                  <input
+                    type="tel"
+                    value={saveFormData.phone}
+                    onChange={(e) => setSaveFormData({ ...saveFormData, phone: e.target.value })}
+                    className="w-full text-sm font-medium border border-slate-200 rounded-xl px-3 py-2 outline-none focus:border-aqua-500 bg-white placeholder:text-slate-300"
+                    placeholder="(99) 99999-9999"
+                  />
+                </div>
+                <div>
+                  <label className="block text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1">E-mail</label>
+                  <input
+                    type="email"
+                    value={saveFormData.email}
+                    onChange={(e) => setSaveFormData({ ...saveFormData, email: e.target.value })}
+                    className="w-full text-sm font-medium border border-slate-200 rounded-xl px-3 py-2 outline-none focus:border-aqua-500 bg-white placeholder:text-slate-300"
+                  />
+                </div>
+              </div>
+            </div>
+
+            <div className="p-4 bg-slate-50 border-t border-slate-100 gap-2 flex">
+              <button 
+                disabled={isSavingProposal}
+                onClick={() => setIsSaveModalOpen(false)}
+                className="flex-1 py-3 text-sm font-bold text-slate-500 border-2 border-slate-200 rounded-xl hover:bg-slate-100 disabled:opacity-50 transition-colors"
+              >
+                Cancelar
+              </button>
+              <button 
+                disabled={isSavingProposal}
+                onClick={handleConfirmSave}
+                className="flex-[2] flex justify-center items-center py-3 text-sm font-black bg-aqua-600 text-white rounded-xl hover:bg-aqua-500 disabled:opacity-50 transition-all shadow-md shadow-aqua-500/20"
+              >
+                {isSavingProposal ? 'Salvando...' : 'Guardar Info & Status'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

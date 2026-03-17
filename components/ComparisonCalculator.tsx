@@ -295,52 +295,19 @@ export const ComparisonCalculator: React.FC<ComparisonCalculatorProps> = ({
 
             {onSaveProposal && (
               <button
-                onClick={async () => {
-                  setIsSaving(true);
-                  const toastId = toast.loading(
-                    lang === 'pt' ? 'Salvando proposta...' :
-                      lang === 'es' ? 'Guardando propuesta...' :
-                        'Saving proposal...'
-                  );
-                  try {
-                    await onSaveProposal({
-                      waterMonthly: customWater,
-                      cleaningMonthly: customCleaning,
-                      creditRange: selectedCredit,
-                      plan: selectedPlan,
-                      monthlyAmount: currentPlan.amount
-                    });
-                    toast.success(
-                      lang === 'pt' ? 'Proposta salva com sucesso! ✅' :
-                        lang === 'es' ? '¡Propuesta guardada! ✅' :
-                          'Proposal saved! ✅',
-                      { id: toastId, duration: 4000 }
-                    );
-                  } catch {
-                    toast.error(
-                      lang === 'pt' ? 'Erro ao salvar. Tente novamente.' :
-                        lang === 'es' ? 'Error al guardar. Inténtelo de nuevo.' :
-                          'Error saving. Please try again.',
-                      { id: toastId }
-                    );
-                  } finally {
-                    setIsSaving(false);
-                  }
+                onClick={() => {
+                  onSaveProposal({
+                    waterMonthly: customWater,
+                    cleaningMonthly: customCleaning,
+                    creditRange: selectedCredit,
+                    plan: selectedPlan,
+                    monthlyAmount: currentPlan.amount
+                  });
                 }}
-                disabled={isSaving}
-                className="w-full flex items-center justify-center gap-3 py-4 rounded-2xl bg-white/10 border border-white/20 text-white font-black text-sm uppercase tracking-widest hover:bg-white/20 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full flex items-center justify-center gap-3 py-4 rounded-2xl bg-white/10 border border-white/20 text-white font-black text-sm uppercase tracking-widest hover:bg-white/20 transition-all"
               >
-                {isSaving ? (
-                  <>
-                    <Loader2 size={18} className="animate-spin" />
-                    {lang === 'pt' ? 'Salvando...' : lang === 'es' ? 'Guardando...' : 'Saving...'}
-                  </>
-                ) : (
-                  <>
-                    <Save size={18} />
-                    {lang === 'pt' ? 'Salvar Proposta' : lang === 'es' ? 'Guardar Propuesta' : 'Save Proposal'}
-                  </>
-                )}
+                <Save size={18} />
+                {lang === 'pt' ? 'Guardar Proposta' : lang === 'es' ? 'Guardar Propuesta' : 'Save Proposal'}
               </button>
             )}
           </div>
