@@ -121,8 +121,8 @@ export const RecommendationsPanel: React.FC = () => {
     referralsByClient[t.client_id].push(t);
   });
 
-  // Only show clients that have referrals or are in add mode
-  const clientsInView = clients.filter(c => referralsByClient[c.id]?.length > 0 || isAddMode === c.id);
+  // Show all clients so users can always add recommendations
+  const clientsInView = clients;
 
   return (
     <div className="space-y-8 animate-in fade-in duration-500">
@@ -146,7 +146,7 @@ export const RecommendationsPanel: React.FC = () => {
       ) : clientsInView.length === 0 && !isAddMode ? (
         <div className="text-center py-20 bg-white rounded-2xl border border-slate-200 border-dashed">
           <Users size={48} className="mx-auto text-slate-300 mb-4" />
-          <h3 className="text-xl font-bold text-slate-700 mb-2">Nenhuma Recomendação Ainda</h3>
+          <h3 className="text-xl font-bold text-slate-700 mb-2">Sem Clientes Cadastrados</h3>
           <p className="text-slate-500 max-w-sm mx-auto mb-6">
             Você pode adicionar novas recomendações diretamente nos cards dos seus clientes no Dashboard.
           </p>

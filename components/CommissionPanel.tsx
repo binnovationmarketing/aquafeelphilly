@@ -243,7 +243,7 @@ const TeamLeaderboard: React.FC<{ analysts: AnalystStat[]; myRole: HierarchyRole
           </thead>
           <tbody className="divide-y divide-slate-50">
             {sorted.map((analyst, idx) => {
-              const analystRole = (analyst.role || 'analyst_jr') as HierarchyRole;
+              const analystRole = (analyst.role && ROLE_COLORS[analyst.role as HierarchyRole]) ? analyst.role as HierarchyRole : 'analyst_jr';
               const commission = calcPersonalCommission(analystRole);
               const totalComm = commission * analyst.totalSales;
               const myDiff = calcDifferentialBonus(myRole, analystRole) * analyst.totalSales;
@@ -293,28 +293,29 @@ const TeamLeaderboard: React.FC<{ analysts: AnalystStat[]; myRole: HierarchyRole
 export const CommissionPanel: React.FC<CommissionPanelProps> = ({
   role, personalSales, teamSales, teamAnalysts = [], monthlyEarnings
 }) => {
-  const isManager = !RECRUITMENT_BONUS_ROLES.includes(role);
+  const safeRole = (role && ROLE_COLORS[role]) ? role : 'analyst_jr';
+  const isManager = !RECRUITMENT_BONUS_ROLES.includes(safeRole);
 
   return (
     <div className="space-y-6">
       {/* Row 1: Earnings + Next Level */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <EarningsCard role={role} monthlyEarnings={monthlyEarnings} />
-        <NextLevelCard role={role} personalSales={personalSales} teamSales={teamSales} />
+        <EarningsCard role={safeRole} monthlyEarnings={monthlyEarnings} />
+        <NextLevelCard role={safeRole} personalSales={personalSales} teamSales={teamSales} />
       </div>
 
       {/* Row 2: Table + Leaderboard (for managers) or just Table */}
       {isManager && teamAnalysts.length > 0 ? (
         <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
           <div className="xl:col-span-2">
-            <TeamLeaderboard analysts={teamAnalysts} myRole={role} />
+            <TeamLeaderboard analysts={teamAnalysts} myRole={safeRole} />
           </div>
           <div>
-            <CommissionTableCard currentRole={role} />
+            <CommissionTableCard currentRole={safeRole} />
           </div>
         </div>
       ) : (
-        <CommissionTableCard currentRole={role} />
+        <CommissionTableCard currentRole={safeRole} />
       )}
 
       {/* Stats banner */}
@@ -336,7 +337,7 @@ export const CommissionPanel: React.FC<CommissionPanelProps> = ({
             <DollarSign size={12} /> Comissão Máx.
           </p>
           <p className="text-3xl font-black text-teal-600">
-            {new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(ROLE_COMMISSION[role])}
+            {new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(ROLE_COMMISSION[safeRole])}
           </p>
         </div>
       </div>
