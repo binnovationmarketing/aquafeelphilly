@@ -225,23 +225,26 @@ export const ComparisonCalculator: React.FC<ComparisonCalculatorProps> = ({
 
           <div className="bg-white/5 border border-white/10 rounded-2xl p-6 mb-8">
             <ul className="space-y-5">
-              <li className="flex gap-4 items-center text-sm md:text-base font-bold text-slate-200">
-                <div className="w-8 h-8 rounded-full bg-emerald-500/20 flex items-center justify-center shrink-0">
+              <li className="flex gap-4 items-start text-sm md:text-base font-bold text-slate-200">
+                <div className="w-8 h-8 rounded-full bg-emerald-500/20 flex items-center justify-center shrink-0 mt-1">
                   <CheckCircle size={16} className="text-emerald-400" />
                 </div>
-                Tanque duplo de purificação
+                <span className="mt-1">Tanque duplo de purificação para toda a casa (Garantia de 25 Anos)</span>
               </li>
-              <li className="flex gap-4 items-center text-sm md:text-base font-bold text-slate-200">
-                <div className="w-8 h-8 rounded-full bg-emerald-500/20 flex items-center justify-center shrink-0">
+              <li className="flex gap-4 items-start text-sm md:text-base font-bold text-slate-200">
+                <div className="w-8 h-8 rounded-full bg-emerald-500/20 flex items-center justify-center shrink-0 mt-1">
                   <CheckCircle size={16} className="text-emerald-400" />
                 </div>
-                Sistema de RO Alcalino
+                <span className="mt-1">Sistema de RO Alcalino (Melhor sistema do mercado - Watts) (Garantia de 25 anos)</span>
               </li>
-              <li className="flex gap-4 items-center text-sm md:text-base font-bold text-slate-200">
-                <div className="w-8 h-8 rounded-full bg-emerald-500/20 flex items-center justify-center shrink-0">
-                  <CheckCircle size={16} className="text-emerald-400" />
+              <li className="flex gap-4 items-start text-sm md:text-base font-bold text-slate-200">
+                <div className="w-8 h-8 rounded-full bg-[#11caa0]/20 flex items-center justify-center shrink-0 mt-1">
+                  <CheckCircle size={16} className="text-[#11caa0]" />
                 </div>
-                Sabões orgânicos (25 anos)
+                <div>
+                  <span className="text-[#11caa0] font-black uppercase tracking-widest text-[10px] block mb-1">Recomende e ganhe:</span>
+                  3 analises de agua na casa que qualifiquem de familias e receba 1 ano de Sabões orgânicos para toda a casa gratis
+                </div>
               </li>
             </ul>
           </div>

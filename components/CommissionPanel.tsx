@@ -74,14 +74,14 @@ const EarningsCard: React.FC<{ role: HierarchyRole; monthlyEarnings?: { personal
         </div>
       </div>
 
-      <div className="grid grid-cols-2 gap-4 mt-6 p-4 rounded-xl bg-white/40 border border-white/20 backdrop-blur-sm">
-        <div>
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-6 p-4 rounded-xl bg-white/40 border border-white/20 backdrop-blur-sm">
+        <div className="flex sm:block items-center justify-between">
           <p className="flex items-center gap-1.5 text-[10px] text-slate-500 font-bold mb-1 uppercase tracking-widest">
             <TrendingUp size={12} className={colors.text} /> Suas Vendas
           </p>
           <p className={`text-xl font-black text-slate-800`}>{fmt(personal)}</p>
         </div>
-        <div>
+        <div className="flex sm:block items-center justify-between pt-3 sm:pt-0 border-t sm:border-0 border-white/20">
           <p className="flex items-center gap-1.5 text-[10px] text-slate-500 font-bold mb-1 uppercase tracking-widest">
             <Users size={12} className="text-indigo-500" /> Bônus Equipe
           </p>
@@ -318,25 +318,25 @@ export const CommissionPanel: React.FC<CommissionPanelProps> = ({
         <CommissionTableCard currentRole={safeRole} />
       )}
 
-      {/* Stats banner */}
-      <div className="grid grid-cols-3 gap-4">
-        <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-5 text-center">
-          <p className="text-xs text-slate-400 font-semibold uppercase mb-1 flex justify-center items-center gap-1">
+      {/* Stats banner - Stacks on mobile */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-4 md:p-5 text-center">
+          <p className="text-[10px] md:text-xs text-slate-400 font-semibold uppercase mb-1 flex justify-center items-center gap-1">
             <TrendingUp size={12} /> Vendas Pessoais
           </p>
-          <p className="text-3xl font-black text-slate-900">{personalSales}</p>
+          <p className="text-2xl md:text-3xl font-black text-slate-900">{personalSales}</p>
         </div>
-        <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-5 text-center">
-          <p className="text-xs text-slate-400 font-semibold uppercase mb-1 flex justify-center items-center gap-1">
+        <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-4 md:p-5 text-center">
+          <p className="text-[10px] md:text-xs text-slate-400 font-semibold uppercase mb-1 flex justify-center items-center gap-1">
             <Users size={12} /> Vendas Equipe
           </p>
-          <p className="text-3xl font-black text-slate-900">{teamSales}</p>
+          <p className="text-2xl md:text-3xl font-black text-slate-900">{teamSales}</p>
         </div>
-        <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-5 text-center">
-          <p className="text-xs text-slate-400 font-semibold uppercase mb-1 flex justify-center items-center gap-1">
+        <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-4 md:p-5 text-center text-ellipsis overflow-hidden">
+          <p className="text-[10px] md:text-xs text-slate-400 font-semibold uppercase mb-1 flex justify-center items-center gap-1">
             <DollarSign size={12} /> Comissão Máx.
           </p>
-          <p className="text-3xl font-black text-teal-600">
+          <p className="text-2xl md:text-3xl font-black text-teal-600 truncate">
             {new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(ROLE_COMMISSION[safeRole])}
           </p>
         </div>

@@ -109,15 +109,7 @@ const Feature: React.FC<{ icon: React.FC<any>; title: string; desc: string; dela
 /* ─── Main Component ─── */
 export const IntroPage: React.FC<{ onEnter: () => void }> = ({ onEnter }) => {
   return (
-    <div style={{
-      position: 'fixed', inset: 0,
-      background: '#020d1a',
-      color: '#fff',
-      overflow: 'hidden',
-      zIndex: 100,
-      fontFamily: "'Montserrat', 'Inter', sans-serif",
-    }}>
-      {/* Particle network */}
+    <div className="relative min-h-screen bg-[#020d1a] text-white overflow-x-hidden w-full font-montserrat flex flex-col items-center py-12 md:py-20 lg:py-24">
       <ParticleCanvas />
 
       {/* Glow blobs */}
@@ -140,25 +132,15 @@ export const IntroPage: React.FC<{ onEnter: () => void }> = ({ onEnter }) => {
       </div>
 
       {/* Content */}
-      <div style={{
-        position: 'relative', zIndex: 10,
-        height: '100%',
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        justifyContent: 'center',
-        padding: '2rem',
-        maxWidth: '1100px',
-        margin: '0 auto',
-      }}>
+      <div className="relative z-10 w-full max-w-6xl px-4 md:px-8 mx-auto flex flex-col items-center justify-center">
         {/* Logo */}
         <motion.div
           initial={{ opacity: 0, y: -30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8 }}
-          style={{ marginBottom: '2.5rem' }}
+          className="mb-8 md:mb-12"
         >
-          <AquaFeelLogo width="260px" variant="white" />
+          <AquaFeelLogo width="min(260px, 60vw)" variant="white" />
         </motion.div>
 
         {/* Hero text */}
@@ -166,41 +148,20 @@ export const IntroPage: React.FC<{ onEnter: () => void }> = ({ onEnter }) => {
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.3, duration: 0.8 }}
-          style={{ textAlign: 'center', marginBottom: '2.5rem' }}
+          className="text-center mb-10 md:mb-16 px-4"
         >
-          <div style={{
-            display: 'inline-block',
-            background: 'rgba(0,174,239,0.1)',
-            border: '1px solid rgba(0,174,239,0.25)',
-            borderRadius: '9999px',
-            padding: '0.35rem 1rem',
-            fontSize: '0.65rem',
-            fontWeight: 800,
-            letterSpacing: '0.12em',
-            color: '#00AEEF',
-            textTransform: 'uppercase',
-            marginBottom: '1.25rem',
-          }}>
+          <div className="inline-block bg-aqua-500/10 border border-aqua-500/20 rounded-full px-4 py-1.5 text-[10px] md:text-xs font-black tracking-widest text-emerald-400 uppercase mb-6">
             🌊 Water Solutions Intelligence Platform
           </div>
 
-          <h1 style={{
-            fontSize: 'clamp(2rem, 5vw, 3.75rem)',
-            fontWeight: 900,
-            lineHeight: 1.05,
-            letterSpacing: '-0.04em',
-            marginBottom: '1rem',
-            background: 'linear-gradient(135deg, #fff 0%, #bae6fd 50%, #64748b 100%)',
-            WebkitBackgroundClip: 'text',
-            WebkitTextFillColor: 'transparent',
-          }}>
+          <h1 className="text-4xl sm:text-5xl md:text-7xl lg:text-8xl font-black leading-tight tracking-tighter mb-4 bg-gradient-to-b from-white via-white to-slate-500 bg-clip-text text-transparent">
             Aquafeel Solutions<br />
-            <span style={{ background: 'linear-gradient(90deg, #00AEEF, #0284c7)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
+            <span className="bg-gradient-to-r from-aqua-400 to-blue-500 bg-clip-text text-transparent">
               Tech
             </span>
           </h1>
 
-          <p style={{ color: '#64748b', fontSize: 'clamp(0.9rem, 2vw, 1.1rem)', fontWeight: 400, maxWidth: '520px', margin: '0 auto', lineHeight: 1.6 }}>
+          <p className="text-slate-400 text-sm md:text-base lg:text-xl font-light max-w-2xl mx-auto leading-relaxed">
             Sales intelligence, hierarchy management & real-time analytics — all in one platform.
           </p>
         </motion.div>
@@ -210,64 +171,23 @@ export const IntroPage: React.FC<{ onEnter: () => void }> = ({ onEnter }) => {
           initial={{ opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ delay: 0.7, duration: 0.5 }}
-          style={{ marginBottom: '3rem' }}
+          className="mb-12 md:mb-20"
         >
           <button
             onClick={onEnter}
-            style={{
-              display: 'flex', alignItems: 'center', gap: '1rem',
-              background: '#fff',
-              color: '#020d1a',
-              border: 'none',
-              borderRadius: '9999px',
-              padding: '1rem 2rem',
-              fontSize: '0.85rem',
-              fontWeight: 900,
-              letterSpacing: '0.12em',
-              textTransform: 'uppercase',
-              cursor: 'pointer',
-              boxShadow: '0 0 40px rgba(255,255,255,0.2)',
-              transition: 'all 0.3s ease',
-            }}
-            onMouseEnter={e => {
-              (e.currentTarget as HTMLButtonElement).style.background = '#00AEEF';
-              (e.currentTarget as HTMLButtonElement).style.color = '#fff';
-              (e.currentTarget as HTMLButtonElement).style.boxShadow = '0 0 60px rgba(0,174,239,0.5)';
-              (e.currentTarget as HTMLButtonElement).style.transform = 'scale(1.05)';
-            }}
-            onMouseLeave={e => {
-              (e.currentTarget as HTMLButtonElement).style.background = '#fff';
-              (e.currentTarget as HTMLButtonElement).style.color = '#020d1a';
-              (e.currentTarget as HTMLButtonElement).style.boxShadow = '0 0 40px rgba(255,255,255,0.2)';
-              (e.currentTarget as HTMLButtonElement).style.transform = 'scale(1)';
-            }}
+            className="flex items-center gap-4 bg-white text-slate-950 px-8 py-4 rounded-full text-xs md:text-sm font-black tracking-widest uppercase cursor-pointer shadow-[0_0_50px_rgba(255,255,255,0.2)] hover:bg-aqua-500 hover:text-white hover:scale-105 active:scale-95 transition-all duration-300 group"
           >
             Access Platform
-            <div style={{
-              background: '#020d1a',
-              color: '#fff',
-              borderRadius: '9999px',
-              padding: '0.4rem',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              transition: 'all 0.3s',
-            }}>
+            <div className="bg-slate-950 text-white rounded-full p-2 flex items-center justify-center group-hover:bg-white group-hover:text-aqua-600 transition-colors">
               <ChevronRight size={18} />
             </div>
           </button>
         </motion.div>
 
         {/* Stats + Features side by side */}
-        <div style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))',
-          gap: '2rem',
-          width: '100%',
-          maxWidth: '900px',
-        }}>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 md:gap-12 w-full max-w-5xl">
           {/* Stats */}
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
+          <div className="grid grid-cols-2 gap-3 md:gap-4 order-2 lg:order-1">
             <StatCard value="8,790" label="System Value ($)" delay={1.0} />
             <StatCard value="$3K" label="Top Commission" delay={1.1} />
             <StatCard value="10+" label="Career Levels" delay={1.2} />
@@ -275,10 +195,10 @@ export const IntroPage: React.FC<{ onEnter: () => void }> = ({ onEnter }) => {
           </div>
 
           {/* Features list */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem', justifyContent: 'center' }}>
+          <div className="flex flex-col gap-6 md:gap-8 justify-center order-1 lg:order-2 px-4">
             <Feature icon={BarChart2} title="Commission Intelligence" desc="Differential bonuses calculated automatically across your entire hierarchy." delay={1.1} />
-            <Feature icon={Users} title="Team Hierarchy" desc="Analyst Jr → Embaixador — track every level's performance in real time." delay={1.25} />
-            <Feature icon={ShieldCheck} title="Secure Access" desc="Role-based access, session protection, and auto-logout after inactivity." delay={1.4} />
+            <Feature icon={Users} title="Team Hierarchy" desc="Analyst Jr → Embaixador — track every level's performance." delay={1.25} />
+            <Feature icon={ShieldCheck} title="Secure Access" desc="Role-based access, session protection, and auto-logout." delay={1.4} />
             <Feature icon={Award} title="Progress Tracking" desc="Know exactly how many sales to your next promotion." delay={1.55} />
           </div>
         </div>
@@ -288,19 +208,16 @@ export const IntroPage: React.FC<{ onEnter: () => void }> = ({ onEnter }) => {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 1.8, duration: 0.6 }}
-          style={{
-            position: 'absolute', bottom: '1.5rem',
-            display: 'flex', gap: '2rem', alignItems: 'center',
-          }}
+          className="mt-16 mb-8 lg:mt-24 flex flex-wrap justify-center gap-8 md:gap-12"
         >
           {[
             { icon: ShieldCheck, label: 'Secure Access' },
             { icon: Globe, label: 'Global Scale' },
             { icon: Zap, label: 'Real-time Data' },
           ].map((item, idx) => (
-            <div key={idx} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.35rem', color: '#334155' }}>
-              <item.icon size={20} color="rgba(0,174,239,0.4)" />
-              <span style={{ fontSize: '0.6rem', fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase' }}>{item.label}</span>
+            <div key={idx} className="flex flex-col items-center gap-2 text-slate-500">
+              <item.icon size={24} className="opacity-40 text-aqua-400" />
+              <span className="text-[9px] md:text-[10px] font-black tracking-widest uppercase">{item.label}</span>
             </div>
           ))}
         </motion.div>

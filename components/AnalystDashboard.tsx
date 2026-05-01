@@ -373,24 +373,24 @@ export const AnalystDashboard: React.FC<{ onNewProposal: () => void }> = ({ onNe
           <div className="flex items-center gap-4">
             <AquaFeelLogo width="120px" />
             <span className="hidden md:inline-block h-6 w-px bg-slate-200"></span>
-            <div className="hidden md:flex bg-slate-100 p-1 rounded-xl">
+            <div className="flex bg-slate-100 p-1 rounded-xl overflow-x-auto whitespace-nowrap hide-scrollbar max-w-[200px] sm:max-w-none">
               <button
                 onClick={() => setActiveTab('COMMISSIONS')}
-                className={`px-4 py-1.5 text-sm font-bold rounded-lg transition-all flex items-center gap-2 ${activeTab === 'COMMISSIONS' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+                className={`px-3 sm:px-4 py-1.5 text-[10px] sm:text-sm font-bold rounded-lg transition-all flex items-center gap-1 sm:gap-2 ${activeTab === 'COMMISSIONS' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
               >
-                💰 Comissões
+                💰 <span className="hidden xs:inline">Comissões</span>
               </button>
               <button
                 onClick={() => setActiveTab('OVERVIEW')}
-                className={`px-4 py-1.5 text-sm font-bold rounded-lg transition-all ${activeTab === 'OVERVIEW' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+                className={`px-3 sm:px-4 py-1.5 text-[10px] sm:text-sm font-bold rounded-lg transition-all ${activeTab === 'OVERVIEW' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
               >
-                Overview & Leads
+                Leads
               </button>
               <button
                 onClick={() => setActiveTab('RECOMMENDATIONS')}
-                className={`px-4 py-1.5 text-sm font-bold rounded-lg transition-all flex items-center gap-2 ${activeTab === 'RECOMMENDATIONS' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+                className={`px-3 sm:px-4 py-1.5 text-[10px] sm:text-sm font-bold rounded-lg transition-all flex items-center gap-1 sm:gap-2 ${activeTab === 'RECOMMENDATIONS' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
               >
-                Painel das Recomendações
+                🤝 <span className="hidden xs:inline">Recomendações</span>
               </button>
             </div>
             <h1 className="md:hidden text-lg font-bold text-slate-700">Analyst Dashboard</h1>
@@ -422,22 +422,22 @@ export const AnalystDashboard: React.FC<{ onNewProposal: () => void }> = ({ onNe
             <h2 className="text-2xl font-black text-slate-900">Welcome back!</h2>
             <p className="text-slate-500">Here's what's happening with your leads today.</p>
           </div>
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 sm:gap-3 w-full md:w-auto">
             <button
               onClick={() => {
                 const latest = allLeads[0];
                 if (latest) setShareTarget({ id: latest.id, name: latest.name });
               }}
-              className="flex items-center justify-center gap-2 border border-aqua-200 bg-aqua-50 hover:bg-aqua-100 text-aqua-700 px-5 py-3 rounded-xl font-bold text-sm transition-all"
+              className="flex-1 sm:flex-none flex items-center justify-center gap-2 border border-aqua-200 bg-aqua-50 hover:bg-aqua-100 text-aqua-700 px-4 sm:px-5 py-3 rounded-xl font-bold text-xs sm:text-sm transition-all"
             >
               <Share2 size={16} />
-              Compartilhar
+              <span className="sm:inline">Compartilhar</span>
             </button>
             <button
               onClick={onNewProposal}
-              className="flex items-center justify-center gap-2 bg-aqua-600 hover:bg-aqua-500 text-white px-6 py-3 rounded-xl font-bold shadow-lg shadow-aqua-500/30 transition-all transform hover:-translate-y-1 active:scale-95"
+              className="flex-1 sm:flex-none flex items-center justify-center gap-2 bg-aqua-600 hover:bg-aqua-500 text-white px-4 sm:px-6 py-3 rounded-xl font-bold shadow-lg shadow-aqua-500/30 transition-all transform hover:-translate-y-1 active:scale-95 text-xs sm:text-sm"
             >
-              <Plus size={20} />
+              <Plus size={18} />
               New Proposal
             </button>
           </div>
@@ -736,12 +736,29 @@ export const AnalystDashboard: React.FC<{ onNewProposal: () => void }> = ({ onNe
             ) : (
               <div className="mt-6 pt-4 border-t border-slate-100 flex flex-col gap-3">
                 {/* ── Close Sale CTA —  only shown for non-sale statuses ── */}
-                {!['SALE','INSTALLED','ACTIVE'].includes(selectedLead.status) && (
+                {!['SALE','INSTALLED','ACTIVE'].includes(selectedLead.status) ? (
                   <button
                     onClick={() => handleCloseSale(selectedLead)}
                     className="w-full py-3 text-sm font-black bg-gradient-to-r from-emerald-500 to-teal-500 text-white rounded-xl hover:from-emerald-400 hover:to-teal-400 transition-all shadow-lg shadow-emerald-500/20 flex items-center justify-center gap-2"
                   >
                     ✅ Fechar Venda — Calcular Comissões
+                  </button>
+                ) : (
+                  <button
+                    onClick={async () => {
+                      try {
+                        const { data, error } = await supabase.from('client_points').select('referral_token').eq('client_id', selectedLead.id).single();
+                        if (error || !data) throw new Error('Portal ainda não ativado ou token não encontrado.');
+                        const url = `${window.location.origin}/referral?token=${data.referral_token}`;
+                        await navigator.clipboard.writeText(url);
+                        toast.success('Link do Portal VIP copiado para a área de transferência!');
+                      } catch (err: any) {
+                        toast.error(err.message);
+                      }
+                    }}
+                    className="w-full py-3 text-sm font-black bg-gradient-to-r from-yellow-500 to-amber-500 text-yellow-950 rounded-xl hover:from-yellow-400 hover:to-amber-400 transition-all shadow-lg shadow-yellow-500/20 flex items-center justify-center gap-2"
+                  >
+                    👑 Copiar Link do Portal VIP (Indicações)
                   </button>
                 )}
                 <button

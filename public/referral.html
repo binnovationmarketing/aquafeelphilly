@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aquafeel Philly | Points & Rewards</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&family=Urbanist:wght@700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        body { font-family: 'Outfit', sans-serif; background-color: #0f172a; color: #f8fafc; }
+        h1, h2, h3 { font-family: 'Urbanist', sans-serif; }
+        .aqua-gradient { background: linear-gradient(135deg, #005088 0%, #11caa0 100%); }
+        .glass-card { background: rgba(30, 41, 59, 0.7); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.1); }
+        .tab-active { border-bottom: 3px solid #11caa0; color: #11caa0; }
+        .node { width: 40px; height: 40px; border-radius: 50%; display: inline-block; margin-right: 8px; }
+    </style>
+</head>
+<body class="min-h-screen">
+
+    <!-- Navigation -->
+    <nav class="p-6 border-b border-slate-800 glass-card sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto flex justify-between items-center">
+            <div class="flex items-center gap-2">
+                <div class="w-10 h-10 bg-white rounded-full flex items-center justify-center text-blue-900 font-bold">AQ</div>
+                <h1 class="text-2xl font-bold tracking-tight">Aquafeel <span class="text-[#11caa0]">Philly</span></h1>
+            </div>
+            <div class="flex items-center gap-6">
+                <div class="text-right">
+                    <p class="text-xs text-slate-400 uppercase tracking-widest">Saldo Atual</p>
+                    <p class="text-xl font-bold text-[#11caa0]">4.200 Points</p>
+                </div>
+                <div class="w-12 h-12 bg-slate-700 rounded-full flex items-center justify-center border-2 border-[#11caa0]">
+                    <i class="fa-solid fa-user"></i>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <main class="max-w-7xl mx-auto p-6 space-y-8">
+        
+        <!-- Welcome Hero -->
+        <section class="aqua-gradient p-10 rounded-3xl shadow-2xl relative overflow-hidden">
+            <div class="relative z-10">
+                <h2 class="text-4xl font-bold mb-2">Olá, Rick!</h2>
+                <p class="text-lg opacity-90 max-w-xl">Você está no <span class="font-bold underline">Nível 1 (Embaixador)</span>. Indique mais 2 pessoas para desbloquear o Nível Elite e prêmios de 5.000 pontos!</p>
+                <div class="mt-6 flex gap-4">
+                    <button onclick="showTab('cadastro')" class="bg-white text-blue-900 px-6 py-3 rounded-full font-bold shadow-lg hover:bg-slate-100 transition">Nova Indicação</button>
+                    <button onclick="showTab('premios')" class="bg-blue-900 text-white px-6 py-3 rounded-full font-bold shadow-lg hover:bg-blue-800 transition">Ver Catálogo</button>
+                </div>
+            </div>
+            <i class="fa-solid fa-droplet absolute -bottom-10 -right-10 text-9xl opacity-20 rotate-12"></i>
+        </section>
+
+        <!-- Tabs Menu -->
+        <div class="flex gap-8 border-b border-slate-800 overflow-x-auto pb-2">
+            <button id="tab-dashboard" onclick="showTab('dashboard')" class="tab-active py-2 px-4 font-semibold transition">Dashboard</button>
+            <button id="tab-cadastro" onclick="showTab('cadastro')" class="py-2 px-4 text-slate-400 hover:text-white transition">Cadastrar Família</button>
+            <button id="tab-arvore" onclick="showTab('arvore')" class="py-2 px-4 text-slate-400 hover:text-white transition">Rede (Árvore)</button>
+            <button id="tab-premios" onclick="showTab('premios')" class="py-2 px-4 text-slate-400 hover:text-white transition">Prêmios</button>
+        </div>
+
+        <!-- DASHBOARD TAB -->
+        <div id="content-dashboard" class="tab-content grid md:grid-cols-3 gap-6">
+            <div class="glass-card p-6 rounded-2xl">
+                <p class="text-slate-400 text-sm">RECOMENDAÇÕES</p>
+                <h3 class="text-3xl font-bold mt-1">12 Famílias</h3>
+                <div class="mt-4 flex gap-1">
+                    <div class="h-2 w-full bg-[#11caa0] rounded-full"></div>
+                    <div class="h-2 w-1/2 bg-slate-700 rounded-full"></div>
+                </div>
+            </div>
+            <div class="glass-card p-6 rounded-2xl">
+                <p class="text-slate-400 text-sm">VENDAS CONVERTIDAS</p>
+                <h3 class="text-3xl font-bold mt-1 text-[#11caa0]">4 Vendas</h3>
+                <p class="text-xs text-slate-500 mt-2">+ 3.600 pontos acumulados</p>
+            </div>
+            <div class="glass-card p-6 rounded-2xl">
+                <p class="text-slate-400 text-sm">REGRAS DE PONTOS</p>
+                <div class="mt-2 space-y-1 text-sm">
+                    <div class="flex justify-between"><span>Venda</span> <span class="text-[#11caa0] font-bold">+900</span></div>
+                    <div class="flex justify-between"><span>Indicação Extra</span> <span class="text-[#11caa0] font-bold">+300</span></div>
+                    <div class="flex justify-between"><span>Análise Feita</span> <span class="text-[#11caa0] font-bold">+100</span></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- CADASTRO TAB -->
+        <div id="content-cadastro" class="tab-content hidden glass-card p-8 rounded-2xl max-w-2xl mx-auto">
+            <h3 class="text-2xl font-bold mb-6">Cadastrar Nova Família</h3>
+            <form class="space-y-4" onsubmit="event.preventDefault(); alert('Indicação cadastrada com sucesso!');">
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs uppercase tracking-wider text-slate-400 mb-1">Analista Responsável</label>
+                        <input type="text" placeholder="Nome do Analista" class="w-full bg-slate-800 border border-slate-700 rounded-lg p-3 focus:outline-none focus:border-[#11caa0]">
+                    </div>
+                    <div>
+                        <label class="block text-xs uppercase tracking-wider text-slate-400 mb-1">Seu Nome (Cliente)</label>
+                        <input type="text" placeholder="Seu Nome" class="w-full bg-slate-800 border border-slate-700 rounded-lg p-3 focus:outline-none focus:border-[#11caa0]">
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-xs uppercase tracking-wider text-slate-400 mb-1">Nome da Recomendação</label>
+                    <input type="text" placeholder="Nome da Família Indicada" class="w-full bg-slate-800 border border-slate-700 rounded-lg p-3 focus:outline-none focus:border-[#11caa0]">
+                </div>
+                <div>
+                    <label class="block text-xs uppercase tracking-wider text-slate-400 mb-1">Telefone de Contato</label>
+                    <input type="tel" placeholder="215-000-0000" class="w-full bg-slate-800 border border-slate-700 rounded-lg p-3 focus:outline-none focus:border-[#11caa0]">
+                </div>
+                <div>
+                    <label class="block text-xs uppercase tracking-wider text-slate-400 mb-1">Endereço Residencial</label>
+                    <textarea placeholder="Endereço Completo" class="w-full bg-slate-800 border border-slate-700 rounded-lg p-3 focus:outline-none focus:border-[#11caa0]"></textarea>
+                </div>
+                <button type="submit" class="w-full bg-[#11caa0] text-white font-bold py-4 rounded-lg shadow-lg hover:scale-[1.02] transition">Enviar Indicação (+100 Pts na Análise)</button>
+            </form>
+        </div>
+
+        <!-- ARVORE TAB -->
+        <div id="content-arvore" class="tab-content hidden space-y-6">
+            <div class="glass-card p-6 rounded-2xl flex flex-wrap gap-6 justify-center">
+                <div class="flex items-center gap-2"><span class="node bg-slate-500"></span> <span class="text-sm">Aguardando</span></div>
+                <div class="flex items-center gap-2"><span class="node bg-blue-500"></span> <span class="text-sm">Agendado</span></div>
+                <div class="flex items-center gap-2"><span class="node bg-[#11caa0]"></span> <span class="text-sm">Convertido</span></div>
+                <div class="flex items-center gap-2"><span class="node bg-yellow-500"></span> <span class="text-sm">Em Espera (Hold)</span></div>
+                <div class="flex items-center gap-2"><span class="node bg-red-500"></span> <span class="text-sm">Não Qualificado</span></div>
+            </div>
+            <div class="glass-card p-20 rounded-2xl text-center border-dashed border-2 border-slate-700">
+                <div class="inline-block p-4 bg-slate-800 rounded-full mb-4"><i class="fa-solid fa-sitemap text-3xl text-[#11caa0]"></i></div>
+                <h3 class="text-xl font-bold">Visualização Dinâmica da Rede</h3>
+                <p class="text-slate-400">Em uma implementação real, aqui apareceria sua árvore interativa em SVG/D3.js.</p>
+            </div>
+        </div>
+
+        <!-- PREMIOS TAB -->
+        <div id="content-premios" class="tab-content hidden">
+            <div class="grid md:grid-cols-3 gap-8">
+                <!-- Premio 1 -->
+                <div class="glass-card rounded-3xl overflow-hidden group hover:border-[#11caa0] transition">
+                    <div class="h-48 bg-slate-700 flex items-center justify-center overflow-hidden">
+                         <img src="https://images.unsplash.com/photo-1544117519-31a4b719223d?auto=format&fit=crop&q=80&w=400" alt="Apple Watch" class="w-full h-full object-cover group-hover:scale-110 transition duration-500">
+                    </div>
+                    <div class="p-6">
+                        <h4 class="text-xl font-bold">Apple Watch SE</h4>
+                        <p class="text-[#11caa0] font-bold text-lg mt-2">3.500 Points</p>
+                        <button onclick="solicitarResgate('Apple Watch SE', '3500')" class="w-full mt-4 border border-slate-600 py-2 rounded-xl hover:bg-white hover:text-blue-900 transition font-bold">Resgatar</button>
+                    </div>
+                </div>
+                <!-- Premio 2 -->
+                <div class="glass-card rounded-3xl overflow-hidden group hover:border-[#11caa0] transition border-2 border-yellow-500/30">
+                    <div class="h-48 bg-slate-700 flex items-center justify-center overflow-hidden">
+                         <img src="https://images.unsplash.com/photo-1540555700478-4be289fbecef?auto=format&fit=crop&q=80&w=400" alt="Spa" class="w-full h-full object-cover group-hover:scale-110 transition duration-500">
+                    </div>
+                    <div class="p-6">
+                        <div class="flex justify-between items-start">
+                            <h4 class="text-xl font-bold">Spa Day Premium</h4>
+                            <span class="bg-yellow-500 text-black text-[10px] font-black px-2 py-1 rounded uppercase">Elite VIP</span>
+                        </div>
+                        <p class="text-[#11caa0] font-bold text-lg mt-2">5.000 Points</p>
+                        <button onclick="solicitarResgate('Spa Day Premium', '5000')" class="w-full mt-4 bg-yellow-500 text-black py-2 rounded-xl hover:bg-yellow-400 transition font-bold">Resgatar VIP</button>
+                    </div>
+                </div>
+                <!-- Premio 3 -->
+                <div class="glass-card rounded-3xl overflow-hidden group hover:border-[#11caa0] transition border-2 border-yellow-500/30">
+                    <div class="h-48 bg-slate-700 flex items-center justify-center overflow-hidden">
+                         <img src="https://images.unsplash.com/photo-1517336714731-489689fd1ca8?auto=format&fit=crop&q=80&w=400" alt="iPad" class="w-full h-full object-cover group-hover:scale-110 transition duration-500">
+                    </div>
+                    <div class="p-6">
+                        <div class="flex justify-between items-start">
+                            <h4 class="text-xl font-bold">iPad Pro</h4>
+                            <span class="bg-yellow-500 text-black text-[10px] font-black px-2 py-1 rounded uppercase">Elite VIP</span>
+                        </div>
+                        <p class="text-[#11caa0] font-bold text-lg mt-2">7.500 Points</p>
+                        <button onclick="solicitarResgate('iPad Pro', '7500')" class="w-full mt-4 bg-yellow-500 text-black py-2 rounded-xl hover:bg-yellow-400 transition font-bold">Resgatar VIP</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <script>
+        function showTab(tabName) {
+            // Hide all
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+            document.querySelectorAll('nav button, .flex button').forEach(el => el.classList.remove('tab-active', 'text-white'));
+            
+            // Show selected
+            document.getElementById('content-' + tabName).classList.remove('hidden');
+            const activeTab = document.getElementById('tab-' + tabName);
+            if(activeTab) {
+                activeTab.classList.add('tab-active');
+            }
+        }
+
+        function solicitarResgate(item, pontos) {
+            const subject = encodeURIComponent(`Resgate Solicitado: Rick / Analista Jorge`);
+            const body = encodeURIComponent(`Olá equipe Aquafeel Philly,\n\nSolicito o resgate do prêmio: ${item} (${pontos} pontos).\n\nCliente: Dayane Lago\nAnalista: Henrique Silva\nStatus: Nível 2`);
+            const mailtoUrl = `mailto:binnovationmarketing@gmail.com?subject=${subject}&body=${body}`;
+            
+            if(confirm(`Confirmar resgate do ${item} por ${pontos} pontos?`)) {
+                window.location.href = mailtoUrl;
+            }
+        }
+    </script>
+</body>
+</html>

@@ -239,7 +239,7 @@ const ptTranslations = {
   },
   package: {
     title: "Promoção de Ativação",
-    desc: "O maior benefício já oferecido na história da Aquafeel PA.",
+    desc: "O maior benefício já oferecido na história da Aquafeel Philly Water & Health.",
     soapYears: "Anos de Sabão",
     guarantee: "Garantia Total",
     cost: "0 TAXES / 0 DOWN",

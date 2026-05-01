@@ -227,28 +227,30 @@ export const InfoSection: React.FC<InfoSectionProps> = ({ lang, zipCode }) => {
         </a>
 
         {/* ── Cards Row ─────────────────────────────────────────────────────── */}
-        <div className="grid md:grid-cols-2 gap-8 mb-12">
+        <div className="flex flex-col gap-8 mb-12">
 
           {/* Card 1 – Regional Alert */}
-          <div className="bg-slate-50 p-6 rounded-2xl border border-slate-100 transform transition-all duration-500 hover:scale-105 hover:shadow-2xl hover:bg-white hover:border-red-100 cursor-default group">
-            <div className="flex items-center gap-3 mb-4">
-              <div className="bg-red-100 p-3 rounded-full text-red-600 group-hover:bg-red-600 group-hover:text-white transition-colors duration-300">
-                <MapPin size={24} />
+          <div className="bg-slate-50 p-6 rounded-2xl border border-slate-100 transform transition-all duration-500 hover:scale-[1.02] hover:shadow-2xl hover:bg-white hover:border-red-100 cursor-default group flex flex-col md:flex-row items-center gap-6">
+            <div className="flex items-center gap-4 md:w-1/3">
+              <div className="bg-red-100 p-4 rounded-full text-red-600 group-hover:bg-red-600 group-hover:text-white transition-colors duration-300 shrink-0">
+                <MapPin size={32} />
               </div>
-              <h3 className="font-bold text-xl text-slate-800">
-                {t.alertTitle} {zipCode && <span className="text-red-500">({zipCode})</span>}
+              <h3 className="font-bold text-2xl text-slate-800 leading-tight">
+                {t.alertTitle} {zipCode && <span className="text-red-500 block text-lg">({zipCode})</span>}
               </h3>
             </div>
-            <p className="text-slate-600 mb-4 text-sm leading-relaxed">{t.alertBody}</p>
-            <div className="space-y-3">
+            <div className="md:w-1/3">
+              <p className="text-slate-600 text-sm leading-relaxed">{t.alertBody}</p>
+            </div>
+            <div className="md:w-1/3 w-full mt-4 md:mt-0">
               <a
                 href={ewgLink}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center justify-between p-3 bg-white rounded-lg shadow-sm hover:shadow-md transition-all group/link border border-slate-100 cursor-pointer"
+                className="flex items-center justify-between p-4 bg-white rounded-xl shadow-sm hover:shadow-md transition-all group/link border border-slate-200 cursor-pointer w-full"
               >
-                <span className="text-sm font-bold text-slate-700">VER RELATÓRIO DO MEU ZIP CODE</span>
-                <ExternalLink size={16} className="text-aqua-500 group-hover/link:translate-x-1 transition-transform" />
+                <span className="text-sm font-bold text-slate-700">VER RELATÓRIO EWG DO MEU ZIP CODE</span>
+                <ExternalLink size={18} className="text-aqua-500 group-hover/link:translate-x-1 transition-transform" />
               </a>
             </div>
           </div>

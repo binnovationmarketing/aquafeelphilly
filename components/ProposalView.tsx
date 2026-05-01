@@ -369,7 +369,7 @@ export function ProposalView() {
                     type="tel"
                     value={saveFormData.phone}
                     onChange={(e) => setSaveFormData({ ...saveFormData, phone: e.target.value })}
-                    className="w-full text-sm font-medium border border-slate-200 rounded-xl px-3 py-2 outline-none focus:border-aqua-500 bg-white placeholder:text-slate-300"
+                    className="w-full text-sm font-medium border border-slate-200 rounded-xl px-3 py-2 outline-none focus:border-aqua-500 bg-white text-slate-900 placeholder:text-slate-300"
                     placeholder="(99) 99999-9999"
                   />
                 </div>
@@ -379,7 +379,7 @@ export function ProposalView() {
                     type="email"
                     value={saveFormData.email}
                     onChange={(e) => setSaveFormData({ ...saveFormData, email: e.target.value })}
-                    className="w-full text-sm font-medium border border-slate-200 rounded-xl px-3 py-2 outline-none focus:border-aqua-500 bg-white placeholder:text-slate-300"
+                    className="w-full text-sm font-medium border border-slate-200 rounded-xl px-3 py-2 outline-none focus:border-aqua-500 bg-white text-slate-900 placeholder:text-slate-300"
                   />
                 </div>
               </div>
