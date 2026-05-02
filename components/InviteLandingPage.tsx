@@ -39,19 +39,9 @@ export function InviteLandingPage() {
     e.preventDefault();
     if (!leadData.name || !leadData.phone) return;
     
-    // Move to schedule step
-    setStep(2);
-  };
-
-  const handleFinalSubmit = async () => {
-    if (!scheduleData.date || !scheduleData.time) {
-      toast.error('Por favor, selecione uma data e horário.');
-      return;
-    }
-
     setIsSubmitting(true);
     try {
-      const observations = `Agendado para: ${scheduleData.date} às ${scheduleData.time}`;
+      const observations = `Agendamento pendente no Google Calendar`;
 
       if (token && token.length > 10) {
         // Valid token, use RPC (assuming token is UUID or valid length)
@@ -79,9 +69,9 @@ export function InviteLandingPage() {
         if (error) throw error;
       }
 
-      setStep(3); // Success step
+      setStep(2); // Move to schedule step
     } catch (err: any) {
-      toast.error('Erro ao agendar: ' + err.message);
+      toast.error('Erro ao enviar dados: ' + err.message);
     } finally {
       setIsSubmitting(false);
     }
@@ -220,71 +210,45 @@ export function InviteLandingPage() {
                 </motion.div>
               )}
 
-              {/* STEP 2: Booking Calendar */}
+              {/* STEP 2: Booking Calendar External */}
               {step === 2 && (
                 <motion.div
                   key="step2"
                   initial={{ opacity: 0, x: 20 }}
                   animate={{ opacity: 1, x: 0 }}
                   exit={{ opacity: 0, x: -20 }}
-                  className="space-y-6"
+                  className="space-y-8 text-center"
                 >
-                  <div className="text-center mb-6">
-                    <div className="w-12 h-12 bg-[#11caa0]/20 text-[#11caa0] rounded-full flex items-center justify-center mx-auto mb-4">
-                      <CalendarIcon size={24} />
-                    </div>
-                    <h2 className="text-2xl font-bold mb-2">Escolha o Horário</h2>
-                    <p className="text-slate-400 text-sm">Selecione quando você prefere receber nosso especialista.</p>
+                  <div className="w-16 h-16 bg-[#11caa0]/20 text-[#11caa0] rounded-full flex items-center justify-center mx-auto mb-2">
+                    <CalendarIcon size={32} />
+                  </div>
+                  
+                  <div>
+                    <h2 className="text-2xl font-bold mb-2">Quase lá, {leadData.name.split(' ')[0]}!</h2>
+                    <p className="text-slate-400">Seus dados foram salvos com segurança. Agora, escolha o melhor dia e horário na agenda do nosso especialista.</p>
                   </div>
 
-                  <div className="space-y-4">
-                    <div>
-                      <label className="text-xs font-bold text-slate-400 uppercase tracking-widest pl-1 mb-2 block">1. Selecione o Dia</label>
-                      <div className="flex gap-2 overflow-x-auto pb-2 hide-scrollbar">
-                        {nextDays.map((day) => (
-                          <button
-                            key={day.dateStr}
-                            onClick={() => setScheduleData({...scheduleData, date: day.dateStr})}
-                            className={`flex-shrink-0 px-4 py-3 rounded-xl border font-bold transition-all ${scheduleData.date === day.dateStr ? 'bg-[#11caa0] border-[#11caa0] text-slate-900 shadow-lg shadow-[#11caa0]/30' : 'bg-[#0a213f] border-white/10 text-slate-300 hover:bg-white/10'}`}
-                          >
-                            <span className="block text-xs opacity-80">{day.display.split(',')[0]}</span>
-                            <span className="block text-lg">{day.display.split(' ')[1]}</span>
-                          </button>
-                        ))}
-                      </div>
-                    </div>
+                  <div className="bg-[#0a213f] border border-white/10 rounded-2xl p-6">
+                    <a 
+                      href="https://calendar.app.google/nTKaGHYRMt44ZJu3A"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="w-full bg-gradient-to-r from-[#005088] to-[#11caa0] text-white font-bold py-5 rounded-xl shadow-lg shadow-[#11caa0]/20 hover:shadow-[#11caa0]/40 transition-all flex items-center justify-center gap-3 text-lg"
+                    >
+                      <CalendarIcon size={24} />
+                      Abrir Agenda do Especialista
+                    </a>
+                    <p className="text-xs text-slate-500 mt-4">A agenda abrirá em uma nova aba.</p>
+                  </div>
 
-                    <AnimatePresence>
-                      {scheduleData.date && (
-                        <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} className="pt-2">
-                          <label className="text-xs font-bold text-slate-400 uppercase tracking-widest pl-1 mb-2 block">2. Selecione o Horário</label>
-                          <div className="grid grid-cols-3 gap-2">
-                            {availableTimes.map((time) => (
-                              <button
-                                key={time}
-                                onClick={() => setScheduleData({...scheduleData, time})}
-                                className={`py-3 rounded-xl border text-sm font-bold transition-all flex items-center justify-center gap-1 ${scheduleData.time === time ? 'bg-blue-600 border-blue-500 text-white shadow-lg' : 'bg-[#0a213f] border-white/10 text-slate-300 hover:bg-white/10'}`}
-                              >
-                                <Clock size={14} /> {time}
-                              </button>
-                            ))}
-                          </div>
-                        </motion.div>
-                      )}
-                    </AnimatePresence>
-
-                    <div className="pt-4 flex gap-3">
-                      <button onClick={() => setStep(1)} className="px-6 py-4 rounded-xl border border-white/10 font-bold hover:bg-white/5 transition-colors">
-                        Voltar
-                      </button>
-                      <button 
-                        onClick={handleFinalSubmit}
-                        disabled={!scheduleData.date || !scheduleData.time || isSubmitting}
-                        className="flex-1 bg-gradient-to-r from-[#005088] to-[#11caa0] text-white font-bold py-4 rounded-xl shadow-lg shadow-[#11caa0]/20 hover:shadow-[#11caa0]/40 transition-all disabled:opacity-50 flex items-center justify-center gap-2"
-                      >
-                        {isSubmitting ? <Loader2 className="animate-spin" /> : 'Confirmar Agendamento'}
-                      </button>
-                    </div>
+                  <div className="pt-2">
+                    <p className="text-slate-400 text-sm mb-4">Já escolheu seu horário na agenda?</p>
+                    <button 
+                      onClick={() => setStep(3)}
+                      className="px-8 py-3 rounded-xl border border-[#11caa0]/30 text-[#11caa0] font-bold hover:bg-[#11caa0]/10 transition-colors"
+                    >
+                      Sim, já agendei!
+                    </button>
                   </div>
                 </motion.div>
               )}
@@ -312,11 +276,11 @@ export function InviteLandingPage() {
                   </div>
 
                   <div className="bg-[#0a213f] border border-white/10 rounded-2xl p-6 text-left">
-                    <h3 className="font-bold text-lg mb-4 text-[#11caa0]">Detalhes da sua visita:</h3>
+                    <h3 className="font-bold text-lg mb-4 text-[#11caa0]">Detalhes da indicação:</h3>
                     <div className="space-y-3 text-sm">
                       <p className="flex justify-between border-b border-white/5 pb-2"><span className="text-slate-400">Nome:</span> <span className="font-bold">{leadData.name}</span></p>
-                      <p className="flex justify-between border-b border-white/5 pb-2"><span className="text-slate-400">Data:</span> <span className="font-bold">{scheduleData.date}</span></p>
-                      <p className="flex justify-between"><span className="text-slate-400">Horário:</span> <span className="font-bold">{scheduleData.time}</span></p>
+                      <p className="flex justify-between border-b border-white/5 pb-2"><span className="text-slate-400">Telefone:</span> <span className="font-bold">{leadData.phone}</span></p>
+                      <p className="flex justify-between"><span className="text-slate-400">Status:</span> <span className="font-bold text-[#11caa0]">Aguardando Confirmação</span></p>
                     </div>
                   </div>
                 </motion.div>
