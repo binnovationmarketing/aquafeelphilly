@@ -1,6 +1,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { CheckCircle2, Clock, XCircle, AlertCircle } from 'lucide-react';
+import { CheckCircle2, Clock, XCircle, AlertCircle, Copy, Share2 } from 'lucide-react';
+import { toast } from 'sonner';
 
 const MotionDiv = motion.div as any;
 
@@ -19,12 +20,68 @@ const STATUS_CONFIG: Record<string, { label: string; color: string; dot: string;
 export function ClientNetworkTab({ portalData }: Props) {
   const { referrals = [], points } = portalData;
 
+  // Build short link — prefer slug, fallback to UUID token
+  const shortLink = points.referral_slug
+    ? `${window.location.origin}/i/${points.referral_slug}`
+    : `${window.location.origin}/invite?ref=${points.referral_token}`;
+
+  const copyLink = () => {
+    navigator.clipboard.writeText(shortLink);
+    toast.success('Link copiado! 🔗', { description: shortLink });
+  };
+
+  const shareLink = async () => {
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: 'Convite Aquafeel Philly',
+          text: '💧 Eu uso Aquafeel e a água da minha família ficou 100% pura! Quero te indicar para uma análise gratuita.',
+          url: shortLink,
+        });
+      } catch (_) { /* user cancelled */ }
+    } else {
+      copyLink();
+    }
+  };
+
   return (
     <div className="space-y-6">
+      {/* SHORT LINK CARD — top priority */}
+      {points.referral_token && (
+        <MotionDiv
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="bg-gradient-to-br from-cyan-500/10 to-blue-600/10 border border-cyan-500/30 rounded-2xl p-6"
+        >
+          <p className="text-[10px] font-black uppercase tracking-widest text-cyan-500 mb-1">Seu Link de Convite Personalizado</p>
+          <p className="text-slate-400 text-xs mb-4">Compartilhe com amigos e ganhe pontos quando eles agendarem!</p>
+
+          <div className="bg-[#06162a] border border-white/10 rounded-xl p-4 mb-4">
+            <p className="text-cyan-400 font-mono text-sm font-bold break-all">{shortLink}</p>
+          </div>
+
+          <div className="flex gap-3">
+            <button
+              onClick={copyLink}
+              className="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl bg-cyan-500/20 hover:bg-cyan-500/30 border border-cyan-500/30 text-cyan-400 text-sm font-black uppercase tracking-wider transition-colors"
+            >
+              <Copy size={15} /> Copiar Link
+            </button>
+            <button
+              onClick={shareLink}
+              className="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-slate-300 text-sm font-black uppercase tracking-wider transition-colors"
+            >
+              <Share2 size={15} /> Compartilhar
+            </button>
+          </div>
+        </MotionDiv>
+      )}
+
       {/* Legend */}
       <MotionDiv
         initial={{ opacity: 0, y: -10 }}
         animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.05 }}
         className="flex flex-wrap gap-3 bg-white/5 border border-white/10 rounded-2xl p-5"
       >
         <p className="w-full text-[10px] font-black uppercase tracking-widest text-slate-500 mb-1">Legenda de Status:</p>
@@ -41,7 +98,7 @@ export function ClientNetworkTab({ portalData }: Props) {
         {[
           { label: 'Total', value: referrals.length, color: 'text-white' },
           { label: 'Convertidos', value: referrals.filter((r: any) => r.status === 'CONVERTED').length, color: 'text-emerald-400' },
-          { label: 'Pendentes', value: referrals.filter((r: any) => r.status === 'PENDING').length, color: 'text-slate-400' },
+          { label: 'Agendados', value: referrals.filter((r: any) => r.status === 'SCHEDULED').length, color: 'text-blue-400' },
         ].map((stat, i) => (
           <MotionDiv
             key={i}
@@ -68,7 +125,6 @@ export function ClientNetworkTab({ portalData }: Props) {
             <h3 className="font-black text-white text-base uppercase tracking-tight">Todas as Indicações ({referrals.length})</h3>
           </div>
 
-          {/* Visual tree nodes */}
           <div className="p-5 space-y-3">
             {referrals.map((ref: any, i: number) => {
               const cfg = STATUS_CONFIG[ref.status] || STATUS_CONFIG['PENDING'];
@@ -82,12 +138,10 @@ export function ClientNetworkTab({ portalData }: Props) {
                   transition={{ delay: i * 0.05 }}
                   className="flex items-center gap-4 bg-white/3 border border-white/5 rounded-xl p-4 hover:bg-white/6 transition-colors"
                 >
-                  {/* Status dot */}
                   <div className={`w-10 h-10 rounded-full ${cfg.dot} flex items-center justify-center text-white shrink-0 text-xs font-black shadow-md`}>
                     {ref.name?.[0]?.toUpperCase()}
                   </div>
 
-                  {/* Info */}
                   <div className="flex-1 min-w-0">
                     <p className="font-bold text-white text-sm truncate">{ref.name}</p>
                     <div className={`flex items-center gap-1.5 text-xs font-bold mt-0.5 ${cfg.color}`}>
@@ -96,7 +150,6 @@ export function ClientNetworkTab({ portalData }: Props) {
                     </div>
                   </div>
 
-                  {/* Points earned */}
                   {pointsGained > 0 && (
                     <div className="shrink-0 text-right">
                       <p className="text-[10px] text-slate-600 uppercase tracking-wider">Ganhou</p>
@@ -104,7 +157,6 @@ export function ClientNetworkTab({ portalData }: Props) {
                     </div>
                   )}
 
-                  {/* Date */}
                   <div className="shrink-0 text-right hidden sm:block">
                     <p className="text-[10px] text-slate-700 uppercase tracking-wider">Data</p>
                     <p className="text-xs font-bold text-slate-500">
@@ -124,36 +176,7 @@ export function ClientNetworkTab({ portalData }: Props) {
         >
           <p className="text-5xl mb-4">🌱</p>
           <h3 className="text-xl font-black text-white mb-2">Sua rede ainda está vazia</h3>
-          <p className="text-slate-500 text-sm">Cada indicação que você fizer aparecerá aqui com o status de acompanhamento em tempo real.</p>
-        </MotionDiv>
-      )}
-
-      {/* Token share */}
-      {points.referral_token && (
-        <MotionDiv
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.3 }}
-          className="bg-gradient-to-r from-cyan-500/5 to-blue-600/5 border border-cyan-500/20 rounded-2xl p-5"
-        >
-          <p className="text-[10px] font-black uppercase tracking-widest text-slate-500 mb-1">Seu link de indicação</p>
-          <p className="text-slate-400 text-xs mb-3">Compartilhe este link e ganhe pontos quando alguém se cadastrar.</p>
-          <div className="flex gap-2">
-            <input
-              readOnly
-              value={`${window.location.origin}/invite?ref=${points.referral_token}`}
-              className="flex-1 bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-xs text-slate-400 font-mono outline-none"
-            />
-            <button
-              onClick={() => {
-                navigator.clipboard.writeText(`${window.location.origin}/invite?ref=${points.referral_token}`);
-                // toast already handled in layout, just copy
-              }}
-              className="bg-cyan-500/20 hover:bg-cyan-500/30 border border-cyan-500/30 text-cyan-400 px-4 py-2 rounded-xl text-xs font-black uppercase tracking-wider transition-colors whitespace-nowrap"
-            >
-              Copiar
-            </button>
-          </div>
+          <p className="text-slate-500 text-sm">Compartilhe seu link acima e cada indicação aparecerá aqui com acompanhamento em tempo real.</p>
         </MotionDiv>
       )}
     </div>

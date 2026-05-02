@@ -34,6 +34,8 @@ export function AppRoutes() {
         <Route path="/recovery" element={<UpdatePassword />} />
         <Route path="/referral" element={<ReferralDashboard />} />
         <Route path="/invite"   element={<InviteLandingPage />} />
+        {/* Short invite link: /i/:slug — e.g. /i/rick or /i/ana-2 */}
+        <Route path="/i/:slug"  element={<InviteLandingPage />} />
 
         {/* Client Auth */}
         <Route path="/client-login" element={<ClientLogin />} />
