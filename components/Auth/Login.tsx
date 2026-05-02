@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../../lib/supabase';
-import { Lock, Mail, Loader2, ArrowLeft, Chrome, Apple } from 'lucide-react';
+import { Lock, Mail, Loader2, ArrowLeft, Chrome, UserPlus, Droplets } from 'lucide-react';
 import AquaFeelLogo from '../AquaFeelLogo';
 import { Signup } from './Signup';
 import { toast } from 'sonner';
@@ -56,11 +56,11 @@ export const Login: React.FC = () => {
     }
   };
 
-  const handleOAuth = async (provider: 'google' | 'apple') => {
+  const handleOAuth = async () => {
     setLoading(true);
     try {
       const { error } = await supabase.auth.signInWithOAuth({
-        provider,
+        provider: 'google',
         options: {
           redirectTo: `${window.location.origin}/dashboard/analyst`,
         },
@@ -211,7 +211,7 @@ export const Login: React.FC = () => {
               {/* Google */}
               <button
                 type="button"
-                onClick={() => handleOAuth('google')}
+                onClick={() => handleOAuth()}
                 disabled={loading}
                 className="w-full flex items-center justify-center gap-3 py-3 px-4 rounded-2xl border border-white/10 bg-white/5 hover:bg-white/10 text-white text-sm font-bold transition-all hover:border-white/20 active:scale-[0.98]"
               >
@@ -219,23 +219,24 @@ export const Login: React.FC = () => {
                 Continue with Google
               </button>
 
-              {/* Apple */}
-              <button
-                type="button"
-                onClick={() => handleOAuth('apple')}
-                disabled={loading}
-                className="w-full flex items-center justify-center gap-3 py-3 px-4 rounded-2xl border border-white/10 bg-white/5 hover:bg-white/10 text-white text-sm font-bold transition-all hover:border-white/20 active:scale-[0.98]"
-              >
-                <Apple size={18} className="text-slate-300" />
-                Continue with Apple
-              </button>
-
-              <button
-                onClick={() => setMode('signup')}
-                className="text-xs text-slate-400 hover:text-white font-bold uppercase tracking-wide transition-colors flex items-center justify-center gap-2 mx-auto pt-2"
-              >
-                Don&apos;t have an account? <span className="text-aqua-400 underline decoration-2 underline-offset-2 ml-1">Sign up</span>
-              </button>
+              {/* Signup options */}
+              <div className="pt-2 grid grid-cols-2 gap-3">
+                <button
+                  type="button"
+                  onClick={() => setMode('signup')}
+                  className="flex items-center justify-center gap-2 py-3 px-3 rounded-2xl border border-white/10 bg-white/5 hover:bg-white/10 text-white text-xs font-black uppercase tracking-wider transition-all hover:border-aqua-500/40 active:scale-[0.98]"
+                >
+                  <UserPlus size={15} className="text-aqua-400" />
+                  Novo Analista
+                </button>
+                <a
+                  href="/client-login"
+                  className="flex items-center justify-center gap-2 py-3 px-3 rounded-2xl border border-white/10 bg-white/5 hover:bg-white/10 text-white text-xs font-black uppercase tracking-wider transition-all hover:border-cyan-500/40 active:scale-[0.98] no-underline"
+                >
+                  <Droplets size={15} className="text-cyan-400" />
+                  Sou Cliente
+                </a>
+              </div>
             </>
           )}
         </div>

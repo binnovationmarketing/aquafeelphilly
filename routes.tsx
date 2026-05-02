@@ -15,6 +15,8 @@ const WelcomeScreen    = React.lazy(() => import('./components/WelcomeScreen').t
 const ProposalView     = React.lazy(() => import('./components/ProposalView').then(m => ({ default: m.ProposalView })));
 const ReferralDashboard = React.lazy(() => import('./components/ReferralDashboard').then(m => ({ default: m.ReferralDashboard })));
 const InviteLandingPage = React.lazy(() => import('./components/InviteLandingPage').then(m => ({ default: m.InviteLandingPage })));
+const ClientLogin      = React.lazy(() => import('./components/Auth/ClientLogin').then(m => ({ default: m.ClientLogin })));
+const ClientPortalLayout = React.lazy(() => import('./components/ClientPortal/ClientPortalLayout').then(m => ({ default: m.ClientPortalLayout })));
 
 export function AppRoutes() {
   const { user, profile, loading, isManager } = useAuth();
@@ -33,13 +35,30 @@ export function AppRoutes() {
         <Route path="/referral" element={<ReferralDashboard />} />
         <Route path="/invite"   element={<InviteLandingPage />} />
 
-        {/* Auth */}
+        {/* Client Auth */}
+        <Route path="/client-login" element={<ClientLogin />} />
+
+        {/* Client Portal — accessible only with authenticated session */}
+        <Route
+          path="/portal/client"
+          element={
+            !user
+              ? <Navigate to="/client-login" />
+              : <ClientPortalLayout />
+          }
+        />
+
+        {/* Auth — analyst/manager login */}
         <Route
           path="/login"
           element={
             !user
               ? <Login />
-              : <Navigate to={isManager ? '/dashboard/manager' : '/dashboard/analyst'} />
+              : isManager
+                ? <Navigate to="/dashboard/manager" />
+                : profile
+                  ? <Navigate to="/dashboard/analyst" />
+                  : <Navigate to="/portal/client" />
           }
         />
 
