@@ -105,12 +105,17 @@ export const Signup: React.FC<SignupProps> = ({ onBack }) => {
         }
       }
 
-      setSuccess('Account created! Please check your email to confirm.');
-      setFormData(initialState);
-      
-      setTimeout(() => {
-        onBack('Account created! Please check your email to confirm.');
-      }, 2000);
+      if (authData.session) {
+        setSuccess('Conta criada com sucesso! Redirecionando...');
+        // Como não há confirmação de e-mail, o AuthContext vai detectar a sessão 
+        // automaticamente e jogar o usuário para o Dashboard. Não precisamos chamar o onBack().
+      } else {
+        setSuccess('Account created! Please check your email to confirm.');
+        setFormData(initialState);
+        setTimeout(() => {
+          onBack('Account created! Please check your email to confirm.');
+        }, 2000);
+      }
     } catch (err: any) {
       setError(err.message);
     } finally {

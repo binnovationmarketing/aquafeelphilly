@@ -9,7 +9,7 @@ import {
 import {
   Users, TrendingUp,
   CheckCircle, Plus, LogOut, Search, Filter, X, Mail, Phone, MapPin, Clock, Share2,
-  MessageSquare, CalendarCheck, Play, CheckCircle2
+  MessageSquare, CalendarCheck, Play, CheckCircle2, Shield
 } from 'lucide-react';
 import AquaFeelLogo from './AquaFeelLogo';
 import { toast } from 'sonner';
@@ -18,6 +18,7 @@ import { MarketingService } from '../lib/marketing';
 import { Task } from '../types';
 import { CommissionPanel } from './CommissionPanel';
 import { RecommendationsPanel } from './RecommendationsPanel';
+import { AdminPanel } from './AdminPanel';
 import { HierarchyRole, ROLE_LABELS_PT } from '../utils/commissions';
 
 interface DashboardMetrics {
@@ -54,8 +55,11 @@ export const AnalystDashboard: React.FC<{ onNewProposal: () => void }> = ({ onNe
   const [selectedLead, setSelectedLead] = useState<Lead | null>(null);
   const [showAllLeads, setShowAllLeads] = useState(false);
   const [shareTarget, setShareTarget] = useState<{ id: string; name: string } | null>(null);
-  const [activeTab, setActiveTab] = useState<'OVERVIEW' | 'RECOMMENDATIONS' | 'COMMISSIONS'>('OVERVIEW');
+  const [activeTab, setActiveTab] = useState<'OVERVIEW' | 'RECOMMENDATIONS' | 'COMMISSIONS' | 'TEAM_MANAGEMENT'>('OVERVIEW');
   const [isScheduling, setIsScheduling] = useState(false);
+  const [showProfileModal, setShowProfileModal] = useState(false);
+  const [profileData, setProfileData] = useState({ full_name: '', avatar_url: '' });
+  const [isSavingProfile, setIsSavingProfile] = useState(false);
   const [executingTask, setExecutingTask] = useState<Task | null>(null);
   const [generatedDraft, setGeneratedDraft] = useState('');
   const [taskForm, setTaskForm] = useState({
@@ -67,7 +71,31 @@ export const AnalystDashboard: React.FC<{ onNewProposal: () => void }> = ({ onNe
 
   useEffect(() => {
     fetchDashboardData();
-  }, [user]);
+    if (profile) {
+      setProfileData({
+        full_name: profile.full_name || profile.first_name || '',
+        avatar_url: profile.avatar_url || ''
+      });
+    }
+  }, [user, profile]);
+
+  const handleSaveProfile = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!user) return;
+    setIsSavingProfile(true);
+    try {
+      const { error } = await supabase.from('analysts').update(profileData).eq('id', user.id);
+      if (error) throw error;
+      toast.success('Perfil atualizado com sucesso!');
+      setShowProfileModal(false);
+      // reload page to reflect changes in context or let context handle it
+      window.location.reload();
+    } catch (err: any) {
+      toast.error('Erro ao salvar perfil: ' + err.message);
+    } finally {
+      setIsSavingProfile(false);
+    }
+  };
 
   // ── Supabase Realtime: notify analyst when a client opens their proposal ──
   useEffect(() => {
@@ -154,25 +182,35 @@ export const AnalystDashboard: React.FC<{ onNewProposal: () => void }> = ({ onNe
     if (!user) return;
 
     try {
-      const { data: clients, error } = await supabase
-        .from('clients')
-        .select('*')
-        .or(`analyst.eq.${user.email},analyst_id.eq.${user.id}`)
-        .order('created_at', { ascending: false });
+      const today = new Date();
+      const firstDayOfMonth = new Date(today.getFullYear(), today.getMonth(), 1).toISOString();
 
-      if (error) throw error;
+      // Run all queries concurrently to dramatically improve loading speed
+      const [
+        { data: clients, error: clientsError },
+        { data: tasksData, error: tasksError },
+        { data: monthCommissions, error: commsError },
+        { data: downline, error: downlineError }
+      ] = await Promise.all([
+        supabase.from('clients').select('*').or(`analyst.eq.${user.email},analyst_id.eq.${user.id}`).order('created_at', { ascending: false }),
+        supabase.from('tasks').select('*').eq('analyst_id', user.id).eq('status', 'PENDING').order('scheduled_for', { ascending: true }),
+        supabase.from('commissions_log').select('amount, commission_type').eq('beneficiary_id', user.id).gte('created_at', firstDayOfMonth),
+        supabase.from('analyst_performance').select('total_sales').eq('sponsored_by', user.id)
+      ]);
 
-      const totalLeads = clients.length;
-      const sales = clients.filter(c => c.status === 'SALE' || c.status === 'INSTALLED' || c.status === 'ACTIVE');
+      if (clientsError) throw clientsError;
+
+      const totalLeads = clients ? clients.length : 0;
+      const sales = clients ? clients.filter(c => c.status === 'SALE' || c.status === 'INSTALLED' || c.status === 'ACTIVE') : [];
       const totalSales = sales.length;
-      const noSales = clients.filter(c => c.status === 'NO SALE').length;
+      const noSales = clients ? clients.filter(c => c.status === 'NO SALE').length : 0;
       const conversionRate = totalLeads > 0 ? (totalSales / totalLeads) * 100 : 0;
-      const presentations = clients.filter(c => c.status === 'PRESENTATION' || c.status === 'SCHEDULED');
+      const presentations = clients ? clients.filter(c => c.status === 'PRESENTATION' || c.status === 'SCHEDULED') : [];
 
-      const statusCounts = clients.reduce((acc: any, client: any) => {
+      const statusCounts = clients ? clients.reduce((acc: any, client: any) => {
         acc[client.status] = (acc[client.status] || 0) + 1;
         return acc;
-      }, {});
+      }, {}) : {};
 
       const leadsByStatus = Object.keys(statusCounts).map(key => ({
         name: key,
@@ -180,7 +218,6 @@ export const AnalystDashboard: React.FC<{ onNewProposal: () => void }> = ({ onNe
       }));
 
       const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-      const today = new Date();
       const trendData = [];
 
       for (let i = 5; i >= 0; i--) {
@@ -196,21 +233,6 @@ export const AnalystDashboard: React.FC<{ onNewProposal: () => void }> = ({ onNe
         trendData.push({ name: monthName, sales: monthlySales });
       }
 
-      const { data: tasksData } = await supabase
-        .from('tasks')
-        .select('*')
-        .eq('analyst_id', user.id)
-        .eq('status', 'PENDING')
-        .order('scheduled_for', { ascending: true });
-
-      // Fetch this month's commissions
-      const firstDayOfMonth = new Date(today.getFullYear(), today.getMonth(), 1).toISOString();
-      const { data: monthCommissions } = await supabase
-        .from('commissions_log')
-        .select('amount, commission_type')
-        .eq('beneficiary_id', user.id)
-        .gte('created_at', firstDayOfMonth);
-
       let pEarn = 0, tEarn = 0;
       monthCommissions?.forEach((c: any) => {
         if (c.commission_type === 'personal') pEarn += Number(c.amount);
@@ -218,12 +240,6 @@ export const AnalystDashboard: React.FC<{ onNewProposal: () => void }> = ({ onNe
       });
       setMonthlyEarnings({ personal: pEarn, team: tEarn, total: pEarn + tEarn });
 
-      // Fetch downline sales dynamically
-      const { data: downline } = await supabase
-        .from('analyst_performance')
-        .select('total_sales')
-        .eq('sponsored_by', user.id);
-      
       const teamTotalSales = downline?.reduce((sum, a) => sum + (a.total_sales || 0), 0) || 0;
 
       setMetrics({
@@ -238,7 +254,7 @@ export const AnalystDashboard: React.FC<{ onNewProposal: () => void }> = ({ onNe
         teamTotalSales
       });
 
-      setAllLeads(clients);
+      setAllLeads(clients || []);
       setPendingTasks(tasksData || []);
     } catch (err) {
       console.error('Error fetching dashboard:', err);
@@ -392,21 +408,45 @@ export const AnalystDashboard: React.FC<{ onNewProposal: () => void }> = ({ onNe
               >
                 🤝 <span className="hidden xs:inline">Recomendações</span>
               </button>
+              {(profile?.role === 'admin' || profile?.role?.includes('manager') || profile?.role?.includes('director') || user?.email === 'binnovationmarketing@gmail.com') && (
+                <button
+                  onClick={() => setActiveTab('TEAM_MANAGEMENT')}
+                  className={`px-4 sm:px-5 py-2.5 rounded-xl font-bold text-sm transition-all duration-300 ${
+                    activeTab === 'TEAM_MANAGEMENT'
+                      ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-500/30'
+                      : 'text-slate-500 hover:bg-slate-100 hover:text-slate-800'
+                  }`}
+                >
+                  <Shield size={18} className="inline mr-1" />
+                  <span className="hidden xs:inline">Gestão de Equipe</span>
+                </button>
+              )}
             </div>
             <h1 className="md:hidden text-lg font-bold text-slate-700">Analyst Dashboard</h1>
           </div>
 
           <div className="flex items-center gap-4">
             <div className="text-right hidden sm:block">
-              <p className="text-sm font-bold text-slate-900">{user?.email}</p>
+              <p className="text-sm font-bold text-slate-900">{profileData.full_name || user?.email}</p>
               <p className="text-xs text-slate-500 uppercase tracking-wider">
                 {profile?.role ? (ROLE_LABELS_PT[profile.role as HierarchyRole] ?? profile.role) : 'Analista'}
               </p>
             </div>
+            <div 
+              onClick={() => setShowProfileModal(true)}
+              className="w-10 h-10 rounded-full bg-slate-200 border-2 border-aqua-500 flex items-center justify-center overflow-hidden cursor-pointer hover:shadow-lg transition-all"
+              title="Editar Perfil"
+            >
+              {profileData.avatar_url ? (
+                <img src={profileData.avatar_url} alt="Profile" className="w-full h-full object-cover" />
+              ) : (
+                <UserCog size={18} className="text-slate-500" />
+              )}
+            </div>
             <button
               onClick={signOut}
               className="p-2 text-slate-400 hover:text-red-500 transition-colors"
-              title="Sign Out"
+              title="Sair"
             >
               <LogOut size={20} />
             </button>
@@ -444,7 +484,9 @@ export const AnalystDashboard: React.FC<{ onNewProposal: () => void }> = ({ onNe
         </div>
 
 
-        {activeTab === 'COMMISSIONS' ? (
+        {activeTab === 'TEAM_MANAGEMENT' ? (
+          <AdminPanel />
+        ) : activeTab === 'COMMISSIONS' ? (
           <CommissionPanel
             role={(profile?.role as HierarchyRole) || 'analyst_jr'}
             personalSales={metrics?.totalSales || 0}
@@ -654,6 +696,62 @@ export const AnalystDashboard: React.FC<{ onNewProposal: () => void }> = ({ onNe
         ) : activeTab === 'RECOMMENDATIONS' ? (
           <RecommendationsPanel />
         ) : null}
+
+        {showProfileModal && (
+          <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4">
+            <div className="bg-white rounded-3xl p-6 md:p-8 w-full max-w-md shadow-2xl relative animate-in zoom-in-95 duration-300">
+              <button 
+                onClick={() => setShowProfileModal(false)}
+                className="absolute top-4 right-4 text-slate-400 hover:text-slate-600 bg-slate-100 p-2 rounded-full"
+              >
+                <X size={20} />
+              </button>
+              
+              <div className="flex items-center gap-3 mb-6">
+                <div className="w-12 h-12 bg-aqua-100 text-aqua-600 rounded-full flex items-center justify-center">
+                  <UserCog size={24} />
+                </div>
+                <div>
+                  <h3 className="text-xl font-bold text-slate-800">Editar Perfil</h3>
+                  <p className="text-sm text-slate-500">Altere sua foto e nome de exibição.</p>
+                </div>
+              </div>
+
+              <form onSubmit={handleSaveProfile} className="space-y-4">
+                <div>
+                  <label className="block text-sm font-bold text-slate-700 mb-1">Nome de Exibição / Nickname</label>
+                  <input 
+                    type="text"
+                    value={profileData.full_name}
+                    onChange={(e) => setProfileData({...profileData, full_name: e.target.value})}
+                    className="w-full bg-slate-50 border border-slate-200 text-slate-900 text-sm rounded-xl focus:ring-aqua-500 focus:border-aqua-500 block p-3 outline-none"
+                    placeholder="Seu nome"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-bold text-slate-700 mb-1">URL da Foto de Perfil (Opcional)</label>
+                  <input 
+                    type="url"
+                    value={profileData.avatar_url}
+                    onChange={(e) => setProfileData({...profileData, avatar_url: e.target.value})}
+                    className="w-full bg-slate-50 border border-slate-200 text-slate-900 text-sm rounded-xl focus:ring-aqua-500 focus:border-aqua-500 block p-3 outline-none"
+                    placeholder="https://suafoto.com/imagem.jpg"
+                  />
+                  <p className="text-xs text-slate-400 mt-1">Cole o link (URL) de uma imagem para ser seu avatar circular.</p>
+                </div>
+
+                <div className="flex justify-end gap-3 mt-8">
+                  <button type="button" onClick={() => setShowProfileModal(false)} className="px-5 py-2.5 text-sm font-bold text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-xl">
+                    Cancelar
+                  </button>
+                  <button type="submit" disabled={isSavingProfile} className="px-5 py-2.5 text-sm font-bold text-white bg-aqua-600 hover:bg-aqua-500 rounded-xl disabled:opacity-50 flex items-center gap-2">
+                    {isSavingProfile ? 'Salvando...' : 'Salvar Perfil'}
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        )}
 
       </main>
 

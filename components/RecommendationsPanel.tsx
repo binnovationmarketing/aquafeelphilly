@@ -15,12 +15,14 @@ interface TreeNode {
   token?: string;
   children: TreeNode[];
   phone?: string;
+  avatar_url?: string;
 }
 
 export const RecommendationsPanel: React.FC = () => {
   const { user } = useAuth();
   const [treeData, setTreeData] = useState<TreeNode[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [hasError, setHasError] = useState(false);
   const [zoom, setZoom] = useState(1);
 
   // For Add Referral Modal
@@ -34,38 +36,51 @@ export const RecommendationsPanel: React.FC = () => {
   const fetchData = async () => {
     if (!user) return;
     setIsLoading(true);
-    try {
-      // 1. Fetch Analyst's Clients
-      const { data: clients, error: cErr } = await supabase
-        .from('clients')
-        .select('*')
-        .or(`analyst.eq.${user.email},analyst_id.eq.${user.id}`);
-      if (cErr) throw cErr;
+    setHasError(false);
 
-      // 2. Fetch Client Points (for token, level, converted counts)
-      const clientIds = (clients || []).map(c => c.id);
-      let points = [];
+    const withTimeout = <T,>(promise: Promise<T> | PromiseLike<T>, ms: number = 8000) => {
+      let timeoutId: NodeJS.Timeout;
+      const timeoutPromise = new Promise<never>((_, reject) => {
+        timeoutId = setTimeout(() => reject(new Error('TIMEOUT')), ms);
+      });
+      return Promise.race([Promise.resolve(promise), timeoutPromise]).finally(() => clearTimeout(timeoutId));
+    };
+
+    try {
+      // Fetch Clients and Referrals concurrently to save time
+      const [
+        clientsResult,
+        referralsResult
+      ] = await Promise.all([
+        withTimeout(supabase.from('clients').select('*').or(`analyst.eq.${user.email},analyst_id.eq.${user.id}`)),
+        withTimeout(supabase.from('referrals').select('*').eq('analyst_id', user.id))
+      ]) as any[];
+
+      if (clientsResult.error) throw clientsResult.error;
+      if (referralsResult.error) throw referralsResult.error;
+
+      const clients = clientsResult.data || [];
+      const referrals = referralsResult.data || [];
+
+      // Fetch Client Points
+      const clientIds = clients.map((c: any) => c.id);
+      let points: any[] = [];
       if (clientIds.length > 0) {
-        const { data: ptsData } = await supabase
-          .from('client_points')
-          .select('*')
-          .in('client_id', clientIds);
-        points = ptsData || [];
+        const ptsResult = await withTimeout(supabase.from('client_points').select('*').in('client_id', clientIds)) as any;
+        points = ptsResult.data || [];
       }
 
-      // 3. Fetch Referrals (including those not yet converted)
-      // We fetch all referrals for this analyst
-      const { data: referrals, error: rErr } = await supabase
-        .from('referrals')
-        .select('*')
-        .eq('analyst_id', user.id);
-      if (rErr) throw rErr;
-
       // Build the Tree
-      const tree = buildTree(clients || [], points, referrals || []);
+      const tree = buildTree(clients, points, referrals);
       setTreeData(tree);
     } catch (err: any) {
-      toast.error('Erro ao carregar organograma: ' + err.message);
+      console.error('Error fetching tree data:', err);
+      if (err.message === 'TIMEOUT') {
+        toast.error('O carregamento demorou muito (possível bloqueio de abas). Tente novamente.');
+      } else {
+        toast.error('Erro ao carregar organograma: ' + err.message);
+      }
+      setHasError(true);
     } finally {
       setIsLoading(false);
     }
@@ -99,7 +114,8 @@ export const RecommendationsPanel: React.FC = () => {
         sales3Months: getSales3Months(c.id),
         token: p ? p.referral_token : undefined,
         children: [],
-        phone: c.phone
+        phone: c.phone,
+        avatar_url: c.avatar_url
       };
     });
 
@@ -209,10 +225,14 @@ export const RecommendationsPanel: React.FC = () => {
           }`}>
             <div className="flex justify-between items-start mb-2">
               <div className="flex items-center gap-2">
-                <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
-                  isClient ? (isElite ? 'bg-yellow-100 text-yellow-600' : 'bg-[#11caa0]/10 text-[#11caa0]') : 'bg-slate-100 text-slate-500'
+                <div className={`w-10 h-10 rounded-full flex items-center justify-center overflow-hidden border-2 flex-shrink-0 ${
+                  isClient ? (isElite ? 'border-yellow-400 bg-yellow-100 text-yellow-600' : 'border-[#11caa0] bg-[#11caa0]/10 text-[#11caa0]') : 'border-slate-200 bg-slate-100 text-slate-500'
                 }`}>
-                  <Users size={16} />
+                  {node.avatar_url ? (
+                    <img src={node.avatar_url} alt={node.name} className="w-full h-full object-cover" />
+                  ) : (
+                    <Users size={18} />
+                  )}
                 </div>
                 <div>
                   <h4 className="font-bold text-sm text-slate-800 leading-tight truncate w-32" title={node.name}>{node.name}</h4>
@@ -357,9 +377,18 @@ export const RecommendationsPanel: React.FC = () => {
 
       <div className="flex-1 bg-slate-50 rounded-2xl border border-slate-200 overflow-hidden relative shadow-inner">
         {isLoading ? (
-          <div className="absolute inset-0 flex flex-col items-center justify-center">
+          <div className="absolute inset-0 flex flex-col items-center justify-center bg-white/50 backdrop-blur-sm z-50">
             <div className="animate-spin w-8 h-8 border-4 border-[#11caa0] border-t-transparent rounded-full mb-4"></div>
             <p className="text-slate-500 font-bold uppercase tracking-widest text-xs">Carregando Rede...</p>
+          </div>
+        ) : hasError ? (
+          <div className="absolute inset-0 flex flex-col items-center justify-center">
+            <XCircle size={48} className="text-red-400 mb-4" />
+            <h3 className="text-xl font-bold text-slate-700 mb-2">Erro ao carregar</h3>
+            <p className="text-slate-500 mb-6 text-center max-w-sm">Pode haver um conflito de sessão se você tiver muitas abas abertas. Feche outras abas e tente novamente.</p>
+            <button onClick={fetchData} className="px-6 py-2 bg-[#11caa0] hover:bg-[#0fbaa0] text-white font-bold rounded-lg transition-colors">
+              Tentar Novamente
+            </button>
           </div>
         ) : treeData.length === 0 ? (
           <div className="absolute inset-0 flex flex-col items-center justify-center">
