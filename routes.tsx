@@ -14,6 +14,7 @@ const AnalystDashboard = React.lazy(() => import('./components/AnalystDashboard'
 const WelcomeScreen    = React.lazy(() => import('./components/WelcomeScreen').then(m => ({ default: m.WelcomeScreen })));
 const ProposalView     = React.lazy(() => import('./components/ProposalView').then(m => ({ default: m.ProposalView })));
 const ReferralDashboard = React.lazy(() => import('./components/ReferralDashboard').then(m => ({ default: m.ReferralDashboard })));
+const InviteLandingPage = React.lazy(() => import('./components/InviteLandingPage').then(m => ({ default: m.InviteLandingPage })));
 
 export function AppRoutes() {
   const { user, profile, loading, isManager } = useAuth();
@@ -30,6 +31,7 @@ export function AppRoutes() {
         <Route path="/intro"   element={<Navigate to="/" />} />
         <Route path="/recovery" element={<UpdatePassword />} />
         <Route path="/referral" element={<ReferralDashboard />} />
+        <Route path="/invite"   element={<InviteLandingPage />} />
 
         {/* Auth */}
         <Route

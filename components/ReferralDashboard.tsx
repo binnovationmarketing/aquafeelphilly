@@ -15,11 +15,6 @@ export function ReferralDashboard() {
   const [newRef, setNewRef] = useState({ name: '', phone: '', email: '', address: '' });
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Confirmation screen state
-  const [isConfirmed, setIsConfirmed] = useState(false);
-  const [confirmData, setConfirmData] = useState({ name: '', phone: '', email: '' });
-  const [isConfirming, setIsConfirming] = useState(false);
-
   useEffect(() => {
     if (token) {
       loadPortalData();
@@ -37,11 +32,6 @@ export function ReferralDashboard() {
         setData(null);
       } else {
         setData(result);
-        setConfirmData({
-          name: result.client.name || '',
-          phone: result.client.phone || '',
-          email: result.client.email || ''
-        });
       }
     } catch (err: any) {
       toast.error('Erro ao carregar os dados: ' + err.message);
@@ -105,36 +95,6 @@ export function ReferralDashboard() {
     }
   };
 
-  const handleConfirmData = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!token) return;
-    setIsConfirming(true);
-    try {
-      const { error } = await supabase
-        .from('clients')
-        .update({
-          name: confirmData.name,
-          phone: confirmData.phone,
-          email: confirmData.email
-        })
-        .eq('id', token);
-
-      if (error) throw error;
-      toast.success('Cadastro confirmado com sucesso! Bem-vindo ao Portal VIP.');
-      setIsConfirmed(true);
-      
-      // Update local state so it reflects immediately in the UI
-      setData((prev: any) => ({
-        ...prev,
-        client: { ...prev.client, ...confirmData }
-      }));
-    } catch (err: any) {
-      toast.error('Erro ao atualizar dados: ' + err.message);
-    } finally {
-      setIsConfirming(false);
-    }
-  };
-
   if (loading) {
     return (
       <div className="min-h-screen bg-slate-900 text-slate-50 flex items-center justify-center">
@@ -156,60 +116,7 @@ export function ReferralDashboard() {
   const { client, points, referrals, history } = data;
   const isElite = points.level === 2;
 
-  if (!isConfirmed) {
-    return (
-      <div className="min-h-screen bg-slate-900 text-slate-50 flex items-center justify-center p-6" style={{ fontFamily: "'Outfit', sans-serif" }}>
-        <div className="max-w-md w-full bg-slate-800/80 backdrop-blur-md p-8 rounded-3xl shadow-2xl border border-white/10 animate-in fade-in zoom-in-95 duration-500">
-          <div className="w-16 h-16 bg-gradient-to-br from-[#005088] to-[#11caa0] rounded-full flex items-center justify-center mx-auto mb-6 shadow-lg">
-            <Award size={32} className="text-white" />
-          </div>
-          <h2 className="text-2xl font-bold text-center mb-2" style={{ fontFamily: "'Urbanist', sans-serif" }}>Bem-vindo ao Portal VIP</h2>
-          <p className="text-slate-400 text-center mb-8 text-sm">Confirme seus dados para ativar sua conta e desbloquear seus prêmios.</p>
-          
-          <form onSubmit={handleConfirmData} className="space-y-4">
-            <div>
-              <label className="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">Nome Completo</label>
-              <input 
-                type="text" 
-                required
-                value={confirmData.name}
-                onChange={e => setConfirmData({...confirmData, name: e.target.value})}
-                className="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 outline-none focus:border-[#11caa0] transition-colors"
-              />
-            </div>
-            <div>
-              <label className="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">Telefone (WhatsApp)</label>
-              <input 
-                type="tel" 
-                required
-                value={confirmData.phone}
-                onChange={e => setConfirmData({...confirmData, phone: e.target.value})}
-                className="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 outline-none focus:border-[#11caa0] transition-colors"
-              />
-            </div>
-            <div>
-              <label className="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">E-mail</label>
-              <input 
-                type="email" 
-                value={confirmData.email}
-                onChange={e => setConfirmData({...confirmData, email: e.target.value})}
-                className="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 outline-none focus:border-[#11caa0] transition-colors"
-              />
-            </div>
-            <button 
-              type="submit" 
-              disabled={isConfirming}
-              className="w-full bg-gradient-to-r from-[#005088] to-[#11caa0] text-white font-bold py-4 rounded-xl mt-6 shadow-lg shadow-[#11caa0]/20 hover:shadow-[#11caa0]/40 transition-all disabled:opacity-50"
-            >
-              {isConfirming ? 'Confirmando...' : 'Confirmar e Acessar Portal'}
-            </button>
-          </form>
-        </div>
-      </div>
-    );
-  }
-
-  const referralLink = `${window.location.origin}/referral?token=${token}`;
+  const referralLink = `${window.location.origin}/invite?ref=${token}`;
   const whatsappMessage = encodeURIComponent(`Oi! Estou usando a Aquafeel na minha casa e adorando. Use meu link VIP para agendar uma análise grátis e ganhar descontos: ${referralLink}`);
 
   return (
