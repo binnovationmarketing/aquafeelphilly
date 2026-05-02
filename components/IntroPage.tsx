@@ -155,7 +155,7 @@ export const IntroPage: React.FC<{ onEnter: () => void }> = ({ onEnter }) => {
           </div>
 
           <h1 className="text-4xl sm:text-5xl md:text-7xl lg:text-8xl font-black leading-tight tracking-tighter mb-4 bg-gradient-to-b from-white via-white to-slate-500 bg-clip-text text-transparent">
-            Aquafeel Solutions<br />
+            Aquafeel Philly<br />
             <span className="bg-gradient-to-r from-aqua-400 to-blue-500 bg-clip-text text-transparent">
               Tech
             </span>
@@ -188,8 +188,8 @@ export const IntroPage: React.FC<{ onEnter: () => void }> = ({ onEnter }) => {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 md:gap-12 w-full max-w-5xl">
           {/* Stats */}
           <div className="grid grid-cols-2 gap-3 md:gap-4 order-2 lg:order-1">
-            <StatCard value="8,790" label="System Value ($)" delay={1.0} />
-            <StatCard value="$3K" label="Top Commission" delay={1.1} />
+            <StatCard value="8,790?" label="System Value ($)" delay={1.0} />
+            <StatCard value="$1.5K até ?" label="Top Commission" delay={1.1} />
             <StatCard value="10+" label="Career Levels" delay={1.2} />
             <StatCard value="24/7" label="Real-time Sync" delay={1.3} />
           </div>
