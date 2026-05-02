@@ -9,7 +9,8 @@ import {
 import {
   Users, TrendingUp,
   CheckCircle, Plus, LogOut, Search, Filter, X, Mail, Phone, MapPin, Clock, Share2,
-  MessageSquare, CalendarCheck, Play, CheckCircle2, Shield, FileText, UserCog
+  MessageSquare, CalendarCheck, Play, CheckCircle2, Shield, FileText, UserCog,
+  DollarSign, ClipboardList, Users2, UserPlus, MessageCircle
 } from 'lucide-react';
 import AquaFeelLogo from './AquaFeelLogo';
 import { toast } from 'sonner';
@@ -58,6 +59,8 @@ export const AnalystDashboard: React.FC<{ onNewProposal: () => void }> = ({ onNe
   const [activeTab, setActiveTab] = useState<'OVERVIEW' | 'RECOMMENDATIONS' | 'COMMISSIONS' | 'TEAM_MANAGEMENT'>('OVERVIEW');
   const [isScheduling, setIsScheduling] = useState(false);
   const [showProfileModal, setShowProfileModal] = useState(false);
+  const [showSignupLinkModal, setShowSignupLinkModal] = useState(false);
+  const [signupPhone, setSignupPhone] = useState('');
   const [profileData, setProfileData] = useState({ full_name: '', avatar_url: '' });
   const [isSavingProfile, setIsSavingProfile] = useState(false);
   const [executingTask, setExecutingTask] = useState<Task | null>(null);
@@ -389,36 +392,35 @@ export const AnalystDashboard: React.FC<{ onNewProposal: () => void }> = ({ onNe
           <div className="flex items-center gap-4">
             <AquaFeelLogo width="120px" />
             <span className="hidden md:inline-block h-6 w-px bg-slate-200"></span>
-            <div className="flex bg-slate-100 p-1 rounded-xl overflow-x-auto whitespace-nowrap hide-scrollbar max-w-[200px] sm:max-w-none">
+            <div className="flex bg-slate-100 p-1 rounded-xl overflow-x-auto whitespace-nowrap hide-scrollbar">
               <button
                 onClick={() => setActiveTab('COMMISSIONS')}
-                className={`px-3 sm:px-4 py-1.5 text-[10px] sm:text-sm font-bold rounded-lg transition-all flex items-center gap-1 sm:gap-2 ${activeTab === 'COMMISSIONS' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+                className={`px-3 py-2 text-xs font-bold rounded-lg transition-all flex items-center gap-1.5 ${activeTab === 'COMMISSIONS' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
               >
-                💰 <span className="hidden xs:inline">Comissões</span>
+                <DollarSign size={14} /> Comissões
               </button>
               <button
                 onClick={() => setActiveTab('OVERVIEW')}
-                className={`px-3 sm:px-4 py-1.5 text-[10px] sm:text-sm font-bold rounded-lg transition-all ${activeTab === 'OVERVIEW' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+                className={`px-3 py-2 text-xs font-bold rounded-lg transition-all flex items-center gap-1.5 ${activeTab === 'OVERVIEW' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
               >
-                Leads
+                <ClipboardList size={14} /> Leads
               </button>
               <button
                 onClick={() => setActiveTab('RECOMMENDATIONS')}
-                className={`px-3 sm:px-4 py-1.5 text-[10px] sm:text-sm font-bold rounded-lg transition-all flex items-center gap-1 sm:gap-2 ${activeTab === 'RECOMMENDATIONS' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+                className={`px-3 py-2 text-xs font-bold rounded-lg transition-all flex items-center gap-1.5 ${activeTab === 'RECOMMENDATIONS' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
               >
-                🤝 <span className="hidden xs:inline">Recomendações</span>
+                <Users2 size={14} /> Recomendações
               </button>
               {(profile?.role !== 'analyst_jr' || user?.email === 'binnovationmarketing@gmail.com') && (
                 <button
                   onClick={() => setActiveTab('TEAM_MANAGEMENT')}
-                  className={`px-4 sm:px-5 py-2.5 rounded-xl font-bold text-sm transition-all duration-300 ${
+                  className={`px-3 py-2 text-xs font-bold rounded-lg transition-all flex items-center gap-1.5 ${
                     activeTab === 'TEAM_MANAGEMENT'
-                      ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-500/30'
-                      : 'text-slate-500 hover:bg-slate-100 hover:text-slate-800'
+                      ? 'bg-indigo-600 text-white shadow-sm'
+                      : 'text-slate-500 hover:text-slate-700'
                   }`}
                 >
-                  <Shield size={18} className="inline mr-1" />
-                  <span className="hidden xs:inline">Gestão de Equipe</span>
+                  <Shield size={14} /> Equipe
                 </button>
               )}
             </div>
@@ -464,21 +466,25 @@ export const AnalystDashboard: React.FC<{ onNewProposal: () => void }> = ({ onNe
           </div>
           <div className="flex items-center gap-2 sm:gap-3 w-full md:w-auto">
             <button
+              onClick={() => setShowSignupLinkModal(true)}
+              className="flex-1 sm:flex-none flex items-center justify-center gap-2 border border-emerald-200 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 px-4 py-3 rounded-xl font-bold text-xs transition-all"
+            >
+              <UserPlus size={15} /> Cadastro Cliente
+            </button>
+            <button
               onClick={() => {
                 const latest = allLeads[0];
                 if (latest) setShareTarget({ id: latest.id, name: latest.name });
               }}
-              className="flex-1 sm:flex-none flex items-center justify-center gap-2 border border-aqua-200 bg-aqua-50 hover:bg-aqua-100 text-aqua-700 px-4 sm:px-5 py-3 rounded-xl font-bold text-xs sm:text-sm transition-all"
+              className="flex-1 sm:flex-none flex items-center justify-center gap-2 border border-aqua-200 bg-aqua-50 hover:bg-aqua-100 text-aqua-700 px-4 py-3 rounded-xl font-bold text-xs transition-all"
             >
-              <Share2 size={16} />
-              <span className="sm:inline">Compartilhar</span>
+              <Share2 size={15} /> Compartilhar
             </button>
             <button
               onClick={onNewProposal}
               className="flex-1 sm:flex-none flex items-center justify-center gap-2 bg-aqua-600 hover:bg-aqua-500 text-white px-4 sm:px-6 py-3 rounded-xl font-bold shadow-lg shadow-aqua-500/30 transition-all transform hover:-translate-y-1 active:scale-95 text-xs sm:text-sm"
             >
-              <Plus size={18} />
-              New Proposal
+              <Plus size={18} /> Nova Proposta
             </button>
           </div>
         </div>
@@ -946,6 +952,67 @@ export const AnalystDashboard: React.FC<{ onNewProposal: () => void }> = ({ onNe
           clientId={shareTarget.id}
           clientName={shareTarget.name}
         />
+      )}
+
+      {/* Signup Link Modal */}
+      {showSignupLinkModal && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4">
+          <div className="bg-white rounded-2xl max-w-sm w-full p-6 shadow-2xl animate-in zoom-in-95 duration-200">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-10 h-10 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center shrink-0">
+                <UserPlus size={20} />
+              </div>
+              <div>
+                <h3 className="font-black text-slate-800">Enviar Cadastro via WhatsApp</h3>
+                <p className="text-slate-500 text-xs">O cliente recebe o link de cadastro direto no WhatsApp</p>
+              </div>
+            </div>
+
+            <div className="flex items-center bg-slate-50 border border-slate-200 rounded-xl overflow-hidden mb-4 focus-within:ring-2 focus-within:ring-emerald-400 transition-all">
+              <span className="pl-4 pr-2 flex items-center gap-1.5 text-slate-500 font-bold text-sm shrink-0">+1</span>
+              <input
+                type="tel" placeholder="215-000-0000" value={signupPhone}
+                onChange={e => setSignupPhone(e.target.value.replace(/\D/g, '').slice(0, 10))}
+                className="flex-1 bg-transparent pr-4 py-3 text-slate-900 text-sm focus:outline-none"
+                autoFocus
+              />
+            </div>
+
+            {/* Preview message */}
+            {signupPhone.length >= 7 && (
+              <div className="bg-slate-50 border border-slate-100 rounded-xl p-3 mb-4 text-xs text-slate-600 leading-relaxed">
+                <p className="font-bold text-slate-400 uppercase tracking-widest text-[10px] mb-1">Mensagem que será enviada:</p>
+                Olá! Aqui é da Aquafeel Philly 💧<br/>
+                Clique no link para criar sua conta gratuita no Portal VIP e acompanhar seus pontos:<br/>
+                <span className="text-emerald-600 font-bold">{window.location.origin}/client-signup</span>
+              </div>
+            )}
+
+            <div className="flex gap-3">
+              <button
+                onClick={() => { setShowSignupLinkModal(false); setSignupPhone(''); }}
+                className="flex-1 py-3 border border-slate-200 rounded-xl text-slate-500 font-bold text-sm hover:bg-slate-50 transition-colors"
+              >
+                Cancelar
+              </button>
+              <a
+                href={signupPhone.length >= 7
+                  ? `https://wa.me/1${signupPhone}?text=${encodeURIComponent(`Olá! Aqui é da Aquafeel Philly 💧\n\nClique no link abaixo para criar sua conta gratuita no Portal VIP Aquafeel e começar a acompanhar seus pontos e recompensas:\n\n👉 ${window.location.origin}/client-signup\n\nQualquer dúvida, estou à disposição! 😊`)}`
+                  : undefined
+                }
+                target="_blank" rel="noopener noreferrer"
+                onClick={() => { if (signupPhone.length >= 7) { setShowSignupLinkModal(false); setSignupPhone(''); } }}
+                className={`flex-[2] flex items-center justify-center gap-2 py-3 rounded-xl font-black text-sm transition-all ${
+                  signupPhone.length >= 7
+                    ? 'bg-[#25D366] text-white hover:bg-[#1ebe5d] cursor-pointer'
+                    : 'bg-slate-100 text-slate-400 cursor-not-allowed pointer-events-none'
+                }`}
+              >
+                <MessageCircle size={16} /> Enviar no WhatsApp
+              </a>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );

@@ -38,6 +38,9 @@ export function ProposalView() {
   const [saveFormData, setSaveFormData] = useState({ phone: '', email: '', status: 'PENDING' });
   const [proposalCalcData, setProposalCalcData] = useState<any>(null);
   const [isSavingProposal, setIsSavingProposal] = useState(false);
+  const [saveResult, setSaveResult] = useState<{ clientWaLink: string; pdfUrl: string } | null>(null);
+
+  const INTERNAL_NUMBERS = ['+19842206002', '+12407064966', '+12407806473'];
 
   // 1. Load client data + server-side timer anchor
   const { isLoaded, clientData, proposalOpenedAt } = useProposalInit();
@@ -80,41 +83,124 @@ export function ProposalView() {
         'RANGE1': 740, 'RANGE2': 690, 'RANGE3': 660, 'RANGE4': 600,
       };
 
-      // 1. Generate PDF
+      // 1. Generate PDF — persuasive layout
       const doc = new jsPDF();
-      doc.setFillColor(2, 13, 26); // #020d1a
-      doc.rect(0, 0, 210, 297, 'F');
-      
-      doc.setTextColor(255, 255, 255);
-      doc.setFontSize(24);
-      doc.text("Aquafeel VIP Proposal", 105, 30, { align: "center" });
-      
-      doc.setFontSize(16);
-      doc.setTextColor(17, 202, 160); // #11caa0
-      doc.text(`Cliente: ${clientData.name}`, 105, 50, { align: "center" });
-      
-      doc.setFontSize(14);
-      doc.setTextColor(200, 200, 200);
-      doc.text(`Gastos Mensais Atuais:`, 20, 80);
-      doc.text(`- Agua: $${proposalCalcData.waterMonthly}`, 25, 90);
-      doc.text(`- Produtos/Sabao: $${proposalCalcData.cleaningMonthly}`, 25, 100);
-      
+      const W = 210;
       const totalMonthly = Number(proposalCalcData.waterMonthly) + Number(proposalCalcData.cleaningMonthly);
+      const totalAnnual = totalMonthly * 12;
+      const totalLifetime = totalMonthly * 12 * 30;
+      const fmt = (n: number) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(n);
+
+      // Dark background
+      doc.setFillColor(2, 13, 26);
+      doc.rect(0, 0, W, 297, 'F');
+
+      // Cyan header bar
+      doc.setFillColor(0, 174, 239);
+      doc.rect(0, 0, W, 14, 'F');
+
+      // Title
+      doc.setTextColor(255, 255, 255);
+      doc.setFontSize(22);
+      doc.setFont('helvetica', 'bold');
+      doc.text('AQUAFEEL VIP PROPOSAL', W / 2, 28, { align: 'center' });
+
+      doc.setFontSize(11);
+      doc.setTextColor(0, 174, 239);
+      doc.text('💧 Água Pura. Família Protegida.', W / 2, 37, { align: 'center' });
+
+      // Client info
+      doc.setFontSize(13);
+      doc.setTextColor(255, 255, 255);
+      doc.text(`Cliente: ${clientData.name}`, 20, 52);
+      doc.setFontSize(10);
+      doc.setTextColor(148, 163, 184);
+      doc.text(`Data: ${new Date().toLocaleDateString('pt-BR')}`, 20, 60);
+
+      // Divider
+      doc.setDrawColor(0, 174, 239);
+      doc.setLineWidth(0.3);
+      doc.line(20, 65, W - 20, 65);
+
+      // Section — Problem
+      doc.setFontSize(12);
       doc.setTextColor(255, 80, 80);
-      doc.text(`Desperdicio ao longo da vida: $${(totalMonthly * 12 * 30).toLocaleString()}`, 20, 120);
-      
-      doc.setTextColor(17, 202, 160);
-      doc.text(`Solucao Aquafeel VIP:`, 20, 150);
+      doc.setFont('helvetica', 'bold');
+      doc.text('❌  QUANTO VOCÊ ESTÁ DESPERDIÇANDO HOJE', 20, 75);
+
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(11);
       doc.setTextColor(200, 200, 200);
-      doc.text(`- Sistema RO (Osmose Reversa) de Alta Performance`, 25, 160);
-      doc.text(`- Sabao Organico 1 Ano: Lavanderia, Cozinha e Banheiro`, 25, 170);
-      doc.text(`- Garantia de 25 Anos`, 25, 180);
-      doc.text(`- $0 Entrada / $0 Instalacao`, 25, 190);
-      doc.text(`- 3 Meses livres de pagamento (Com indicacao)`, 25, 200);
+      doc.text(`Gastos mensais com água contaminada:  ${fmt(proposalCalcData.waterMonthly)}`, 22, 84);
+      doc.text(`Gastos mensais com sabão e produtos:   ${fmt(proposalCalcData.cleaningMonthly)}`, 22, 92);
+
+      doc.setFontSize(12);
+      doc.setTextColor(255, 120, 120);
+      doc.setFont('helvetica', 'bold');
+      doc.text(`TOTAL MENSAL:    ${fmt(totalMonthly)}`, 22, 103);
+      doc.text(`TOTAL ANUAL:     ${fmt(totalAnnual)}`, 22, 112);
+
+      doc.setFontSize(13);
+      doc.setTextColor(255, 60, 60);
+      doc.text(`Em 30 anos de vida:  ${fmt(totalLifetime)} PERDIDOS!`, 22, 124);
 
       doc.setFontSize(10);
-      doc.text("Proteja sua familia, seu patrimonio e sua saude.", 105, 260, { align: "center" });
-      doc.text("Aquafeel Solutions Philly", 105, 270, { align: "center" });
+      doc.setTextColor(148, 163, 184);
+      doc.setFont('helvetica', 'normal');
+      doc.text('Você está pagando pela água que contamina sua própria família.', 22, 133);
+
+      // Divider
+      doc.line(20, 139, W - 20, 139);
+
+      // Section — Solution
+      doc.setFontSize(12);
+      doc.setTextColor(17, 202, 160);
+      doc.setFont('helvetica', 'bold');
+      doc.text('✅  SUA SOLUÇÃO AQUAFEEL VIP — OFERTA EXCLUSIVA', 20, 149);
+
+      const benefits = [
+        ['Sistema de Osmose Reversa (RO) de Alta Performance', 'Remove 99.9% de contaminantes, cloro e metais pesados'],
+        ['Sabão Orgânico 25 ANOS  (Lavanderia + Cozinha + Banheiro)', 'Economia de +$2.000 em produtos ao longo do contrato'],
+        ['Garantia de 25 Anos', 'Tranquilidade total para sua família'],
+        ['$0 de Entrada — $0 de Instalação', 'Sem surpresas, sem custos ocultos'],
+        ['3 meses GRÁTIS com indicação de amigos', 'Quanto mais você indica, mais você ganha'],
+      ];
+
+      let y = 160;
+      benefits.forEach(([title, sub]) => {
+        doc.setFontSize(11);
+        doc.setTextColor(255, 255, 255);
+        doc.setFont('helvetica', 'bold');
+        doc.text(`✔  ${title}`, 22, y);
+        doc.setFontSize(9);
+        doc.setTextColor(148, 163, 184);
+        doc.setFont('helvetica', 'normal');
+        doc.text(`    ${sub}`, 22, y + 6);
+        y += 16;
+      });
+
+      // Divider
+      doc.line(20, y + 2, W - 20, y + 2);
+      y += 10;
+
+      // Urgency block
+      doc.setFillColor(17, 202, 160, 0.08 as any);
+      doc.setFontSize(11);
+      doc.setTextColor(17, 202, 160);
+      doc.setFont('helvetica', 'bold');
+      doc.text('Esta proposta é exclusiva e por tempo limitado.', W / 2, y + 6, { align: 'center' });
+      doc.setFontSize(10);
+      doc.setTextColor(200, 200, 200);
+      doc.setFont('helvetica', 'normal');
+      doc.text('Aquafeel já transformou milhares de famílias na Filadélfia.', W / 2, y + 14, { align: 'center' });
+      doc.text('Sua família merece água 100% pura. Não pague para envenenar quem você ama.', W / 2, y + 22, { align: 'center' });
+
+      // Footer
+      doc.setFillColor(0, 174, 239);
+      doc.rect(0, 283, W, 14, 'F');
+      doc.setFontSize(9);
+      doc.setTextColor(255, 255, 255);
+      doc.text('Aquafeel Solutions Philly  |  aquafeelphilly.com  |  © 2026', W / 2, 292, { align: 'center' });
 
       const pdfBlob = doc.output('blob');
       const fileName = `proposal_${clientData.id}_${Date.now()}.pdf`;
@@ -179,26 +265,13 @@ export function ProposalView() {
         creditScore: rangeToScore[proposalCalcData.creditRange] || undefined,
       });
 
-      // 4. WhatsApp Link
-      let msg = `Olá ${clientData.name}! Aqui está o resumo da sua proposta VIP da Aquafeel Solutions! \n\nAcesse o PDF com os seus benefícios aqui:\n${pdfUrl}\n\nPara acessar a proposta completa interativa, use este link:\n${window.location.origin}/proposal?id=${clientData.id}&lang=${clientData.lang}`;
-      const encodedMsg = encodeURIComponent(msg);
+      // 4. Build WhatsApp links
+      const msg = `Olá ${clientData.name}! 💧 Aqui está sua proposta VIP Aquafeel!\n\n✅ PDF com todos os benefícios:\n${pdfUrl}\n\n📊 Proposta interativa completa:\n${window.location.origin}/proposal?id=${clientData.id}&lang=${clientData.lang}\n\nQualquer dúvida, estou à disposição!`;
       const rawDigits = saveFormData.phone.replace(/\D/g, '');
       const phoneDigits = rawDigits.startsWith('1') ? rawDigits : `1${rawDigits}`;
-      const waLink = `https://wa.me/${phoneDigits}?text=${encodedMsg}`;
+      const clientWaLink = `https://wa.me/${phoneDigits}?text=${encodeURIComponent(msg)}`;
 
-      toast.success(
-        <div className="flex flex-col gap-2">
-          <span>Proposta Salva com PDF! ✅</span>
-          {phoneDigits && (
-            <a href={waLink} target="_blank" rel="noopener noreferrer" className="bg-emerald-500 text-white px-3 py-2 flex items-center justify-center gap-2 rounded-lg font-bold text-xs mt-2 hover:bg-emerald-600">
-              <Send size={14} /> Enviar PDF no WhatsApp
-            </a>
-          )}
-        </div>,
-        { duration: 8000 }
-      );
-      
-      setIsSaveModalOpen(false);
+      setSaveResult({ clientWaLink, pdfUrl });
     } catch (err: any) {
       toast.error('Erro ao guardar proposta: ' + err.message);
     } finally {
@@ -396,6 +469,51 @@ export function ProposalView() {
       {isSaveModalOpen && (
         <div className="fixed inset-0 bg-black/50 z-[200] flex items-center justify-center p-4 backdrop-blur-sm animate-in fade-in duration-200">
           <div className="bg-white rounded-2xl max-w-sm w-full shadow-2xl overflow-hidden animate-in slide-in-from-bottom-8">
+            {/* Success State */}
+            {saveResult ? (
+              <div className="p-6 space-y-4">
+                <div className="text-center">
+                  <div className="w-14 h-14 bg-emerald-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                    <Send size={24} className="text-emerald-600" />
+                  </div>
+                  <h3 className="font-black text-slate-800 text-lg">Proposta Salva! ✅</h3>
+                  <p className="text-slate-500 text-xs mt-1">Envie agora via WhatsApp</p>
+                </div>
+
+                {/* Client WhatsApp */}
+                <a href={saveResult.clientWaLink} target="_blank" rel="noopener noreferrer"
+                  className="flex items-center justify-between gap-3 p-3 rounded-xl bg-[#25D366]/10 border border-[#25D366]/30 hover:bg-[#25D366]/20 transition-colors">
+                  <div>
+                    <p className="text-[10px] font-black uppercase tracking-widest text-[#25D366]">Enviar ao Cliente</p>
+                    <p className="text-slate-600 text-xs font-bold">{clientData.name}</p>
+                  </div>
+                  <Send size={18} className="text-[#25D366] shrink-0" />
+                </a>
+
+                {/* Internal numbers */}
+                <div className="space-y-2">
+                  <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">Notificar Equipe Interna:</p>
+                  {INTERNAL_NUMBERS.map((num) => {
+                    const internalMsg = `🏠 Nova Proposta Aquafeel!\nCliente: ${clientData.name}\nProposta: ${window.location.origin}/proposal?id=${clientData.id}`;
+                    return (
+                      <a key={num}
+                        href={`https://wa.me/${num.replace(/\D/g, '')}?text=${encodeURIComponent(internalMsg)}`}
+                        target="_blank" rel="noopener noreferrer"
+                        className="flex items-center justify-between gap-2 p-2.5 rounded-xl bg-slate-50 border border-slate-200 hover:bg-slate-100 transition-colors text-xs">
+                        <span className="font-bold text-slate-600">{num}</span>
+                        <Send size={14} className="text-slate-400 shrink-0" />
+                      </a>
+                    );
+                  })}
+                </div>
+
+                <button onClick={() => { setSaveResult(null); setIsSaveModalOpen(false); }}
+                  className="w-full py-3 rounded-xl bg-slate-100 text-slate-600 font-bold text-sm hover:bg-slate-200 transition-colors">
+                  Fechar
+                </button>
+              </div>
+            ) : (
+              <>
             <div className="px-6 py-4 flex items-center justify-between border-b border-slate-100">
               <h3 className="font-black text-slate-800 flex items-center justify-center gap-2">
                 <FileText size={18} className="text-aqua-600" /> Confirmar Proposta
@@ -450,14 +568,14 @@ export function ProposalView() {
             </div>
 
             <div className="p-4 bg-slate-50 border-t border-slate-100 gap-2 flex">
-              <button 
+              <button
                 disabled={isSavingProposal}
                 onClick={() => setIsSaveModalOpen(false)}
                 className="flex-1 py-3 text-sm font-bold text-slate-500 border-2 border-slate-200 rounded-xl hover:bg-slate-100 disabled:opacity-50 transition-colors"
               >
                 Cancelar
               </button>
-              <button 
+              <button
                 disabled={isSavingProposal}
                 onClick={handleConfirmSave}
                 className="flex-[2] flex justify-center items-center py-3 text-sm font-black bg-aqua-600 text-white rounded-xl hover:bg-aqua-500 disabled:opacity-50 transition-all shadow-md shadow-aqua-500/20"
@@ -465,6 +583,8 @@ export function ProposalView() {
                 {isSavingProposal ? 'Salvando...' : 'Guardar Info & Status'}
               </button>
             </div>
+              </>
+            )}
           </div>
         </div>
       )}

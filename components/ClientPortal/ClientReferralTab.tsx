@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import { supabase } from '../../lib/supabase';
-import { User, Phone, MapPin, Mail, Loader2, Gift, MessageCircle } from 'lucide-react';
+import { User, Phone, MapPin, Mail, Loader2, Gift, MessageCircle, Send, CheckCircle2 } from 'lucide-react';
 import { toast } from 'sonner';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 
 const MotionDiv = motion.div as any;
 
@@ -11,10 +11,66 @@ interface Props {
   onSuccess: () => void;
 }
 
+function buildInviteEmailHtml(referrerName: string, friendName: string, inviteLink: string): string {
+  return `<!DOCTYPE html>
+<html lang="pt">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Convite Aquafeel</title></head>
+<body style="margin:0;padding:0;background:#020d1a;font-family:'Helvetica Neue',Arial,sans-serif;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background:#020d1a;padding:40px 20px;">
+    <tr><td align="center">
+      <table width="600" cellpadding="0" cellspacing="0" style="max-width:600px;width:100%;background:#0a1929;border-radius:20px;overflow:hidden;border:1px solid rgba(0,200,220,0.15);">
+        <!-- Header -->
+        <tr><td style="background:linear-gradient(135deg,#06b6d4,#2563eb);padding:36px 40px;text-align:center;">
+          <p style="margin:0;color:#e0f7fa;font-size:12px;font-weight:900;letter-spacing:4px;text-transform:uppercase;margin-bottom:12px;">💧 AQUAFEEL PHILLY</p>
+          <h1 style="margin:0;color:#ffffff;font-size:30px;font-weight:900;letter-spacing:-0.5px;line-height:1.2;">Você foi indicado(a)<br>por um amigo!</h1>
+        </td></tr>
+        <!-- Body -->
+        <tr><td style="padding:40px;">
+          <p style="color:#94a3b8;font-size:15px;line-height:1.7;margin:0 0 20px;">Olá, <strong style="color:#e2e8f0;">${friendName}</strong>! 👋</p>
+          <p style="color:#94a3b8;font-size:15px;line-height:1.7;margin:0 0 24px;">
+            <strong style="color:#22d3ee;">${referrerName}</strong> te convidou para uma <strong style="color:#e2e8f0;">análise gratuita da qualidade da sua água</strong> com a Aquafeel Philly.
+          </p>
+          <!-- Benefit box -->
+          <table width="100%" cellpadding="0" cellspacing="0" style="background:rgba(6,182,212,0.08);border:1px solid rgba(6,182,212,0.2);border-radius:14px;margin-bottom:28px;">
+            <tr><td style="padding:24px 28px;">
+              <p style="margin:0 0 14px;color:#22d3ee;font-size:11px;font-weight:900;letter-spacing:3px;text-transform:uppercase;">O que você ganha:</p>
+              ${[
+                '✅ Análise gratuita da qualidade da água',
+                '💧 Sistema de purificação RO — água 100% pura',
+                '🧼 Sabonete orgânico por 25 anos incluso',
+                '🛡️ Garantia total na instalação',
+                '🎁 3 meses grátis ao fechar contrato',
+              ].map(b => `<p style="margin:0 0 8px;color:#cbd5e1;font-size:14px;">${b}</p>`).join('')}
+            </td></tr>
+          </table>
+          <!-- CTA -->
+          <table width="100%" cellpadding="0" cellspacing="0"><tr><td align="center" style="padding-bottom:28px;">
+            <a href="${inviteLink}" style="display:inline-block;background:linear-gradient(135deg,#06b6d4,#2563eb);color:#ffffff;text-decoration:none;font-weight:900;font-size:15px;letter-spacing:1px;padding:16px 40px;border-radius:50px;text-transform:uppercase;">
+              💧 Quero Água Pura Grátis
+            </a>
+          </td></tr></table>
+          <p style="color:#475569;font-size:12px;text-align:center;margin:0;">Ou acesse: <a href="${inviteLink}" style="color:#22d3ee;text-decoration:none;">${inviteLink}</a></p>
+        </td></tr>
+        <!-- Footer -->
+        <tr><td style="background:rgba(6,182,212,0.06);border-top:1px solid rgba(6,182,212,0.1);padding:24px 40px;text-align:center;">
+          <p style="margin:0;color:#475569;font-size:11px;">© 2025 Aquafeel Philly · Philadelphia, PA</p>
+          <p style="margin:6px 0 0;color:#334155;font-size:11px;">Você recebeu este email porque <strong style="color:#475569;">${referrerName}</strong> te indicou.</p>
+        </td></tr>
+      </table>
+    </td></tr>
+  </table>
+</body>
+</html>`;
+}
+
 export function ClientReferralTab({ portalData, onSuccess }: Props) {
   const { points } = portalData;
+  const clientName: string = portalData.client?.name || 'Seu amigo';
   const [form, setForm] = useState({ name: '', phone: '', email: '', address: '' });
   const [submitting, setSubmitting] = useState(false);
+  const [lastReferral, setLastReferral] = useState<{ email: string; name: string } | null>(null);
+  const [sendingEmail, setSendingEmail] = useState(false);
+  const [emailSent, setEmailSent] = useState(false);
 
   const shortLink = points.referral_slug
     ? `${window.location.origin}/i/${points.referral_slug}`
@@ -28,6 +84,28 @@ export function ClientReferralTab({ portalData, onSuccess }: Props) {
   };
 
   const phoneDisplay = form.phone.replace(/^\+1/, '');
+
+  const handleSendEmail = async () => {
+    if (!lastReferral) return;
+    setSendingEmail(true);
+    try {
+      const html = buildInviteEmailHtml(clientName, lastReferral.name, shortLink);
+      const { error } = await supabase.functions.invoke('send-email', {
+        body: {
+          to: lastReferral.email,
+          subject: `${clientName} quer te dar um presente! 💧`,
+          html,
+        },
+      });
+      if (error) throw error;
+      setEmailSent(true);
+      toast.success('Email de convite enviado com sucesso!');
+    } catch (err: any) {
+      toast.error(err.message || 'Erro ao enviar email. Tente novamente.');
+    } finally {
+      setSendingEmail(false);
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -54,6 +132,10 @@ export function ClientReferralTab({ portalData, onSuccess }: Props) {
       if (data?.error) throw new Error(data.error);
 
       toast.success('🎉 Indicação cadastrada! +300 pontos adicionados à sua conta!');
+      if (form.email) {
+        setLastReferral({ email: form.email, name: form.name });
+        setEmailSent(false);
+      }
       setForm({ name: '', phone: '', email: '', address: '' });
       onSuccess();
     } catch (err: any) {
@@ -104,6 +186,40 @@ export function ClientReferralTab({ portalData, onSuccess }: Props) {
           </a>
         </MotionDiv>
       )}
+
+      {/* Email invite card — appears after successful referral with email */}
+      <AnimatePresence>
+        {lastReferral && (
+          <MotionDiv
+            key="email-invite"
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            transition={{ delay: 0.05 }}
+            className="bg-blue-500/10 border border-blue-500/30 rounded-2xl p-5 flex items-center justify-between gap-4"
+          >
+            <div className="min-w-0">
+              <p className="text-[10px] font-black uppercase tracking-widest text-blue-400 mb-0.5">Enviar convite por email</p>
+              <p className="text-slate-300 text-sm font-bold truncate">{lastReferral.name}</p>
+              <p className="text-slate-500 text-xs truncate">{lastReferral.email}</p>
+            </div>
+            {emailSent ? (
+              <div className="flex items-center gap-2 text-emerald-400 font-black text-sm shrink-0">
+                <CheckCircle2 size={18} /> Enviado!
+              </div>
+            ) : (
+              <button
+                onClick={handleSendEmail}
+                disabled={sendingEmail}
+                className="flex items-center gap-2 bg-blue-600 hover:bg-blue-500 text-white px-4 py-2.5 rounded-xl font-black text-sm shrink-0 transition-colors disabled:opacity-50"
+              >
+                {sendingEmail ? <Loader2 size={16} className="animate-spin" /> : <Send size={16} />}
+                Enviar Email
+              </button>
+            )}
+          </MotionDiv>
+        )}
+      </AnimatePresence>
 
       {/* Form */}
       <MotionDiv
