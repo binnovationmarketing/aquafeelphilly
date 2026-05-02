@@ -19,9 +19,9 @@ export const UpdatePassword: React.FC = () => {
       const { error } = await supabase.auth.updateUser({ password: password });
       if (error) throw error;
       setSuccess(true);
-      // Redirect to home after a delay
+      // Redirect to dashboard after a delay
       setTimeout(() => {
-        window.location.href = '/';
+        window.location.href = '/dashboard/analyst';
       }, 3000);
     } catch (err: any) {
       setError(err.message);

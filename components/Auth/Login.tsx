@@ -44,7 +44,7 @@ export const Login: React.FC = () => {
         toast.success('Login realizado com sucesso!');
       } else if (mode === 'reset') {
         const { error } = await supabase.auth.resetPasswordForEmail(email, {
-          redirectTo: `${window.location.origin}/`,
+          redirectTo: `${window.location.origin}/recovery`,
         });
         if (error) throw error;
         toast.success('Link de redefinição enviado para o seu email!');

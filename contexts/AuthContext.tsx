@@ -98,14 +98,44 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     if (error) {
       // PGRST116 = 0 rows found → user is authenticated but has no profile.
-      // Sign them out cleanly instead of hanging on a blank dashboard.
+      // Fix: Auto-create a default profile instead of kicking them out (Ghost Logout bug)
       if (error.code === 'PGRST116') {
-        console.warn('No analyst profile found for user — signing out.');
-        await supabase.auth.signOut();
-        setUser(null);
-        setSession(null);
-        setProfile(null);
-        return false;
+        console.warn('No analyst profile found for user. Auto-creating default profile...');
+        
+        // We get the current session to extract the email
+        const { data: { session: currentSession } } = await supabase.auth.getSession();
+        const userEmail = currentSession?.user?.email || `user-${userId.substring(0, 5)}@aquafeel.com`;
+        
+        const { error: insertError } = await supabase
+          .from('analysts')
+          .insert({
+            id: userId,
+            email: userEmail,
+            first_name: 'Novo',
+            last_name: 'Analista',
+            role: 'analyst',
+            sales_goal: 100000,
+            active: true,
+            pending_approval: false,
+            aquafeel_email: userEmail
+          });
+
+        if (insertError) {
+          console.error('Failed to auto-create profile:', insertError);
+          // Only sign out if we literally cannot create the profile due to DB errors
+          await supabase.auth.signOut();
+          setUser(null);
+          setSession(null);
+          setProfile(null);
+          return false;
+        }
+
+        // Retry fetching the profile now that it exists
+        const { data: newProfile } = await supabase.from('analysts').select('*').eq('id', userId).single();
+        if (newProfile) {
+          setProfile(newProfile as AnalystProfile);
+          return true;
+        }
       }
       console.error('Error fetching analyst profile:', error);
       return false;
