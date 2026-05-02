@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { supabase } from '../../lib/supabase';
-import { User, Phone, MapPin, Mail, Loader2, Gift } from 'lucide-react';
+import { User, Phone, MapPin, Mail, Loader2, Gift, MessageCircle } from 'lucide-react';
 import { toast } from 'sonner';
 import { motion } from 'framer-motion';
 
@@ -15,6 +15,19 @@ export function ClientReferralTab({ portalData, onSuccess }: Props) {
   const { points } = portalData;
   const [form, setForm] = useState({ name: '', phone: '', email: '', address: '' });
   const [submitting, setSubmitting] = useState(false);
+
+  const shortLink = points.referral_slug
+    ? `${window.location.origin}/i/${points.referral_slug}`
+    : `${window.location.origin}/invite?ref=${points.referral_token}`;
+
+  const waShareLink = `https://wa.me/?text=${encodeURIComponent(`💧 Eu uso Aquafeel e a água da minha família ficou 100% pura! Quero te indicar para uma análise gratuita. Acesse: ${shortLink}`)}`;
+
+  const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const digits = e.target.value.replace(/\D/g, '').slice(0, 10);
+    setForm({ ...form, phone: digits ? `+1${digits}` : '' });
+  };
+
+  const phoneDisplay = form.phone.replace(/^\+1/, '');
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -69,6 +82,29 @@ export function ClientReferralTab({ portalData, onSuccess }: Props) {
         </div>
       </MotionDiv>
 
+      {/* WhatsApp share card */}
+      {points.referral_token && (
+        <MotionDiv
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.05 }}
+          className="bg-[#25D366]/10 border border-[#25D366]/30 rounded-2xl p-5 flex items-center justify-between gap-4"
+        >
+          <div>
+            <p className="text-[10px] font-black uppercase tracking-widest text-[#25D366] mb-0.5">Compartilhe via WhatsApp</p>
+            <p className="text-slate-400 text-xs">Envie seu link de convite diretamente!</p>
+          </div>
+          <a
+            href={waShareLink}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center gap-2 bg-[#25D366] text-white px-4 py-2.5 rounded-xl font-black text-sm shrink-0 hover:bg-[#1ebe5d] transition-colors"
+          >
+            <MessageCircle size={16} /> Compartilhar
+          </a>
+        </MotionDiv>
+      )}
+
       {/* Form */}
       <MotionDiv
         initial={{ opacity: 0, y: 20 }}
@@ -96,17 +132,18 @@ export function ClientReferralTab({ portalData, onSuccess }: Props) {
           </div>
 
           {/* Phone */}
-          <div className="relative group">
-            <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-500 group-focus-within:text-cyan-400 transition-colors">
-              <Phone size={17} />
+          <div className="relative group flex items-center bg-white/5 border border-white/10 rounded-xl focus-within:ring-2 focus-within:ring-cyan-500 transition-all overflow-hidden">
+            <div className="pl-4 pr-2 flex items-center gap-1.5 text-slate-400 shrink-0">
+              <Phone size={15} />
+              <span className="font-bold text-sm text-slate-300">+1</span>
             </div>
             <input
               required
               type="tel"
-              placeholder="Telefone de contato * (ex: 215-555-0000)"
-              value={form.phone}
-              onChange={(e) => setForm({ ...form, phone: e.target.value })}
-              className="w-full bg-white/5 border border-white/10 rounded-xl pl-11 pr-4 py-3.5 text-white placeholder-slate-600 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent text-sm transition-all"
+              placeholder="215-555-0000"
+              value={phoneDisplay}
+              onChange={handlePhoneChange}
+              className="flex-1 bg-transparent pr-4 py-3.5 text-white placeholder-slate-600 focus:outline-none text-sm"
             />
           </div>
 
