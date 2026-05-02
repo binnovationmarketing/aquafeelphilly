@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   ShoppingCart,
   Droplets,
@@ -8,7 +8,11 @@ import {
   MapPin,
   CheckCircle,
   Save,
-  Loader2
+  Loader2,
+  Camera,
+  X,
+  MessageCircle,
+  ExternalLink
 } from 'lucide-react';
 import { Language, translations } from '../utils/i18n';
 import { useAppStore } from '../src/store/useAppStore';
@@ -48,6 +52,9 @@ export const ComparisonCalculator: React.FC<ComparisonCalculatorProps> = ({
   const [selectedRegion, setSelectedRegion] = useState<RegionId>('NE');
   const [selectedCredit, setSelectedCredit] = useState<CreditRangeId>('RANGE3');
   const [customWater, setCustomWater] = useState<number>(waterTotal);
+  const [showApplyModal, setShowApplyModal] = useState(false);
+  const [capturedPhoto, setCapturedPhoto] = useState<string | null>(null);
+  const cameraInputRef = useRef<HTMLInputElement>(null);
   const [customCleaning, setCustomCleaning] = useState<number>(cleaningTotal);
 
   useEffect(() => {
@@ -290,15 +297,13 @@ export const ComparisonCalculator: React.FC<ComparisonCalculatorProps> = ({
           </div>
 
           <div className="mt-auto space-y-4">
-            <a
-              href="https://aquafeelsolutions.com/credit-form/"
-              target="_blank"
-              rel="noopener noreferrer"
+            <button
+              onClick={() => { setCapturedPhoto(null); setShowApplyModal(true); }}
               className="w-full bg-emerald-500 text-white font-black py-5 rounded-2xl flex items-center justify-center gap-3 hover:bg-emerald-400 transition-all active:scale-[0.98] shadow-[0_0_30px_rgba(16,185,129,0.3)] border border-emerald-400/50"
             >
               <span className="uppercase tracking-[0.2em] text-sm md:text-base">Aplique Já</span>
               <ArrowRight size={20} className="animate-pulse" />
-            </a>
+            </button>
 
             {onSaveProposal && (
               <button
@@ -333,6 +338,88 @@ export const ComparisonCalculator: React.FC<ComparisonCalculatorProps> = ({
 
       {isClientModalOpen && (
         <ClientAccessModal onClose={() => setIsClientModalOpen(false)} />
+      )}
+
+      {/* Aplique Já — Camera + WhatsApp Modal */}
+      {showApplyModal && (
+        <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
+          <div className="bg-[#06162a] border border-white/10 rounded-3xl w-full max-w-sm p-6 space-y-5 relative">
+            <button
+              onClick={() => setShowApplyModal(false)}
+              className="absolute top-4 right-4 text-slate-500 hover:text-white"
+            >
+              <X size={20} />
+            </button>
+
+            <div className="text-center">
+              <p className="text-[10px] font-black uppercase tracking-widest text-emerald-400 mb-1">Aplique Já</p>
+              <h3 className="text-lg font-black text-white">Foto do Documento</h3>
+              <p className="text-slate-400 text-xs mt-1">Tire uma foto do documento de identidade do cliente</p>
+            </div>
+
+            {/* Hidden camera input */}
+            <input
+              ref={cameraInputRef}
+              type="file"
+              accept="image/*"
+              capture="environment"
+              className="hidden"
+              onChange={(e) => {
+                const file = e.target.files?.[0];
+                if (!file) return;
+                const url = URL.createObjectURL(file);
+                setCapturedPhoto(url);
+              }}
+            />
+
+            {!capturedPhoto ? (
+              <button
+                onClick={() => cameraInputRef.current?.click()}
+                className="w-full py-5 rounded-2xl bg-white/5 border-2 border-dashed border-white/20 hover:border-emerald-500/50 hover:bg-white/10 transition-all flex flex-col items-center gap-3 text-slate-400 hover:text-white"
+              >
+                <Camera size={32} />
+                <span className="text-sm font-black uppercase tracking-wider">Abrir Câmera</span>
+              </button>
+            ) : (
+              <div className="space-y-4">
+                <img src={capturedPhoto} alt="ID capturado" className="w-full rounded-2xl object-cover max-h-48 border border-white/10" />
+                <button
+                  onClick={() => { setCapturedPhoto(null); cameraInputRef.current && (cameraInputRef.current.value = ''); }}
+                  className="w-full py-2 rounded-xl bg-white/5 border border-white/10 text-slate-400 text-xs font-bold hover:text-white transition-colors"
+                >
+                  Tirar outra foto
+                </button>
+
+                {/* WhatsApp share to each contact */}
+                <div className="space-y-2">
+                  <p className="text-[10px] text-slate-500 uppercase tracking-widest font-bold">Enviar foto via WhatsApp:</p>
+                  {['+19842206002', '+12407064966', '+12407806473'].map((num) => (
+                    <a
+                      key={num}
+                      href={`https://wa.me/${num.replace(/\D/g, '')}?text=${encodeURIComponent('Hello girls, could you please run this application? Thank you!')}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="w-full flex items-center justify-between gap-2 py-3 px-4 rounded-xl bg-[#25D366]/10 border border-[#25D366]/30 text-[#25D366] text-sm font-bold hover:bg-[#25D366]/20 transition-colors"
+                    >
+                      <span className="flex items-center gap-2"><MessageCircle size={16} /> {num}</span>
+                      <ExternalLink size={13} />
+                    </a>
+                  ))}
+                </div>
+
+                <a
+                  href="https://aquafeelsolutions.com/credit-form/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  onClick={() => setShowApplyModal(false)}
+                  className="w-full flex items-center justify-center gap-2 py-4 rounded-2xl bg-emerald-500 hover:bg-emerald-400 text-white font-black text-sm uppercase tracking-widest transition-all shadow-[0_0_20px_rgba(16,185,129,0.3)]"
+                >
+                  Continuar para Formulário <ArrowRight size={16} />
+                </a>
+              </div>
+            )}
+          </div>
+        </div>
       )}
     </div>
   );

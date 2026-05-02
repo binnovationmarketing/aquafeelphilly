@@ -408,7 +408,7 @@ export const AnalystDashboard: React.FC<{ onNewProposal: () => void }> = ({ onNe
               >
                 🤝 <span className="hidden xs:inline">Recomendações</span>
               </button>
-              {(profile?.role === 'admin' || profile?.role?.includes('manager') || profile?.role?.includes('director') || user?.email === 'binnovationmarketing@gmail.com') && (
+              {(profile?.role !== 'analyst_jr' || user?.email === 'binnovationmarketing@gmail.com') && (
                 <button
                   onClick={() => setActiveTab('TEAM_MANAGEMENT')}
                   className={`px-4 sm:px-5 py-2.5 rounded-xl font-bold text-sm transition-all duration-300 ${

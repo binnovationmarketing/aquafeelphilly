@@ -106,10 +106,11 @@ export function ProposalView() {
       doc.setTextColor(17, 202, 160);
       doc.text(`Solucao Aquafeel VIP:`, 20, 150);
       doc.setTextColor(200, 200, 200);
-      doc.text(`- 25 Anos de Sabao Organico (Incluso)`, 25, 160);
-      doc.text(`- $0 Entrada / $0 Instalacao`, 25, 170);
-      doc.text(`- 3 Meses livres de pagamento (Com indicacao)`, 25, 180);
-      doc.text(`- Garantia Vitalicia`, 25, 190);
+      doc.text(`- Sistema RO (Osmose Reversa) de Alta Performance`, 25, 160);
+      doc.text(`- Sabao Organico 1 Ano: Lavanderia, Cozinha e Banheiro`, 25, 170);
+      doc.text(`- Garantia de 25 Anos`, 25, 180);
+      doc.text(`- $0 Entrada / $0 Instalacao`, 25, 190);
+      doc.text(`- 3 Meses livres de pagamento (Com indicacao)`, 25, 200);
 
       doc.setFontSize(10);
       doc.text("Proteja sua familia, seu patrimonio e sua saude.", 105, 260, { align: "center" });
@@ -181,7 +182,8 @@ export function ProposalView() {
       // 4. WhatsApp Link
       let msg = `Olá ${clientData.name}! Aqui está o resumo da sua proposta VIP da Aquafeel Solutions! \n\nAcesse o PDF com os seus benefícios aqui:\n${pdfUrl}\n\nPara acessar a proposta completa interativa, use este link:\n${window.location.origin}/proposal?id=${clientData.id}&lang=${clientData.lang}`;
       const encodedMsg = encodeURIComponent(msg);
-      const phoneDigits = saveFormData.phone.replace(/\D/g, '');
+      const rawDigits = saveFormData.phone.replace(/\D/g, '');
+      const phoneDigits = rawDigits.startsWith('1') ? rawDigits : `1${rawDigits}`;
       const waLink = `https://wa.me/${phoneDigits}?text=${encodedMsg}`;
 
       toast.success(
