@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import jsPDF from 'jspdf';
 import { HeroSection } from './HeroSection';
 import { ComparisonCalculator } from './ComparisonCalculator';
 import { InfoSection } from './InfoSection';
@@ -79,6 +80,65 @@ export function ProposalView() {
         'RANGE1': 740, 'RANGE2': 690, 'RANGE3': 660, 'RANGE4': 600,
       };
 
+      // 1. Generate PDF
+      const doc = new jsPDF();
+      doc.setFillColor(2, 13, 26); // #020d1a
+      doc.rect(0, 0, 210, 297, 'F');
+      
+      doc.setTextColor(255, 255, 255);
+      doc.setFontSize(24);
+      doc.text("Aquafeel VIP Proposal", 105, 30, { align: "center" });
+      
+      doc.setFontSize(16);
+      doc.setTextColor(17, 202, 160); // #11caa0
+      doc.text(`Cliente: ${clientData.name}`, 105, 50, { align: "center" });
+      
+      doc.setFontSize(14);
+      doc.setTextColor(200, 200, 200);
+      doc.text(`Gastos Mensais Atuais:`, 20, 80);
+      doc.text(`- Agua: $${proposalCalcData.waterMonthly}`, 25, 90);
+      doc.text(`- Produtos/Sabao: $${proposalCalcData.cleaningMonthly}`, 25, 100);
+      
+      const totalMonthly = Number(proposalCalcData.waterMonthly) + Number(proposalCalcData.cleaningMonthly);
+      doc.setTextColor(255, 80, 80);
+      doc.text(`Desperdicio ao longo da vida: $${(totalMonthly * 12 * 30).toLocaleString()}`, 20, 120);
+      
+      doc.setTextColor(17, 202, 160);
+      doc.text(`Solucao Aquafeel VIP:`, 20, 150);
+      doc.setTextColor(200, 200, 200);
+      doc.text(`- 25 Anos de Sabao Organico (Incluso)`, 25, 160);
+      doc.text(`- $0 Entrada / $0 Instalacao`, 25, 170);
+      doc.text(`- 3 Meses livres de pagamento (Com indicacao)`, 25, 180);
+      doc.text(`- Garantia Vitalicia`, 25, 190);
+
+      doc.setFontSize(10);
+      doc.text("Proteja sua familia, seu patrimonio e sua saude.", 105, 260, { align: "center" });
+      doc.text("Aquafeel Solutions Philly", 105, 270, { align: "center" });
+
+      const pdfBlob = doc.output('blob');
+      const fileName = `proposal_${clientData.id}_${Date.now()}.pdf`;
+
+      // 2. Upload to Supabase
+      const { data: uploadData, error: uploadError } = await supabase
+        .storage
+        .from('proposals')
+        .upload(fileName, pdfBlob, {
+          contentType: 'application/pdf',
+          upsert: true
+        });
+
+      if (uploadError) {
+        console.error("Erro ao fazer upload do PDF:", uploadError);
+        // We continue even if PDF upload fails, so we don't block saving the client
+      }
+
+      let pdfUrl = '';
+      if (uploadData) {
+        const { data: publicUrlData } = supabase.storage.from('proposals').getPublicUrl(fileName);
+        pdfUrl = publicUrlData.publicUrl;
+      }
+
+      // 3. Save to DB
       const { error } = await supabase
         .from('clients')
         .update({
@@ -88,6 +148,7 @@ export function ProposalView() {
           water_consumption: proposalCalcData.waterMonthly,
           cleaning_consumption: proposalCalcData.cleaningMonthly,
           credit_score: rangeToScore[proposalCalcData.creditRange] || null,
+          proposal_pdf_url: pdfUrl || null
         })
         .eq('id', clientData.id);
 
@@ -97,10 +158,9 @@ export function ProposalView() {
         const followDate = new Date();
         followDate.setDate(followDate.getDate() + 2);
         
-        // Use insert without throwing if error to avoid breaking the proposal flow
         await supabase.from('tasks').insert({
           client_id: clientData.id,
-          analyst_id: clientData.analyst || '', // Or we should get the ID if email is stored
+          analyst_id: clientData.analyst || '',
           title: `Follow-up Automático (Reagendado) - ${clientData.name}`,
           type: 'MESSAGE',
           status: 'PENDING',
@@ -118,16 +178,18 @@ export function ProposalView() {
         creditScore: rangeToScore[proposalCalcData.creditRange] || undefined,
       });
 
-      const encodedMsg = encodeURIComponent(`Olá ${clientData.name}! Aqui está a sua proposta da Aquafeel Solutions: ${window.location.origin}/proposal?id=${clientData.id}&lang=${clientData.lang}`);
+      // 4. WhatsApp Link
+      let msg = `Olá ${clientData.name}! Aqui está o resumo da sua proposta VIP da Aquafeel Solutions! \n\nAcesse o PDF com os seus benefícios aqui:\n${pdfUrl}\n\nPara acessar a proposta completa interativa, use este link:\n${window.location.origin}/proposal?id=${clientData.id}&lang=${clientData.lang}`;
+      const encodedMsg = encodeURIComponent(msg);
       const phoneDigits = saveFormData.phone.replace(/\D/g, '');
       const waLink = `https://wa.me/${phoneDigits}?text=${encodedMsg}`;
 
       toast.success(
         <div className="flex flex-col gap-2">
-          <span>Proposta Salva! ✅</span>
+          <span>Proposta Salva com PDF! ✅</span>
           {phoneDigits && (
             <a href={waLink} target="_blank" rel="noopener noreferrer" className="bg-emerald-500 text-white px-3 py-2 flex items-center justify-center gap-2 rounded-lg font-bold text-xs mt-2 hover:bg-emerald-600">
-              <Send size={14} /> Enviar no WhatsApp
+              <Send size={14} /> Enviar PDF no WhatsApp
             </a>
           )}
         </div>,

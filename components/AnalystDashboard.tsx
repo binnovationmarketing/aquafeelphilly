@@ -9,7 +9,7 @@ import {
 import {
   Users, TrendingUp,
   CheckCircle, Plus, LogOut, Search, Filter, X, Mail, Phone, MapPin, Clock, Share2,
-  MessageSquare, CalendarCheck, Play, CheckCircle2, Shield
+  MessageSquare, CalendarCheck, Play, CheckCircle2, Shield, FileText
 } from 'lucide-react';
 import AquaFeelLogo from './AquaFeelLogo';
 import { toast } from 'sonner';
@@ -859,6 +859,19 @@ export const AnalystDashboard: React.FC<{ onNewProposal: () => void }> = ({ onNe
                     👑 Copiar Link do Portal VIP (Indicações)
                   </button>
                 )}
+                
+                {selectedLead.proposal_pdf_url && (
+                  <a
+                    href={selectedLead.proposal_pdf_url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="w-full py-3 text-sm font-bold bg-slate-950 text-white rounded-xl hover:bg-slate-800 transition-colors flex items-center justify-center gap-2"
+                  >
+                    <FileText size={16} className="text-white" />
+                    Ver PDF da Proposta
+                  </a>
+                )}
+
                 <button
                   onClick={() => setIsScheduling(true)}
                   className="w-full py-3 text-sm font-bold bg-slate-50 border border-slate-200 text-slate-700 rounded-xl hover:bg-slate-100 transition-colors flex items-center justify-center gap-2"
