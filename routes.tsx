@@ -16,6 +16,7 @@ const ProposalView     = React.lazy(() => import('./components/ProposalView').th
 const ReferralDashboard = React.lazy(() => import('./components/ReferralDashboard').then(m => ({ default: m.ReferralDashboard })));
 const InviteLandingPage = React.lazy(() => import('./components/InviteLandingPage').then(m => ({ default: m.InviteLandingPage })));
 const ClientLogin      = React.lazy(() => import('./components/Auth/ClientLogin').then(m => ({ default: m.ClientLogin })));
+const ClientSignup     = React.lazy(() => import('./components/Auth/ClientSignup').then(m => ({ default: m.ClientSignup })));
 const ClientPortalLayout = React.lazy(() => import('./components/ClientPortal/ClientPortalLayout').then(m => ({ default: m.ClientPortalLayout })));
 
 export function AppRoutes() {
@@ -39,6 +40,7 @@ export function AppRoutes() {
 
         {/* Client Auth */}
         <Route path="/client-login" element={<ClientLogin />} />
+        <Route path="/client-signup" element={<ClientSignup />} />
 
         {/* Client Portal — accessible only with authenticated session */}
         <Route

@@ -213,6 +213,8 @@ const CommissionTableCard: React.FC<{ currentRole: HierarchyRole }> = ({ current
   );
 };
 
+const BLUR_ROLES: HierarchyRole[] = ['director_jr', 'director_sr', 'master', 'ambassador'];
+
 /** Team leaderboard for manager view */
 const TeamLeaderboard: React.FC<{ analysts: AnalystStat[]; myRole: HierarchyRole }> = ({ analysts, myRole }) => {
   const sorted = [...analysts].sort((a, b) => b.totalSales - a.totalSales);
@@ -249,6 +251,7 @@ const TeamLeaderboard: React.FC<{ analysts: AnalystStat[]; myRole: HierarchyRole
               const myDiff = calcDifferentialBonus(myRole, analystRole) * analyst.totalSales;
               const colors = ROLE_COLORS[analystRole];
               const medal = idx === 0 ? '🥇' : idx === 1 ? '🥈' : idx === 2 ? '🥉' : `${idx + 1}.`;
+              const blurred = BLUR_ROLES.includes(analystRole);
 
               return (
                 <tr key={analyst.id} className="hover:bg-slate-50/80 transition-colors">
@@ -269,8 +272,12 @@ const TeamLeaderboard: React.FC<{ analysts: AnalystStat[]; myRole: HierarchyRole
                     </span>
                   </td>
                   <td className="px-5 py-4 text-right font-black text-slate-900">{analyst.totalSales}</td>
-                  <td className="px-5 py-4 text-right font-bold text-emerald-600">{fmt(totalComm)}</td>
-                  <td className="px-5 py-4 text-right font-bold text-indigo-600">{fmt(myDiff)}</td>
+                  <td className="px-5 py-4 text-right font-bold text-emerald-600">
+                    <span className={blurred ? 'blur-sm select-none' : ''}>{fmt(totalComm)}</span>
+                  </td>
+                  <td className="px-5 py-4 text-right font-bold text-indigo-600">
+                    <span className={blurred ? 'blur-sm select-none' : ''}>{fmt(myDiff)}</span>
+                  </td>
                   <td className="px-5 py-4 text-right text-slate-500">{analyst.conversionRate.toFixed(0)}%</td>
                 </tr>
               );

@@ -1,12 +1,22 @@
 import React, { useState } from 'react';
 import { supabase } from '../../lib/supabase';
-import { Lock, Mail, Loader2, ArrowLeft, User, Phone, Briefcase, MapPin } from 'lucide-react';
+import { Lock, Mail, Loader2, ArrowLeft, User, Phone, Briefcase, MapPin, ChevronDown } from 'lucide-react';
 import AquaFeelLogo from '../AquaFeelLogo';
 import { motion } from 'framer-motion';
 
 interface SignupProps {
   onBack: (message?: string) => void;
 }
+
+const MANAGERS: Array<{
+  name: string;
+  director: string;
+  ambassador: string;
+  office: string;
+  division: string;
+}> = [
+  { name: 'Carlos Henrique A. Silva', director: 'Jorge Martinez', ambassador: 'Jose Miguel Taramona', office: 'Philadelphia', division: 'Elite' },
+];
 
 export const Signup: React.FC<SignupProps> = ({ onBack }) => {
   const initialState = {
@@ -28,8 +38,24 @@ export const Signup: React.FC<SignupProps> = ({ onBack }) => {
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
+
+  const handleManagerSelect = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const selected = MANAGERS.find(m => m.name === e.target.value);
+    if (selected) {
+      setFormData(prev => ({
+        ...prev,
+        managerName: selected.name,
+        directorName: selected.director,
+        ambassadorName: selected.ambassador,
+        office: selected.office,
+        division: selected.division,
+      }));
+    } else {
+      setFormData(prev => ({ ...prev, managerName: e.target.value }));
+    }
   };
 
   const handleSignup = async (e: React.FormEvent) => {
@@ -39,7 +65,6 @@ export const Signup: React.FC<SignupProps> = ({ onBack }) => {
     setSuccess(null);
 
     try {
-      // 1. Sign up with Supabase Auth
       const { data: authData, error: authError } = await supabase.auth.signUp({
         email: formData.email,
         password: formData.password,
@@ -54,37 +79,10 @@ export const Signup: React.FC<SignupProps> = ({ onBack }) => {
       if (authError) throw authError;
 
       if (authData.user) {
-        // 2. Create Analyst Record in 'analysts' table (or update if exists via trigger, but let's be explicit)
-        // Note: We need to make sure the 'analysts' table exists and has these columns.
-        // Based on previous steps, we added columns to 'analysts' table.
-        
-        // We might need to insert into a profile table. 
-        // Assuming 'analysts' table is where we store this info.
-        // However, usually 'auth.users' handles the login, and we might have a trigger or we insert manually.
-        // Let's try to insert/upsert into 'analysts' table linked by email or id.
-        
-        // Check if we can insert into analysts table directly or if it's linked to auth.users
-        // For now, let's assume we can insert/update based on email or user_id if we had one.
-        // Since we don't have the user ID available synchronously in all cases (if email confirmation is required),
-        // we usually rely on a trigger. 
-        
-        // BUT, since we want to store extra fields that are NOT in auth.users metadata by default (or we want them in our public table),
-        // we should try to insert them.
-        
-        // Let's use the 'analysts' table.
-        // We need to know if the user is already created by a trigger.
-        
-        // Let's just try to insert into 'analysts' and if it fails (duplicate), we update.
-        // Actually, best practice is to use a trigger on auth.users to create the public.users/analysts record,
-        // then update it.
-        
-        // For this MVP, let's assume the trigger might create a basic record, or we create it here.
-        // Let's try to upsert.
-        
         const { error: profileError } = await supabase
           .from('analysts')
           .upsert({
-            id: authData.user.id, // Assuming id matches auth.uid()
+            id: authData.user.id,
             email: formData.email,
             first_name: formData.firstName,
             last_name: formData.lastName,
@@ -95,27 +93,19 @@ export const Signup: React.FC<SignupProps> = ({ onBack }) => {
             ambassador_name: formData.ambassadorName,
             office: formData.office,
             division: formData.division,
-            aquafeel_email: formData.email, // Using same email for now
+            aquafeel_email: formData.email,
+            role: 'analyst_jr',
             created_at: new Date().toISOString()
           }, { onConflict: 'email' });
 
         if (profileError) {
-           console.error("Error creating analyst profile:", profileError);
-           // Don't block signup success if profile fails, but warn.
+          console.error('Error creating analyst profile:', profileError);
         }
       }
 
-      if (authData.session) {
-        setSuccess('Conta criada com sucesso! Redirecionando...');
-        // Como não há confirmação de e-mail, o AuthContext vai detectar a sessão 
-        // automaticamente e jogar o usuário para o Dashboard. Não precisamos chamar o onBack().
-      } else {
-        setSuccess('Account created! Please check your email to confirm.');
-        setFormData(initialState);
-        setTimeout(() => {
-          onBack('Account created! Please check your email to confirm.');
-        }, 2000);
-      }
+      setSuccess('Conta criada! Faça login para continuar.');
+      setFormData(initialState);
+      setTimeout(() => onBack('Conta criada! Faça login para continuar.'), 1500);
     } catch (err: any) {
       setError(err.message);
     } finally {
@@ -233,16 +223,22 @@ export const Signup: React.FC<SignupProps> = ({ onBack }) => {
                 />
               </div>
 
+              {/* Manager dropdown */}
               <div className="relative group">
-                <Briefcase size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 group-focus-within:text-aqua-500 transition-colors" />
-                <input
+                <Briefcase size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 group-focus-within:text-aqua-500 transition-colors z-10" />
+                <ChevronDown size={14} className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-500 pointer-events-none" />
+                <select
                   name="managerName"
                   required
-                  placeholder="Manager Name"
                   value={formData.managerName}
-                  onChange={handleChange}
-                  className="w-full bg-white/5 border border-white/10 rounded-xl pl-12 pr-4 py-3 text-white focus:ring-2 focus:ring-aqua-500 outline-none text-sm placeholder-slate-500"
-                />
+                  onChange={handleManagerSelect}
+                  className="w-full bg-white/5 border border-white/10 rounded-xl pl-12 pr-8 py-3 text-white focus:ring-2 focus:ring-aqua-500 outline-none text-sm appearance-none cursor-pointer"
+                >
+                  <option value="" disabled className="bg-[#020d1a]">Select Manager</option>
+                  {MANAGERS.map(m => (
+                    <option key={m.name} value={m.name} className="bg-[#020d1a]">{m.name}</option>
+                  ))}
+                </select>
               </div>
 
               <div className="relative group">

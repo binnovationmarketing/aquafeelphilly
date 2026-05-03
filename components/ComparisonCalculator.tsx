@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   ShoppingCart,
   Droplets,
@@ -8,7 +8,12 @@ import {
   MapPin,
   CheckCircle,
   Save,
-  Loader2
+  Loader2,
+  Camera,
+  X,
+  MessageCircle,
+  ExternalLink,
+  Upload,
 } from 'lucide-react';
 import { Language, translations } from '../utils/i18n';
 import { useAppStore } from '../src/store/useAppStore';
@@ -48,6 +53,14 @@ export const ComparisonCalculator: React.FC<ComparisonCalculatorProps> = ({
   const [selectedRegion, setSelectedRegion] = useState<RegionId>('NE');
   const [selectedCredit, setSelectedCredit] = useState<CreditRangeId>('RANGE3');
   const [customWater, setCustomWater] = useState<number>(waterTotal);
+  const [showApplyModal, setShowApplyModal] = useState(false);
+  const [capturedPhoto, setCapturedPhoto] = useState<string | null>(null);
+  const [idFileUrl, setIdFileUrl] = useState<string | null>(null);
+  const [idFileName, setIdFileName] = useState<string | null>(null);
+  const [isUploadingId, setIsUploadingId] = useState(false);
+  const [isDeletingId, setIsDeletingId] = useState(false);
+  const cameraInputRef = useRef<HTMLInputElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const [customCleaning, setCustomCleaning] = useState<number>(cleaningTotal);
 
   useEffect(() => {
@@ -128,6 +141,55 @@ export const ComparisonCalculator: React.FC<ComparisonCalculatorProps> = ({
     { id: 'RANGE4', label: '620-659', score: "FAIR" },
     { id: 'RANGE5', label: '619-', score: "CHALLENGED" }
   ];
+
+  const handleIdFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setCapturedPhoto(URL.createObjectURL(file));
+    setIdFileUrl(null);
+    setIdFileName(null);
+    setIsUploadingId(true);
+    try {
+      const ext = file.name.split('.').pop() || 'jpg';
+      const storageName = `id-docs/${Date.now()}-${clientId || 'anon'}.${ext}`;
+      const { error: upErr } = await supabase.storage
+        .from('proposals')
+        .upload(storageName, file, { contentType: file.type, upsert: true });
+      if (upErr) throw upErr;
+      const { data: { publicUrl } } = supabase.storage.from('proposals').getPublicUrl(storageName);
+      setIdFileUrl(publicUrl);
+      setIdFileName(storageName);
+    } catch (err: any) {
+      toast.error('Erro ao enviar arquivo: ' + err.message);
+    } finally {
+      setIsUploadingId(false);
+    }
+  };
+
+  const handleDeleteId = async () => {
+    setIsDeletingId(true);
+    try {
+      if (idFileName) {
+        await supabase.storage.from('proposals').remove([idFileName]);
+      }
+    } catch {
+      // Silently ignore delete errors — file was temp anyway
+    } finally {
+      setIdFileUrl(null);
+      setIdFileName(null);
+      setCapturedPhoto(null);
+      setIsDeletingId(false);
+      setShowApplyModal(false);
+      toast.success('Arquivo excluído com segurança.');
+    }
+  };
+
+  const closeApplyModal = () => {
+    setShowApplyModal(false);
+    setCapturedPhoto(null);
+    setIdFileUrl(null);
+    setIdFileName(null);
+  };
 
   return (
     <div className="max-w-7xl mx-auto px-4 md:px-6 relative z-20">
@@ -243,7 +305,7 @@ export const ComparisonCalculator: React.FC<ComparisonCalculatorProps> = ({
                 </div>
                 <div>
                   <span className="text-[#11caa0] font-black uppercase tracking-widest text-[10px] block mb-1">Recomende e ganhe:</span>
-                  3 analises de agua na casa que qualifiquem de familias e receba 1 ano de Sabões orgânicos para toda a casa gratis
+                  Recomende 3 famílias Agora e receba 1 ano de Sabões orgânicos para toda a casa grátis
                 </div>
               </li>
             </ul>
@@ -290,15 +352,13 @@ export const ComparisonCalculator: React.FC<ComparisonCalculatorProps> = ({
           </div>
 
           <div className="mt-auto space-y-4">
-            <a
-              href="https://aquafeelsolutions.com/credit-form/"
-              target="_blank"
-              rel="noopener noreferrer"
+            <button
+              onClick={() => { setCapturedPhoto(null); setShowApplyModal(true); }}
               className="w-full bg-emerald-500 text-white font-black py-5 rounded-2xl flex items-center justify-center gap-3 hover:bg-emerald-400 transition-all active:scale-[0.98] shadow-[0_0_30px_rgba(16,185,129,0.3)] border border-emerald-400/50"
             >
               <span className="uppercase tracking-[0.2em] text-sm md:text-base">Aplique Já</span>
               <ArrowRight size={20} className="animate-pulse" />
-            </a>
+            </button>
 
             {onSaveProposal && (
               <button
@@ -333,6 +393,125 @@ export const ComparisonCalculator: React.FC<ComparisonCalculatorProps> = ({
 
       {isClientModalOpen && (
         <ClientAccessModal onClose={() => setIsClientModalOpen(false)} />
+      )}
+
+      {/* Aplique Já — ID Upload + WhatsApp + Secure Delete */}
+      {showApplyModal && (
+        <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
+          <div className="bg-[#06162a] border border-white/10 rounded-3xl w-full max-w-sm p-6 space-y-5 relative max-h-[90vh] overflow-y-auto">
+            <button onClick={closeApplyModal} className="absolute top-4 right-4 text-slate-500 hover:text-white">
+              <X size={20} />
+            </button>
+
+            <div className="text-center">
+              <p className="text-[10px] font-black uppercase tracking-widest text-emerald-400 mb-1">Aplique Já</p>
+              <h3 className="text-lg font-black text-white">Documento de Identidade</h3>
+              <p className="text-slate-400 text-xs mt-1">Tire uma foto ou faça upload do ID do cliente</p>
+            </div>
+
+            {/* Hidden inputs */}
+            <input ref={cameraInputRef} type="file" accept="image/*" capture="environment" className="hidden" onChange={handleIdFileSelect} />
+            <input ref={fileInputRef} type="file" accept="image/*,application/pdf" className="hidden" onChange={handleIdFileSelect} />
+
+            {!capturedPhoto ? (
+              <div className="space-y-3">
+                <button
+                  onClick={() => cameraInputRef.current?.click()}
+                  className="w-full py-5 rounded-2xl bg-white/5 border-2 border-dashed border-white/20 hover:border-emerald-500/50 hover:bg-white/10 transition-all flex flex-col items-center gap-3 text-slate-400 hover:text-white"
+                >
+                  <Camera size={32} />
+                  <span className="text-sm font-black uppercase tracking-wider">Abrir Câmera</span>
+                </button>
+                <button
+                  onClick={() => fileInputRef.current?.click()}
+                  className="w-full py-3 rounded-xl bg-white/5 border border-white/10 text-slate-400 text-xs font-bold hover:text-white transition-colors flex items-center justify-center gap-2"
+                >
+                  <ExternalLink size={14} /> Selecionar arquivo do dispositivo
+                </button>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                <div className="relative">
+                  <img src={capturedPhoto} alt="ID capturado" className="w-full rounded-2xl object-cover max-h-48 border border-white/10" />
+                  {isUploadingId && (
+                    <div className="absolute inset-0 bg-black/60 rounded-2xl flex flex-col items-center justify-center gap-2">
+                      <Loader2 size={28} className="text-emerald-400 animate-spin" />
+                      <span className="text-white text-xs font-bold">Enviando arquivo...</span>
+                    </div>
+                  )}
+                  {idFileUrl && (
+                    <div className="absolute top-2 right-2 bg-emerald-500 text-white text-[10px] font-black px-2 py-1 rounded-full uppercase tracking-wider">
+                      Enviado ✓
+                    </div>
+                  )}
+                </div>
+
+                <button
+                  onClick={() => {
+                    setCapturedPhoto(null);
+                    setIdFileUrl(null);
+                    setIdFileName(null);
+                    if (cameraInputRef.current) cameraInputRef.current.value = '';
+                    if (fileInputRef.current) fileInputRef.current.value = '';
+                  }}
+                  className="w-full py-2 rounded-xl bg-white/5 border border-white/10 text-slate-400 text-xs font-bold hover:text-white transition-colors"
+                >
+                  Trocar arquivo
+                </button>
+
+                {/* WhatsApp links — enabled once upload is done */}
+                <div className="space-y-2">
+                  <p className="text-[10px] text-slate-500 uppercase tracking-widest font-bold">
+                    {idFileUrl ? 'Enviar documento via WhatsApp:' : 'Aguardando upload para compartilhar...'}
+                  </p>
+                  {['+19842206002', '+12407064966', '+12407806473'].map((num) => {
+                    const msg = idFileUrl
+                      ? `Documento do cliente para análise:\n${idFileUrl}\n\nPor favor, processar a aplicação. Obrigado!`
+                      : 'Documento do cliente — aguardando upload.';
+                    return (
+                      <a
+                        key={num}
+                        href={idFileUrl ? `https://wa.me/${num.replace(/\D/g, '')}?text=${encodeURIComponent(msg)}` : '#'}
+                        onClick={(e) => { if (!idFileUrl) e.preventDefault(); }}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className={`w-full flex items-center justify-between gap-2 py-3 px-4 rounded-xl border text-sm font-bold transition-colors ${
+                          idFileUrl
+                            ? 'bg-[#25D366]/10 border-[#25D366]/30 text-[#25D366] hover:bg-[#25D366]/20'
+                            : 'bg-white/3 border-white/10 text-slate-600 cursor-not-allowed'
+                        }`}
+                      >
+                        <span className="flex items-center gap-2"><MessageCircle size={16} /> {num}</span>
+                        <ExternalLink size={13} />
+                      </a>
+                    );
+                  })}
+                </div>
+
+                <a
+                  href="https://aquafeelsolutions.com/credit-form/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="w-full flex items-center justify-center gap-2 py-4 rounded-2xl bg-emerald-500 hover:bg-emerald-400 text-white font-black text-sm uppercase tracking-widest transition-all shadow-[0_0_20px_rgba(16,185,129,0.3)]"
+                >
+                  Continuar para Formulário <ArrowRight size={16} />
+                </a>
+
+                {/* Secure delete — only available after upload */}
+                {idFileUrl && (
+                  <button
+                    onClick={handleDeleteId}
+                    disabled={isDeletingId}
+                    className="w-full py-3 rounded-xl bg-red-500/10 border border-red-500/30 text-red-400 text-xs font-black uppercase tracking-wider hover:bg-red-500/20 transition-colors flex items-center justify-center gap-2 disabled:opacity-50"
+                  >
+                    {isDeletingId ? <Loader2 size={14} className="animate-spin" /> : <X size={14} />}
+                    {isDeletingId ? 'Excluindo...' : 'Excluir arquivo por segurança'}
+                  </button>
+                )}
+              </div>
+            )}
+          </div>
+        </div>
       )}
     </div>
   );

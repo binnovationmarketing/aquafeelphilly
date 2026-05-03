@@ -71,15 +71,14 @@ export const WaterConsumptionLogic: React.FC<WaterConsumptionLogicProps> = ({ la
                 {t.dailyDrinkCost}
               </label>
               <div className="relative group">
-                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 font-bold">$</span>
                 <input
                   type="number"
                   min="0"
-                  step="0.50"
+                  step="0.5"
                   value={dailyDrinkCost || ''}
                   onChange={(e) => setDailyDrinkCost(Number(e.target.value))}
-                  className="w-full bg-white border border-slate-200 rounded-xl pl-8 pr-4 py-4 text-slate-900 font-mono text-xl font-bold focus:ring-2 focus:ring-blue-500 outline-none transition-all group-hover:border-blue-300"
-                  placeholder="0.00"
+                  className="w-full bg-white border border-slate-200 rounded-xl px-4 py-4 text-slate-900 font-mono text-xl font-bold focus:ring-2 focus:ring-blue-500 outline-none transition-all group-hover:border-blue-300"
+                  placeholder="0"
                 />
               </div>
             </div>
@@ -90,15 +89,14 @@ export const WaterConsumptionLogic: React.FC<WaterConsumptionLogicProps> = ({ la
                 {t.dailyCookCost}
               </label>
               <div className="relative group">
-                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 font-bold">$</span>
                 <input
                   type="number"
                   min="0"
-                  step="0.50"
+                  step="0.5"
                   value={dailyCookCost || ''}
                   onChange={(e) => setDailyCookCost(Number(e.target.value))}
-                  className="w-full bg-white border border-slate-200 rounded-xl pl-8 pr-4 py-4 text-slate-900 font-mono text-xl font-bold focus:ring-2 focus:ring-amber-500 outline-none transition-all group-hover:border-amber-300"
-                  placeholder="0.00"
+                  className="w-full bg-white border border-slate-200 rounded-xl px-4 py-4 text-slate-900 font-mono text-xl font-bold focus:ring-2 focus:ring-amber-500 outline-none transition-all group-hover:border-amber-300"
+                  placeholder="0"
                 />
               </div>
             </div>
