@@ -39,3 +39,24 @@ export const supabase = createClient(
   }
 );
 
+/**
+ * Anonymous Supabase client — NO Web Lock / LockManager.
+ *
+ * Use this for all unauthenticated RPC calls (InviteLandingPage,
+ * ClientReferralTab, etc.) to avoid the "lock:aq_session timed out"
+ * error that happens when 3+ sessions compete for the same lock.
+ *
+ * NEVER call supabase.auth.* on this client.
+ */
+export const supabaseAnon = createClient(
+  supabaseUrl ?? 'https://placeholder.supabase.co',
+  supabaseAnonKey ?? 'placeholder-key',
+  {
+    auth: {
+      persistSession: false,
+      autoRefreshToken: false,
+      detectSessionInUrl: false,
+    },
+  }
+);
+

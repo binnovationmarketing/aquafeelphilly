@@ -46,7 +46,7 @@ interface Lead {
 }
 
 export const AnalystDashboard: React.FC<{ onNewProposal: () => void }> = ({ onNewProposal }) => {
-  const { user, profile, signOut } = useAuth();
+  const { user, profile, signOut, refreshProfile } = useAuth();
   const [metrics, setMetrics] = useState<DashboardMetrics | null>(null);
   const [loading, setLoading] = useState(true);
   const [allLeads, setAllLeads] = useState<Lead[]>([]);
@@ -89,10 +89,10 @@ export const AnalystDashboard: React.FC<{ onNewProposal: () => void }> = ({ onNe
     try {
       const { error } = await supabase.from('analysts').update(profileData).eq('id', user.id);
       if (error) throw error;
+      // Refresh profile in context without a page reload (prevents white screen)
+      await refreshProfile();
       toast.success('Perfil atualizado com sucesso!');
       setShowProfileModal(false);
-      // reload page to reflect changes in context or let context handle it
-      window.location.reload();
     } catch (err: any) {
       toast.error('Erro ao salvar perfil: ' + err.message);
     } finally {

@@ -5,7 +5,7 @@ import {
   Droplet, ShieldCheck, Heart, ArrowRight, Calendar as CalendarIcon,
   CheckCircle, User, Phone, MapPin, Loader2, Building2, Clock
 } from 'lucide-react';
-import { supabase } from '../lib/supabase';
+import { supabase, supabaseAnon } from '../lib/supabase';
 import { toast } from 'sonner';
 
 // Suppress framer type issues
@@ -66,7 +66,7 @@ export function InviteLandingPage() {
     const resolve = async () => {
       if (!rawRef) { setResolving(false); return; }
       try {
-        const { data, error } = await supabase.rpc('get_referral_data_by_slug', { p_slug: rawRef });
+        const { data, error } = await supabaseAnon.rpc('get_referral_data_by_slug', { p_slug: rawRef });
         if (error) throw error;
         if (data?.error) { toast.error(data.error); }
         else {
@@ -92,7 +92,7 @@ export function InviteLandingPage() {
       const fullAddress = [leadData.address, leadData.city, leadData.state].filter(Boolean).join(', ');
 
       if (resolvedToken && resolvedToken.length > 10) {
-        const { data: result, error } = await supabase.rpc('add_referral_from_portal', {
+        const { data: result, error } = await supabaseAnon.rpc('add_referral_from_portal', {
           p_token: resolvedToken,
           p_name: leadData.name,
           p_phone: leadData.phone,
@@ -231,7 +231,7 @@ export function InviteLandingPage() {
       let referrerDisplayName = referrerName;
 
       if (referralId) {
-        const { data: result, error } = await supabase.rpc('schedule_referral_visit', {
+        const { data: result, error } = await supabaseAnon.rpc('schedule_referral_visit', {
           p_referral_id: referralId,
           p_date: scheduleData.date,
           p_time: scheduleData.time,

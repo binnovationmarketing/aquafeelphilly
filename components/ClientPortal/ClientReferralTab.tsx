@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { supabase } from '../../lib/supabase';
+import { supabase, supabaseAnon } from '../../lib/supabase';
 import { User, Phone, MapPin, Mail, Loader2, Gift, MessageCircle, Send, CheckCircle2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -66,7 +66,7 @@ function buildInviteEmailHtml(referrerName: string, friendName: string, inviteLi
 export function ClientReferralTab({ portalData, onSuccess }: Props) {
   const { points } = portalData;
   const clientName: string = portalData.client?.name || 'Seu amigo';
-  const [form, setForm] = useState({ name: '', phone: '', email: '', address: '' });
+  const [form, setForm] = useState({ name: '', phone: '', email: '', address: '', referral_type: 'agua' });
   const [submitting, setSubmitting] = useState(false);
   const [lastReferral, setLastReferral] = useState<{ email: string; name: string } | null>(null);
   const [sendingEmail, setSendingEmail] = useState(false);
@@ -120,12 +120,13 @@ export function ClientReferralTab({ portalData, onSuccess }: Props) {
         return;
       }
 
-      const { data, error } = await supabase.rpc('add_referral_from_portal', {
+      const { data, error } = await supabaseAnon.rpc('add_referral_from_portal', {
         p_token: points.referral_token,
         p_name: form.name,
         p_phone: form.phone,
         p_email: form.email,
         p_address: form.address,
+        p_type: form.referral_type,
       });
 
       if (error) throw error;
@@ -136,7 +137,7 @@ export function ClientReferralTab({ portalData, onSuccess }: Props) {
         setLastReferral({ email: form.email, name: form.name });
         setEmailSent(false);
       }
-      setForm({ name: '', phone: '', email: '', address: '' });
+      setForm({ name: '', phone: '', email: '', address: '', referral_type: 'agua' });
       onSuccess();
     } catch (err: any) {
       toast.error(err.message || 'Erro ao cadastrar indicação. Tente novamente.');
@@ -232,6 +233,33 @@ export function ClientReferralTab({ portalData, onSuccess }: Props) {
         <p className="text-slate-500 text-sm mb-6">Preencha os dados da família ou amigo que você quer indicar. Nosso consultor entrará em contato com eles!</p>
 
         <form onSubmit={handleSubmit} className="space-y-4">
+          {/* Referral Type */}
+          <div>
+            <label className="block text-xs font-black uppercase tracking-widest text-slate-400 mb-2">
+              Tipo de Indicação *
+            </label>
+            <div className="grid grid-cols-2 gap-2">
+              {[
+                { value: 'agua', label: '💧 Análise de Água', desc: 'Família quer água pura' },
+                { value: 'trabalho', label: '💼 Trabalhar Conosco', desc: 'Quer ser analista' },
+              ].map((opt) => (
+                <button
+                  key={opt.value}
+                  type="button"
+                  onClick={() => setForm({ ...form, referral_type: opt.value })}
+                  className={`text-left p-3 rounded-xl border transition-all ${
+                    form.referral_type === opt.value
+                      ? 'bg-cyan-500/20 border-cyan-500 text-white'
+                      : 'bg-white/5 border-white/10 text-slate-400 hover:border-white/30'
+                  }`}
+                >
+                  <p className="text-sm font-bold">{opt.label}</p>
+                  <p className="text-[10px] text-slate-500 mt-0.5">{opt.desc}</p>
+                </button>
+              ))}
+            </div>
+          </div>
+
           {/* Name */}
           <div className="relative group">
             <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-500 group-focus-within:text-cyan-400 transition-colors">
