@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { supabase } from '../../lib/supabase';
+import { createClient } from '@supabase/supabase-js';
+import { supabase, supabaseUrl, supabaseAnonKey } from '../../lib/supabase';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Home, Users, Gift, Network, LogOut, Menu, X, Droplets, Star, RefreshCw, Trash2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
@@ -9,6 +10,31 @@ import { ClientReferralTab } from './ClientReferralTab';
 import { ClientNetworkTab } from './ClientNetworkTab';
 import { ClientRewardsTab } from './ClientRewardsTab';
 import { toast } from 'sonner';
+
+/** Read session directly from localStorage — NO lock acquisition. */
+function getStoredSession(): { access_token: string; user: any } | null {
+  try {
+    const raw = localStorage.getItem('aq_session');
+    if (!raw) return null;
+    const parsed = JSON.parse(raw);
+    // Supabase v2 stores the session object directly at storageKey
+    const session = parsed?.currentSession ?? parsed;
+    if (session?.access_token) return session;
+  } catch (_) {}
+  return null;
+}
+
+/** Create a lock-free Supabase client authenticated with a Bearer token. */
+function createPortalClient(accessToken: string) {
+  return createClient(
+    supabaseUrl ?? 'https://placeholder.supabase.co',
+    supabaseAnonKey ?? 'placeholder-key',
+    {
+      auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false },
+      global: { headers: { Authorization: `Bearer ${accessToken}` } },
+    }
+  );
+}
 
 /** Remove all Supabase/session storage so a stuck lock can't block reload. */
 function clearSupabaseCache() {
@@ -52,25 +78,29 @@ export function ClientPortalLayout() {
   }, [loading]);
 
   const initializePortal = async () => {
-    if (loadingRef.current) return; // prevent concurrent runs
+    if (loadingRef.current) return;
     loadingRef.current = true;
     setLoading(true);
     setLoadingTooLong(false);
     try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) {
+      // ── Read session from localStorage — NO Web Lock acquired ──
+      const session = getStoredSession();
+      if (!session?.access_token) {
         navigate('/client-login');
         return;
       }
 
-      // Try to claim the account first (links auth.uid to clients table)
-      if (!claimAttempted && user.email) {
+      // ── Lock-free client authenticated via Bearer header ──
+      const client = createPortalClient(session.access_token);
+
+      // Try to claim the account (links auth.uid → clients table)
+      if (!claimAttempted && session.user?.email) {
         setClaimAttempted(true);
-        await supabase.rpc('claim_client_account', { p_email: user.email });
+        await client.rpc('claim_client_account', { p_email: session.user.email });
       }
 
       // Load portal data
-      const { data, error } = await supabase.rpc('get_client_portal_data');
+      const { data, error } = await client.rpc('get_client_portal_data');
       if (error) throw error;
       if (data?.error) {
         toast.error(data.error);
