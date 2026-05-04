@@ -63,6 +63,7 @@ $$;
 GRANT EXECUTE ON FUNCTION public.ensure_referral_token() TO authenticated;
 
 -- 4. Update get_client_portal_data to auto-generate token if null
+DROP FUNCTION IF EXISTS public.get_client_portal_data();
 CREATE OR REPLACE FUNCTION public.get_client_portal_data()
 RETURNS jsonb
 LANGUAGE plpgsql
