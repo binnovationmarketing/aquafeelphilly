@@ -1,5 +1,27 @@
 import React, { useState } from 'react';
-import { supabase, supabaseAnon } from '../../lib/supabase';
+import { supabase, supabaseAnon, supabaseUrl, supabaseAnonKey } from '../../lib/supabase';
+import { createClient } from '@supabase/supabase-js';
+
+/** Read stored access token without acquiring any Web Lock. */
+function getStoredToken(): string | null {
+  try {
+    const raw = localStorage.getItem('aq_session');
+    if (!raw) return null;
+    const parsed = JSON.parse(raw);
+    return (parsed?.currentSession ?? parsed)?.access_token ?? null;
+  } catch (_) { return null; }
+}
+
+function createPortalClient(token: string) {
+  return createClient(
+    supabaseUrl ?? 'https://placeholder.supabase.co',
+    supabaseAnonKey ?? 'placeholder-key',
+    {
+      auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false },
+      global: { headers: { Authorization: `Bearer ${token}` } },
+    }
+  );
+}
 import { User, Phone, MapPin, Mail, Loader2, Gift, MessageCircle, Send, CheckCircle2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -115,13 +137,29 @@ export function ClientReferralTab({ portalData, onSuccess }: Props) {
     }
     setSubmitting(true);
     try {
-      if (!points.referral_token) {
-        toast.error('Token de indicação não encontrado. Por favor, faça login novamente.');
-        return;
+      let token: string = points.referral_token;
+
+      // Token missing (old client) — generate one on-the-fly via authenticated RPC
+      if (!token) {
+        const accessToken = getStoredToken();
+        if (!accessToken) {
+          toast.error('Sessão expirada. Por favor, faça login novamente.');
+          return;
+        }
+        const authClient = createPortalClient(accessToken);
+        const { data: ensureData, error: ensureError } = await authClient.rpc('ensure_referral_token');
+        if (ensureError || ensureData?.error) {
+          toast.error('Erro ao gerar token. Recarregue a página e tente novamente.');
+          return;
+        }
+        token = ensureData.referral_token;
+        // Update local portalData so shortLink renders correctly
+        if (points) points.referral_token = token;
+        if (points && ensureData.referral_slug) points.referral_slug = ensureData.referral_slug;
       }
 
       const { data, error } = await supabaseAnon.rpc('add_referral_from_portal', {
-        p_token: points.referral_token,
+        p_token: token,
         p_name: form.name,
         p_phone: form.phone,
         p_email: form.email,
