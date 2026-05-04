@@ -8,7 +8,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 
 const MotionDiv = motion.div as any;
 
-type Step = 'email' | 'login' | 'signup' | 'success';
+type Step = 'email' | 'login' | 'signup' | 'success' | 'reset';
 
 export const ClientLogin: React.FC = () => {
   const [step, setStep] = useState<Step>('email');
@@ -105,30 +105,70 @@ export const ClientLogin: React.FC = () => {
 
       if (signUpError) {
         if (signUpError.message.includes('already registered') || signUpError.message.includes('already been registered')) {
-          toast.error('Este email já possui cadastro. Volte e use a opção de Login.');
+          // User exists in auth — switch to login step automatically
+          setStep('login');
+          setPassword('');
+          setConfirmPassword('');
+          toast.info('Este email já tem cadastro. Entre com sua senha abaixo.');
         } else {
-          throw signUpError;
+          toast.error(signUpError.message || 'Erro ao criar conta. Tente novamente.');
         }
         return;
       }
 
       const userId = signUpData.user?.id;
 
-      // Upsert client record (may already exist if analyst pre-registered them)
+      // Link auth user to existing client record (analyst may have pre-created it),
+      // or insert a new one. Never overwrite clients.id (it's a separate PK).
       if (userId) {
-        await supabase.from('clients').upsert({
-          id: userId,
-          name: signupName,
-          email: email.trim(),
-          phone: signupPhone ? `+1${signupPhone.replace(/\D/g, '')}` : null,
-          status: 'LEAD',
-          created_at: new Date().toISOString(),
-        }, { onConflict: 'email', ignoreDuplicates: false });
+        const { data: existingClient } = await supabase
+          .from('clients')
+          .select('id')
+          .eq('email', email.trim())
+          .single();
+
+        if (existingClient) {
+          // Update existing row: link auth_user_id
+          await supabase
+            .from('clients')
+            .update({ auth_user_id: userId })
+            .eq('id', existingClient.id);
+        } else {
+          // Insert new client row
+          await supabase.from('clients').insert({
+            auth_user_id: userId,
+            name: signupName,
+            email: email.trim(),
+            phone: signupPhone ? `+1${signupPhone.replace(/\D/g, '')}` : null,
+            status: 'LEAD',
+            created_at: new Date().toISOString(),
+          });
+        }
       }
 
       setStep('success');
     } catch (err: any) {
       toast.error(err.message || 'Erro ao criar conta. Tente novamente.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Password reset
+  const handleResetPassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const trimmed = email.trim();
+    if (!trimmed) return;
+    setLoading(true);
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(trimmed, {
+        redirectTo: `${window.location.origin}/recovery`,
+      });
+      if (error) throw error;
+      toast.success('Email de recuperação enviado! Verifique sua caixa de entrada.');
+      setStep('login');
+    } catch (err: any) {
+      toast.error(err.message || 'Erro ao enviar email de recuperação.');
     } finally {
       setLoading(false);
     }
@@ -268,6 +308,14 @@ export const ClientLogin: React.FC = () => {
                   className="w-full py-4 px-6 rounded-2xl bg-gradient-to-r from-cyan-500 to-blue-600 text-white font-black text-sm uppercase tracking-widest shadow-[0_0_30px_rgba(0,200,200,0.3)] hover:shadow-[0_0_40px_rgba(0,200,200,0.5)] transition-all active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                 >
                   {loading ? <Loader2 size={20} className="animate-spin" /> : '🔓 Entrar'}
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setStep('reset')}
+                  className="w-full text-xs text-slate-500 hover:text-yellow-400 font-bold transition-colors"
+                >
+                  Esqueci minha senha →
                 </button>
 
                 <button
@@ -423,6 +471,46 @@ export const ClientLogin: React.FC = () => {
                 className="mt-4 flex items-center justify-center gap-1.5 text-xs text-slate-600 hover:text-slate-300 font-bold uppercase tracking-wider transition-colors mx-auto"
               >
                 <ArrowLeft size={12} /> Usar outro email
+              </button>
+            </MotionDiv>
+          )}
+
+          {/* ── Step: Reset Password ── */}
+          {step === 'reset' && (
+            <MotionDiv
+              key="reset"
+              initial={{ opacity: 0, x: 30 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -30 }}
+              transition={{ duration: 0.35, ease: 'easeOut' }}
+              className="bg-white/5 backdrop-blur-xl p-8 md:p-10 rounded-3xl shadow-2xl border border-white/10"
+            >
+              <div className="flex flex-col items-center text-center mb-8">
+                <div className="mb-5 relative">
+                  <div className="absolute inset-0 bg-yellow-500/20 rounded-full blur-xl animate-pulse" />
+                  <AquaFeelLogo width="140px" variant="white" />
+                </div>
+                <h2 className="text-2xl font-black text-white mb-1 tracking-tight">Recuperar Senha</h2>
+                <p className="text-slate-400 text-sm">
+                  Enviaremos um link para <span className="text-yellow-400 font-bold">{email}</span>
+                </p>
+              </div>
+
+              <form onSubmit={handleResetPassword} className="space-y-5">
+                <button
+                  type="submit"
+                  disabled={loading}
+                  className="w-full py-4 px-6 rounded-2xl bg-gradient-to-r from-yellow-500 to-orange-500 text-white font-black text-sm uppercase tracking-widest shadow-[0_0_30px_rgba(240,180,0,0.3)] hover:shadow-[0_0_40px_rgba(240,180,0,0.5)] transition-all active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                >
+                  {loading ? <Loader2 size={20} className="animate-spin" /> : '📧 Enviar Link de Recuperação'}
+                </button>
+              </form>
+
+              <button
+                onClick={() => setStep('login')}
+                className="mt-6 flex items-center justify-center gap-1.5 text-xs text-slate-600 hover:text-slate-300 font-bold uppercase tracking-wider transition-colors mx-auto"
+              >
+                <ArrowLeft size={12} /> Voltar ao Login
               </button>
             </MotionDiv>
           )}

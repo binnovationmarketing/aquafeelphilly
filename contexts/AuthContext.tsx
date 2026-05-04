@@ -156,7 +156,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setSession(session);
         setUser(session?.user ?? null);
         if (session?.user) {
-          try { await fetchProfile(session.user.id); } catch (_) {}
+          // Skip analyst profile fetch for client users (they have user_type: 'client' in metadata)
+          const userType = session.user.user_metadata?.user_type;
+          if (userType !== 'client') {
+            try { await fetchProfile(session.user.id); } catch (_) {}
+          } else {
+            setProfile(null);
+          }
         } else {
           setProfile(null);
         }
