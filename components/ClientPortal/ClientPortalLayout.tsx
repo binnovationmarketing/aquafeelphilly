@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { supabase } from '../../lib/supabase';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Home, Users, Gift, Network, LogOut, Menu, X, Droplets, Star } from 'lucide-react';
+import { Home, Users, Gift, Network, LogOut, Menu, X, Droplets, Star, RefreshCw, Trash2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import AquaFeelLogo from '../AquaFeelLogo';
 import { ClientDashboardTab } from './ClientDashboardTab';
@@ -9,6 +9,21 @@ import { ClientReferralTab } from './ClientReferralTab';
 import { ClientNetworkTab } from './ClientNetworkTab';
 import { ClientRewardsTab } from './ClientRewardsTab';
 import { toast } from 'sonner';
+
+/** Remove all Supabase/session storage so a stuck lock can't block reload. */
+function clearSupabaseCache() {
+  try {
+    const keysToRemove: string[] = [];
+    for (let i = 0; i < localStorage.length; i++) {
+      const k = localStorage.key(i);
+      if (k && (k.startsWith('sb-') || k === 'aq_session' || k.startsWith('aq_session') || k.includes('supabase'))) {
+        keysToRemove.push(k);
+      }
+    }
+    keysToRemove.forEach(k => localStorage.removeItem(k));
+    sessionStorage.clear();
+  } catch (_) {}
+}
 
 // Workaround for framer-motion type mismatch
 const MotionDiv = motion.div as any;
@@ -20,14 +35,27 @@ export function ClientPortalLayout() {
   const [activeTab, setActiveTab] = useState<Tab>('dashboard');
   const [portalData, setPortalData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [loadingTooLong, setLoadingTooLong] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [claimAttempted, setClaimAttempted] = useState(false);
+  const loadingRef = useRef(false); // guard: no concurrent calls
 
   useEffect(() => {
     initializePortal();
   }, []);
 
+  // After 8 s still loading → show "clear cache" option
+  useEffect(() => {
+    if (!loading) { setLoadingTooLong(false); return; }
+    const t = setTimeout(() => setLoadingTooLong(true), 8000);
+    return () => clearTimeout(t);
+  }, [loading]);
+
   const initializePortal = async () => {
+    if (loadingRef.current) return; // prevent concurrent runs
+    loadingRef.current = true;
+    setLoading(true);
+    setLoadingTooLong(false);
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) {
@@ -54,7 +82,13 @@ export function ClientPortalLayout() {
       toast.error('Erro ao carregar dados: ' + err.message);
     } finally {
       setLoading(false);
+      loadingRef.current = false;
     }
+  };
+
+  const handleClearCacheAndReload = () => {
+    clearSupabaseCache();
+    window.location.reload();
   };
 
   const handleSignOut = async () => {
@@ -71,10 +105,36 @@ export function ClientPortalLayout() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#0a0f1e] flex items-center justify-center">
-        <div className="text-center">
+      <div className="min-h-screen bg-[#0a0f1e] flex items-center justify-center p-6">
+        <div className="text-center max-w-sm w-full">
           <div className="w-16 h-16 border-4 border-cyan-500/30 border-t-cyan-500 rounded-full animate-spin mx-auto mb-4" />
-          <p className="text-slate-400 text-sm font-bold uppercase tracking-widest">Carregando seu Portal VIP...</p>
+          <p className="text-slate-400 text-sm font-bold uppercase tracking-widest mb-6">
+            Carregando seu Portal VIP...
+          </p>
+
+          <AnimatePresence>
+            {loadingTooLong && (
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="space-y-3"
+              >
+                <p className="text-slate-500 text-xs">Está demorando demais? Tente limpar o cache.</p>
+                <button
+                  onClick={handleClearCacheAndReload}
+                  className="w-full flex items-center justify-center gap-2 bg-cyan-600 hover:bg-cyan-500 text-white px-5 py-3 rounded-xl font-black text-sm transition-colors"
+                >
+                  <Trash2 size={15} /> Limpar Cache e Recarregar
+                </button>
+                <button
+                  onClick={() => { loadingRef.current = false; initializePortal(); }}
+                  className="w-full flex items-center justify-center gap-2 bg-white/5 hover:bg-white/10 text-slate-300 px-5 py-3 rounded-xl font-black text-sm transition-colors"
+                >
+                  <RefreshCw size={15} /> Tentar Novamente
+                </button>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
       </div>
     );
