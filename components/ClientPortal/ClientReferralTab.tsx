@@ -68,7 +68,7 @@ export function ClientReferralTab({ portalData, onSuccess }: Props) {
   const clientName: string = portalData.client?.name || 'Seu amigo';
   const [form, setForm] = useState({ name: '', phone: '', email: '', address: '', referral_type: 'agua' });
   const [submitting, setSubmitting] = useState(false);
-  const [lastReferral, setLastReferral] = useState<{ email: string; name: string } | null>(null);
+  const [lastReferral, setLastReferral] = useState<{ email: string; name: string; phone: string } | null>(null);
   const [sendingEmail, setSendingEmail] = useState(false);
   const [emailSent, setEmailSent] = useState(false);
 
@@ -133,10 +133,8 @@ export function ClientReferralTab({ portalData, onSuccess }: Props) {
       if (data?.error) throw new Error(data.error);
 
       toast.success('🎉 Indicação cadastrada! +300 pontos adicionados à sua conta!');
-      if (form.email) {
-        setLastReferral({ email: form.email, name: form.name });
-        setEmailSent(false);
-      }
+      setLastReferral({ email: form.email, name: form.name, phone: form.phone });
+      setEmailSent(false);
       setForm({ name: '', phone: '', email: '', address: '', referral_type: 'agua' });
       onSuccess();
     } catch (err: any) {
@@ -188,35 +186,60 @@ export function ClientReferralTab({ portalData, onSuccess }: Props) {
         </MotionDiv>
       )}
 
-      {/* Email invite card — appears after successful referral with email */}
+      {/* Post-submit share cards — WhatsApp direct + email */}
       <AnimatePresence>
         {lastReferral && (
           <MotionDiv
-            key="email-invite"
+            key="post-submit-share"
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -10 }}
-            transition={{ delay: 0.05 }}
-            className="bg-blue-500/10 border border-blue-500/30 rounded-2xl p-5 flex items-center justify-between gap-4"
+            className="space-y-3"
           >
-            <div className="min-w-0">
-              <p className="text-[10px] font-black uppercase tracking-widest text-blue-400 mb-0.5">Enviar convite por email</p>
-              <p className="text-slate-300 text-sm font-bold truncate">{lastReferral.name}</p>
-              <p className="text-slate-500 text-xs truncate">{lastReferral.email}</p>
-            </div>
-            {emailSent ? (
-              <div className="flex items-center gap-2 text-emerald-400 font-black text-sm shrink-0">
-                <CheckCircle2 size={18} /> Enviado!
+            {/* WhatsApp DIRECT to prospect phone */}
+            {lastReferral.phone && (
+              <div className="bg-[#25D366]/10 border border-[#25D366]/30 rounded-2xl p-5 flex items-center justify-between gap-4">
+                <div className="min-w-0">
+                  <p className="text-[10px] font-black uppercase tracking-widest text-[#25D366] mb-0.5">Enviar convite por WhatsApp</p>
+                  <p className="text-slate-300 text-sm font-bold truncate">{lastReferral.name}</p>
+                  <p className="text-slate-500 text-xs">{lastReferral.phone}</p>
+                </div>
+                <a
+                  href={`https://wa.me/${lastReferral.phone.replace(/\D/g, '')}?text=${encodeURIComponent(
+                    `Olá ${lastReferral.name}! 👋\n\nVocê foi indicado(a) por ${clientName} para uma análise GRATUITA da qualidade da sua água com a Aquafeel Philly! 💧\n\nAcesse seu convite exclusivo:\n${shortLink}\n\n🎁 Incluso: análise grátis + 3 meses sem mensalidade se fechar contrato!`
+                  )}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-2 bg-[#25D366] text-white px-4 py-2.5 rounded-xl font-black text-sm shrink-0 hover:bg-[#1ebe5d] transition-colors"
+                >
+                  <MessageCircle size={16} /> Enviar
+                </a>
               </div>
-            ) : (
-              <button
-                onClick={handleSendEmail}
-                disabled={sendingEmail}
-                className="flex items-center gap-2 bg-blue-600 hover:bg-blue-500 text-white px-4 py-2.5 rounded-xl font-black text-sm shrink-0 transition-colors disabled:opacity-50"
-              >
-                {sendingEmail ? <Loader2 size={16} className="animate-spin" /> : <Send size={16} />}
-                Enviar Email
-              </button>
+            )}
+
+            {/* Email invite */}
+            {lastReferral.email && (
+              <div className="bg-blue-500/10 border border-blue-500/30 rounded-2xl p-5 flex items-center justify-between gap-4">
+                <div className="min-w-0">
+                  <p className="text-[10px] font-black uppercase tracking-widest text-blue-400 mb-0.5">Enviar convite por email</p>
+                  <p className="text-slate-300 text-sm font-bold truncate">{lastReferral.name}</p>
+                  <p className="text-slate-500 text-xs truncate">{lastReferral.email}</p>
+                </div>
+                {emailSent ? (
+                  <div className="flex items-center gap-2 text-emerald-400 font-black text-sm shrink-0">
+                    <CheckCircle2 size={18} /> Enviado!
+                  </div>
+                ) : (
+                  <button
+                    onClick={handleSendEmail}
+                    disabled={sendingEmail}
+                    className="flex items-center gap-2 bg-blue-600 hover:bg-blue-500 text-white px-4 py-2.5 rounded-xl font-black text-sm shrink-0 transition-colors disabled:opacity-50"
+                  >
+                    {sendingEmail ? <Loader2 size={16} className="animate-spin" /> : <Send size={16} />}
+                    Enviar Email
+                  </button>
+                )}
+              </div>
             )}
           </MotionDiv>
         )}
