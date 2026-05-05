@@ -37,6 +37,9 @@ export function AppRoutes() {
         <Route path="/invite"   element={<InviteLandingPage />} />
         {/* Short invite link: /i/:slug — e.g. /i/rick or /i/ana-2 */}
         <Route path="/i/:slug"  element={<InviteLandingPage />} />
+        {/* Job opportunity link: /t/:slug — interview scheduling */}
+        <Route path="/t/:slug"  element={<InviteLandingPage />} />
+        <Route path="/trabalho" element={<InviteLandingPage />} />
 
         {/* Client Auth */}
         <Route path="/client-login" element={<ClientLogin />} />

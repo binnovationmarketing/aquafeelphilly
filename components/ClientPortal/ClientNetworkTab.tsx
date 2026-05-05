@@ -20,17 +20,21 @@ const STATUS_CONFIG: Record<string, { label: string; color: string; dot: string;
 export function ClientNetworkTab({ portalData }: Props) {
   const { referrals = [], points } = portalData;
 
-  // Build short link — prefer slug, fallback to UUID token
+  // Build short link — prefer slug, fallback to UUID token, guard null
   const shortLink = points.referral_slug
     ? `${window.location.origin}/i/${points.referral_slug}`
-    : `${window.location.origin}/invite?ref=${points.referral_token}`;
+    : points.referral_token
+      ? `${window.location.origin}/invite?ref=${points.referral_token}`
+      : null;
 
   const copyLink = () => {
+    if (!shortLink) return;
     navigator.clipboard.writeText(shortLink);
     toast.success('Link copiado! 🔗', { description: shortLink });
   };
 
   const shareLink = async () => {
+    if (!shortLink) return;
     if (navigator.share) {
       try {
         await navigator.share({

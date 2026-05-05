@@ -9,7 +9,7 @@ import {
 import {
   Users, TrendingUp,
   CheckCircle, Plus, LogOut, Search, Filter, X, Mail, Phone, MapPin, Clock, Share2,
-  MessageSquare, CalendarCheck, Play, CheckCircle2, Shield, FileText, UserCog,
+  MessageSquare, CalendarCheck, Calendar as CalendarIcon, Play, CheckCircle2, Shield, FileText, UserCog,
   DollarSign, ClipboardList, Users2, UserPlus, MessageCircle
 } from 'lucide-react';
 import AquaFeelLogo from './AquaFeelLogo';
@@ -537,6 +537,70 @@ export const AnalystDashboard: React.FC<{ onNewProposal: () => void }> = ({ onNe
                 trend="all time"
               />
             </div>
+
+            {/* ── Upcoming Appointments ──────────────────────────────── */}
+            {pendingTasks.filter(t => t.type === 'VISIT' && t.scheduled_for).length > 0 && (
+              <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden mb-8">
+                <div className="p-5 border-b border-slate-100 flex items-center gap-3">
+                  <div className="w-9 h-9 rounded-xl bg-aqua-50 flex items-center justify-center">
+                    <CalendarIcon size={18} className="text-aqua-600" />
+                  </div>
+                  <div>
+                    <h3 className="font-bold text-slate-800">Agendamentos Próximos</h3>
+                    <p className="text-xs text-slate-500">Visitas e entrevistas confirmadas pelo portal</p>
+                  </div>
+                  <span className="ml-auto bg-aqua-100 text-aqua-700 text-xs font-black px-2.5 py-1 rounded-full">
+                    {pendingTasks.filter(t => t.type === 'VISIT' && t.scheduled_for).length}
+                  </span>
+                </div>
+                <div className="divide-y divide-slate-50">
+                  {pendingTasks
+                    .filter(t => t.type === 'VISIT' && t.scheduled_for)
+                    .slice(0, 10)
+                    .map(task => {
+                      const dt = new Date(task.scheduled_for);
+                      const dateLabel = dt.toLocaleDateString('pt-BR', { weekday: 'short', day: 'numeric', month: 'short' });
+                      const timeLabel = dt.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+                      const isInterview = task.title?.toLowerCase().includes('entrevista') || task.notes?.toLowerCase().includes('trabalho');
+                      // Parse notes for details
+                      const notesLines = (task.notes || '').split('\n').filter(Boolean);
+                      return (
+                        <div key={task.id} className="flex items-start gap-4 px-5 py-4 hover:bg-slate-50 transition-colors">
+                          {/* Date badge */}
+                          <div className={`shrink-0 w-14 text-center py-2 rounded-xl ${isInterview ? 'bg-purple-50 text-purple-700' : 'bg-aqua-50 text-aqua-700'}`}>
+                            <p className="text-[10px] font-black uppercase tracking-wider">{dateLabel.split(',')[0]}</p>
+                            <p className="text-xl font-black leading-none mt-0.5">{dt.getDate()}</p>
+                            <p className="text-[10px] font-bold">{timeLabel}</p>
+                          </div>
+                          {/* Details */}
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2 mb-1">
+                              <p className="font-bold text-slate-800 text-sm truncate">{task.title?.replace(/^📅\s*/, '')}</p>
+                              <span className={`shrink-0 text-[10px] font-black uppercase px-2 py-0.5 rounded-full ${isInterview ? 'bg-purple-100 text-purple-600' : 'bg-aqua-100 text-aqua-600'}`}>
+                                {isInterview ? 'Entrevista' : 'Visita'}
+                              </span>
+                            </div>
+                            {notesLines.map((line, i) => (
+                              <p key={i} className="text-xs text-slate-500 truncate">{line}</p>
+                            ))}
+                          </div>
+                          {/* Mark done */}
+                          <button
+                            onClick={async () => {
+                              await supabase.from('tasks').update({ status: 'COMPLETED' }).eq('id', task.id);
+                              setPendingTasks(prev => prev.filter(t => t.id !== task.id));
+                            }}
+                            className="shrink-0 text-xs text-slate-400 hover:text-emerald-600 font-bold transition-colors"
+                            title="Marcar como concluído"
+                          >
+                            ✓
+                          </button>
+                        </div>
+                      );
+                    })}
+                </div>
+              </div>
+            )}
 
             {/* Charts Section */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">

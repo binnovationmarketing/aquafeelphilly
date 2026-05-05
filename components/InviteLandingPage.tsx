@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { useSearchParams, useParams } from 'react-router-dom';
+import { useSearchParams, useParams, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Droplet, ShieldCheck, Heart, ArrowRight, Calendar as CalendarIcon,
-  CheckCircle, User, Phone, MapPin, Loader2, Building2, Clock
+  CheckCircle, User, Phone, MapPin, Loader2, Building2, Clock,
+  Briefcase, Star, Award,
 } from 'lucide-react';
 import { supabase, supabaseAnon } from '../lib/supabase';
 import { toast } from 'sonner';
@@ -13,12 +14,23 @@ const M = {
   div: motion.div as any,
 };
 
-const TIMES = [
+// Water analysis — full day availability
+const WATER_TIMES = [
   '09:00 AM', '10:00 AM', '11:00 AM',
   '12:00 PM', '01:00 PM', '02:00 PM',
   '03:00 PM', '04:00 PM', '05:00 PM',
   '06:00 PM', '07:00 PM',
 ];
+
+// Job interviews — Mon–Fri except Wed, 10 AM–2 PM only
+const WORK_TIMES = [
+  '10:00 AM', '11:00 AM', '12:00 PM', '01:00 PM', '02:00 PM',
+];
+
+// Office address for job interviews
+const OFFICE_ADDRESS = '501 Cambria Ave';
+const OFFICE_CITY    = 'Bensalem';
+const OFFICE_STATE   = 'PA';
 
 const US_STATES = [
   'AL','AK','AZ','AR','CA','CO','CT','DE','FL','GA','HI','ID','IL','IN','IA',
@@ -29,9 +41,14 @@ const US_STATES = [
 
 export function InviteLandingPage() {
   const [searchParams] = useSearchParams();
-  // Support both ?ref=token/slug AND route param /i/:slug
+  const location = useLocation();
+  // Support both ?ref=token/slug AND route param /i/:slug or /t/:slug
   const { slug: routeSlug } = useParams<{ slug?: string }>();
   const rawRef = routeSlug || searchParams.get('ref') || '';
+
+  // Detect page type from route: /t/:slug → job opportunity, /i/:slug → water analysis
+  const pageType: 'agua' | 'trabalho' = location.pathname.startsWith('/t/') ? 'trabalho' : 'agua';
+  const TIMES = pageType === 'trabalho' ? WORK_TIMES : WATER_TIMES;
 
   const [resolvedToken, setResolvedToken] = useState('');
   const [referralId, setReferralId] = useState('');
@@ -49,17 +66,20 @@ export function InviteLandingPage() {
     time: '',
   });
 
-  // Build next 10 days for date picker (skip today)
-  const nextDays = Array.from({ length: 10 }, (_, i) => {
+  // Build next 14 candidate days, filtered by page type
+  const nextDays = Array.from({ length: 21 }, (_, i) => {
     const d = new Date();
     d.setDate(d.getDate() + i + 1);
+    const dow = d.getDay(); // 0=Sun 1=Mon 2=Tue 3=Wed 4=Thu 5=Fri 6=Sat
+    // trabalho: Mon–Fri except Wed; agua: all days
+    if (pageType === 'trabalho' && (dow === 0 || dow === 3 || dow === 6)) return null;
     return {
       dateStr: d.toISOString().split('T')[0],
       label: d.toLocaleDateString('pt-BR', { weekday: 'short', day: 'numeric', month: 'short' }),
       dayNum: d.getDate(),
       weekday: d.toLocaleDateString('en-US', { weekday: 'short' }),
     };
-  });
+  }).filter(Boolean).slice(0, 10) as { dateStr: string; label: string; dayNum: number; weekday: string }[];
 
   // Resolve slug or UUID → token on mount
   useEffect(() => {
@@ -98,6 +118,7 @@ export function InviteLandingPage() {
           p_phone: leadData.phone,
           p_email: leadData.email,
           p_address: fullAddress,
+          p_type: pageType,
         });
         if (error) throw error;
         if (result?.error) throw new Error(result.error);
@@ -219,10 +240,11 @@ export function InviteLandingPage() {
       toast.error('Selecione a data e horário.');
       return;
     }
-    if (!leadData.address || !leadData.city || !leadData.state) {
-      toast.error('Preencha o endereço completo.');
-      return;
-    }
+
+    // For job interviews use the fixed office address; for water analysis use whatever was collected
+    const visitAddress = pageType === 'trabalho' ? OFFICE_ADDRESS : (leadData.address || '');
+    const visitCity    = pageType === 'trabalho' ? OFFICE_CITY    : (leadData.city    || '');
+    const visitState   = pageType === 'trabalho' ? OFFICE_STATE   : (leadData.state   || 'PA');
 
     setIsSubmitting(true);
     try {
@@ -235,9 +257,9 @@ export function InviteLandingPage() {
           p_referral_id: referralId,
           p_date: scheduleData.date,
           p_time: scheduleData.time,
-          p_address: leadData.address,
-          p_city: leadData.city,
-          p_state: leadData.state,
+          p_address: visitAddress,
+          p_city: visitCity,
+          p_state: visitState,
         });
         if (error) throw error;
         if (result?.error) throw new Error(result.error);
@@ -255,9 +277,9 @@ export function InviteLandingPage() {
       const emailBase = {
         visitName: leadData.name,
         visitPhone: leadData.phone,
-        visitAddress: leadData.address,
-        visitCity: leadData.city,
-        visitState: leadData.state,
+        visitAddress: visitAddress,
+        visitCity: visitCity,
+        visitState: visitState,
         dateLabel,
         time: scheduleData.time,
         referrerName: referrerDisplayName,
@@ -358,30 +380,43 @@ export function InviteLandingPage() {
           </div>
 
           <h1 className="text-5xl md:text-6xl font-black leading-tight" style={{ fontFamily: "'Urbanist', sans-serif" }}>
-            Água Pura e Segura por menos de{' '}
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#11caa0] to-emerald-400">
-              $5 ao dia.
-            </span>
+            {pageType === 'trabalho' ? (
+              <>Construa uma Carreira{' '}<span className="text-transparent bg-clip-text bg-gradient-to-r from-[#11caa0] to-emerald-400">que Transforma Vidas.</span></>
+            ) : (
+              <>Água Pura e Alcalina por menos de{' '}<span className="text-transparent bg-clip-text bg-gradient-to-r from-[#11caa0] to-emerald-400">$5 ao dia.</span></>
+            )}
           </h1>
 
-          {referrerName && (
+          {pageType === 'agua' && referrerName && (
             <p className="text-lg text-slate-300 leading-relaxed">
               <strong className="text-white">{referrerName.split(' ')[0]}</strong> transformou a saúde da família e enviou este convite para você receber uma{' '}
               <strong className="text-[#11caa0]">Análise de Água Gratuita</strong> na sua casa.
             </p>
           )}
-          {!referrerName && (
+          {pageType === 'agua' && !referrerName && (
             <p className="text-lg text-slate-400 leading-relaxed">
               Receba uma <strong>Análise de Água Gratuita</strong> na sua casa e descubra o que você está realmente bebendo.
             </p>
           )}
+          {pageType === 'trabalho' && (
+            <p className="text-lg text-slate-300 leading-relaxed">
+              {referrerName
+                ? <><strong className="text-white">{referrerName.split(' ')[0]}</strong> faz parte da nossa equipe e quer te apresentar uma</>
+                : 'Junte-se à'}{' '}
+              <strong className="text-[#11caa0]">oportunidade de crescimento real</strong> como Analista Aquafeel Philly.
+            </p>
+          )}
 
           <div className="space-y-3 pt-2">
-            {[
-              { icon: Droplet, title: 'Água 100% Pura', desc: 'Remove chumbo, cloro, toxinas e metais pesados.' },
-              { icon: Heart, title: 'Saúde da Família', desc: 'Pele mais macia, cabelos sedosos e proteção real.' },
-              { icon: ShieldCheck, title: 'Garantia Vitalícia', desc: 'Tecnologia premium com suporte contínuo.' },
-            ].map((f, idx) => (
+            {(pageType === 'agua' ? [
+              { icon: Droplet,     title: 'Água 100% Pura e Alcalina',    desc: 'Remove chumbo, cloro, toxinas e metais pesados. Adiciona minerais verdadeiros à sua água devolvendo vida.' },
+              { icon: Heart,       title: 'Saúde da Família + Pure Selects', desc: 'Pele mais macia, cabelos sedosos e proteção real. Linha completa de sabão orgânico para toda a família.' },
+              { icon: ShieldCheck, title: 'Garantia Vitalícia (25 Anos)',  desc: 'Tecnologia premium Aquafeel Solutions + Watts com suporte contínuo e seguro para sua tranquilidade.' },
+            ] : [
+              { icon: Briefcase, title: 'Renda Sem Teto',          desc: 'Comissões diretas + bônus de equipe. Você controla quanto ganha.' },
+              { icon: Star,      title: 'Treinamento Completo',    desc: 'Suporte total desde o primeiro dia. Aprenda vendas consultivas com os melhores.' },
+              { icon: Award,     title: 'Crescimento Real',        desc: 'Plano de carreira claro: Analista → Mentor → Diretor → Embaixador.' },
+            ] as { icon: any; title: string; desc: string }[]).map((f, idx) => (
               <M.div
                 key={idx}
                 initial={{ opacity: 0, x: -20 }}
@@ -424,8 +459,12 @@ export function InviteLandingPage() {
               {step === 1 && (
                 <M.div key="step1" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="space-y-5">
                   <div className="text-center mb-6">
-                    <h2 className="text-2xl font-bold mb-1">Seus dados</h2>
-                    <p className="text-slate-400 text-sm">Preencha para validar seu convite VIP e agendar.</p>
+                    <h2 className="text-2xl font-bold mb-1">{pageType === 'trabalho' ? 'Seus dados' : 'Seus dados'}</h2>
+                    <p className="text-slate-400 text-sm">
+                      {pageType === 'trabalho'
+                        ? 'Preencha para agendar sua entrevista.'
+                        : 'Preencha para validar seu convite VIP e agendar.'}
+                    </p>
                   </div>
 
                   <form onSubmit={handleLeadSubmit} className="space-y-4">
@@ -473,7 +512,11 @@ export function InviteLandingPage() {
                       <CalendarIcon size={28} />
                     </div>
                     <h2 className="text-2xl font-bold mb-1">Quase lá, {leadData.name.split(' ')[0]}!</h2>
-                    <p className="text-slate-400 text-sm">Escolha o dia e horário para sua análise gratuita.</p>
+                    <p className="text-slate-400 text-sm">
+                      {pageType === 'trabalho'
+                        ? 'Escolha o dia e horário para sua entrevista.'
+                        : 'Escolha o dia e horário para sua análise gratuita.'}
+                    </p>
                   </div>
 
                   <form onSubmit={handleScheduleSubmit} className="space-y-5">
@@ -522,12 +565,24 @@ export function InviteLandingPage() {
 
                     {/* Address confirmation */}
                     <div className="bg-white/5 border border-white/10 rounded-xl p-4 text-sm text-slate-400 space-y-1">
-                      <p className="text-[10px] font-black uppercase tracking-widest text-slate-500 mb-2">Endereço da visita:</p>
-                      <p className="text-white font-semibold">{leadData.address}</p>
-                      <p>{leadData.city}, {leadData.state}</p>
-                      <button type="button" onClick={() => setStep(1)} className="text-[#11caa0] text-xs font-bold hover:underline mt-1">
-                        Editar endereço
-                      </button>
+                      <p className="text-[10px] font-black uppercase tracking-widest text-slate-500 mb-2">
+                        {pageType === 'trabalho' ? 'Local da entrevista:' : 'Endereço da visita:'}
+                      </p>
+                      {pageType === 'trabalho' ? (
+                        <>
+                          <p className="text-white font-semibold">{OFFICE_ADDRESS}</p>
+                          <p>{OFFICE_CITY}, {OFFICE_STATE} 19020</p>
+                          <p className="text-[#11caa0] text-xs font-bold mt-1">📍 Escritório Aquafeel Philly</p>
+                        </>
+                      ) : (
+                        <>
+                          <p className="text-white font-semibold">{leadData.address || 'Endereço a confirmar'}</p>
+                          {(leadData.city || leadData.state) && <p>{leadData.city}, {leadData.state}</p>}
+                          <button type="button" onClick={() => setStep(1)} className="text-[#11caa0] text-xs font-bold hover:underline mt-1">
+                            Editar endereço
+                          </button>
+                        </>
+                      )}
                     </div>
 
                     <button
@@ -556,18 +611,27 @@ export function InviteLandingPage() {
                   </M.div>
 
                   <div>
-                    <h2 className="text-3xl font-bold mb-2">Agendamento Confirmado! 🎉</h2>
+                    <h2 className="text-3xl font-bold mb-2">
+                      {pageType === 'trabalho' ? 'Entrevista Agendada! 🎉' : 'Agendamento Confirmado! 🎉'}
+                    </h2>
                     <p className="text-slate-400 text-sm">
-                      Nosso especialista foi notificado e entrará em contato para confirmar sua visita.
+                      {pageType === 'trabalho'
+                        ? 'Nossa equipe foi notificada e aguardamos você no nosso escritório!'
+                        : 'Nosso especialista foi notificado e entrará em contato para confirmar sua visita.'}
                     </p>
                   </div>
 
                   <div className="bg-[#0a213f] border border-white/10 rounded-2xl p-6 text-left space-y-3 text-sm">
-                    <h3 className="font-bold text-[#11caa0] text-base mb-4">📋 Detalhes do Agendamento:</h3>
+                    <h3 className="font-bold text-[#11caa0] text-base mb-4">
+                      {pageType === 'trabalho' ? '📋 Detalhes da Entrevista:' : '📋 Detalhes do Agendamento:'}
+                    </h3>
                     {[
                       { label: 'Nome', value: leadData.name },
                       { label: 'Telefone', value: leadData.phone },
-                      { label: 'Endereço', value: `${leadData.address}, ${leadData.city}, ${leadData.state}` },
+                      { label: pageType === 'trabalho' ? 'Local' : 'Endereço',
+                        value: pageType === 'trabalho'
+                          ? `${OFFICE_ADDRESS}, ${OFFICE_CITY}, ${OFFICE_STATE} 19020`
+                          : [leadData.address, leadData.city, leadData.state].filter(Boolean).join(', ') || '—' },
                       { label: 'Data', value: scheduleData.date ? new Date(scheduleData.date + 'T12:00:00').toLocaleDateString('pt-BR', { weekday: 'long', day: 'numeric', month: 'long' }) : '' },
                       { label: 'Horário', value: scheduleData.time },
                     ].map((item) => (

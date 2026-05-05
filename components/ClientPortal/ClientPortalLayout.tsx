@@ -121,8 +121,11 @@ export function ClientPortalLayout() {
     window.location.reload();
   };
 
-  const handleSignOut = async () => {
-    await supabase.auth.signOut();
+  const handleSignOut = () => {
+    // Don't await signOut — it acquires Web Lock and can hang.
+    // Clear session from localStorage directly, then navigate.
+    clearSupabaseCache();
+    supabase.auth.signOut().catch(() => {});
     navigate('/client-login');
   };
 
