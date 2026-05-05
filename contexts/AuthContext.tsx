@@ -17,6 +17,7 @@ export type AnalystRole =
   | 'analyst_jr'
   | 'analyst'; // legacy fallback
 
+// Mentor and below → analyst dashboard. Manager and above → manager dashboard.
 export const MANAGER_ROLES: AnalystRole[] = [
   'admin',
   'ambassador',
@@ -25,8 +26,6 @@ export const MANAGER_ROLES: AnalystRole[] = [
   'director_jr',
   'manager_sr',
   'manager_jr',
-  'mentor_sr',
-  'mentor_jr',
 ];
 
 export const ROLE_LABELS: Record<AnalystRole, string> = {
