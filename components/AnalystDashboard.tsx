@@ -15,7 +15,6 @@ import {
 import AquaFeelLogo from './AquaFeelLogo';
 import { toast } from 'sonner';
 import { ShareProposalModal } from './ShareProposalModal';
-import { MarketingService } from '../lib/marketing';
 import { Task } from '../types';
 import { CommissionPanel } from './CommissionPanel';
 import { RecommendationsPanel } from './RecommendationsPanel';
@@ -1048,7 +1047,7 @@ export const AnalystDashboard: React.FC<{ onNewProposal: () => void }> = ({ onNe
                 <p className="font-bold text-slate-400 uppercase tracking-widest text-[10px] mb-1">Mensagem que será enviada:</p>
                 Olá! Aqui é da Aquafeel Philly 💧<br/>
                 Clique no link para criar sua conta gratuita no Portal VIP e acompanhar seus pontos:<br/>
-                <span className="text-emerald-600 font-bold">{window.location.origin}/client-signup</span>
+                <span className="text-emerald-600 font-bold">https://aquafeelphilly.com/login?tab=client</span>
               </div>
             )}
 
@@ -1061,7 +1060,7 @@ export const AnalystDashboard: React.FC<{ onNewProposal: () => void }> = ({ onNe
               </button>
               <a
                 href={signupPhone.length >= 7
-                  ? `https://wa.me/1${signupPhone}?text=${encodeURIComponent(`Olá! Aqui é da Aquafeel Philly 💧\n\nClique no link abaixo para criar sua conta gratuita no Portal VIP Aquafeel e começar a acompanhar seus pontos e recompensas:\n\n👉 ${window.location.origin}/client-signup\n\nQualquer dúvida, estou à disposição! 😊`)}`
+                  ? `https://wa.me/1${signupPhone}?text=${encodeURIComponent(`Olá! Aqui é da Aquafeel Philly 💧\n\nClique no link abaixo para criar sua conta gratuita no Portal VIP Aquafeel e começar a acompanhar seus pontos e recompensas:\n\n👉 https://aquafeelphilly.com/login?tab=client\n\nQualquer dúvida, estou à disposição! 😊`)}`
                   : undefined
                 }
                 target="_blank" rel="noopener noreferrer"

@@ -22,9 +22,11 @@ function createPortalClient(token: string) {
     }
   );
 }
-import { User, Phone, MapPin, Mail, Loader2, Gift, MessageCircle, Send, CheckCircle2 } from 'lucide-react';
+import { User, Phone, MapPin, Mail, Loader2, Gift, MessageCircle, Send, CheckCircle2, Copy } from 'lucide-react';
 import { toast } from 'sonner';
 import { motion, AnimatePresence } from 'framer-motion';
+
+const PROD_URL = 'https://aquafeelphilly.com';
 
 const MotionDiv = motion.div as any;
 
@@ -93,10 +95,15 @@ export function ClientReferralTab({ portalData, onSuccess }: Props) {
   const [lastReferral, setLastReferral] = useState<{ email: string; name: string; phone: string } | null>(null);
   const [sendingEmail, setSendingEmail] = useState(false);
   const [emailSent, setEmailSent] = useState(false);
+  const [showWorkModal, setShowWorkModal] = useState(false);
+  const [workEmailSent, setWorkEmailSent] = useState(false);
+  const [sendingWorkEmail, setSendingWorkEmail] = useState(false);
 
   const shortLink = points.referral_slug
-    ? `${window.location.origin}/i/${points.referral_slug}`
-    : `${window.location.origin}/invite?ref=${points.referral_token}`;
+    ? `${PROD_URL}/i/${points.referral_slug}`
+    : `${PROD_URL}/invite?ref=${points.referral_token}`;
+
+  const workRecruitLink = `${PROD_URL}/referral`;
 
   const waShareLink = `https://wa.me/?text=${encodeURIComponent(`💧 Eu uso Aquafeel e a água da minha família ficou 100% pura! Quero te indicar para uma análise gratuita. Acesse: ${shortLink}`)}`;
 
@@ -106,6 +113,69 @@ export function ClientReferralTab({ portalData, onSuccess }: Props) {
   };
 
   const phoneDisplay = form.phone.replace(/^\+1/, '');
+
+  const handleSendWorkEmail = async () => {
+    if (!lastReferral) return;
+    setSendingWorkEmail(true);
+    try {
+      const html = `<!DOCTYPE html>
+<html lang="pt">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Oportunidade Aquafeel</title></head>
+<body style="margin:0;padding:0;background:#020d1a;font-family:'Helvetica Neue',Arial,sans-serif;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background:#020d1a;padding:40px 20px;">
+    <tr><td align="center">
+      <table width="600" cellpadding="0" cellspacing="0" style="max-width:600px;width:100%;background:#0a1929;border-radius:20px;overflow:hidden;border:1px solid rgba(0,200,220,0.15);">
+        <tr><td style="background:linear-gradient(135deg,#06b6d4,#2563eb);padding:36px 40px;text-align:center;">
+          <p style="margin:0;color:#e0f7fa;font-size:12px;font-weight:900;letter-spacing:4px;text-transform:uppercase;margin-bottom:12px;">💧 AQUAFEEL PHILLY</p>
+          <h1 style="margin:0;color:#ffffff;font-size:30px;font-weight:900;letter-spacing:-0.5px;line-height:1.2;">Oportunidade de Renda<br>Extra em Philly!</h1>
+        </td></tr>
+        <tr><td style="padding:40px;">
+          <p style="color:#94a3b8;font-size:15px;line-height:1.7;margin:0 0 20px;">Olá, <strong style="color:#e2e8f0;">${lastReferral.name}</strong>! 👋</p>
+          <p style="color:#94a3b8;font-size:15px;line-height:1.7;margin:0 0 24px;">
+            <strong style="color:#22d3ee;">${clientName}</strong> te indicou para uma incrível oportunidade de renda com a <strong style="color:#e2e8f0;">Aquafeel Philly</strong> — consultores de purificação de água que ganham entre <strong style="color:#22d3ee;">$1.500 e $6.000/mês</strong>!
+          </p>
+          <table width="100%" cellpadding="0" cellspacing="0" style="background:rgba(6,182,212,0.08);border:1px solid rgba(6,182,212,0.2);border-radius:14px;margin-bottom:28px;">
+            <tr><td style="padding:24px 28px;">
+              <p style="margin:0 0 14px;color:#22d3ee;font-size:11px;font-weight:900;letter-spacing:3px;text-transform:uppercase;">O que você ganha:</p>
+              <p style="margin:0 0 8px;color:#cbd5e1;font-size:14px;">💰 $1.500–6.000/mês trabalhando em seus horários</p>
+              <p style="margin:0 0 8px;color:#cbd5e1;font-size:14px;">📅 Sem horário fixo — você decide quando trabalhar</p>
+              <p style="margin:0 0 8px;color:#cbd5e1;font-size:14px;">🏆 Treinamento gratuito e suporte completo</p>
+              <p style="margin:0 0 8px;color:#cbd5e1;font-size:14px;">📈 Crescimento acelerado — plano de carreira claro</p>
+              <p style="margin:0 0 0;color:#cbd5e1;font-size:14px;">🏢 Escritório: 501 Cambria Ave, Bensalem PA 19020</p>
+            </td></tr>
+          </table>
+          <table width="100%" cellpadding="0" cellspacing="0"><tr><td align="center" style="padding-bottom:28px;">
+            <a href="${workRecruitLink}" style="display:inline-block;background:linear-gradient(135deg,#06b6d4,#2563eb);color:#ffffff;text-decoration:none;font-weight:900;font-size:15px;letter-spacing:1px;padding:16px 40px;border-radius:50px;text-transform:uppercase;">
+              💼 Quero Saber Mais
+            </a>
+          </td></tr></table>
+          <p style="color:#475569;font-size:12px;text-align:center;margin:0;">Ou acesse: <a href="${workRecruitLink}" style="color:#22d3ee;text-decoration:none;">${workRecruitLink}</a></p>
+        </td></tr>
+        <tr><td style="background:rgba(6,182,212,0.06);border-top:1px solid rgba(6,182,212,0.1);padding:24px 40px;text-align:center;">
+          <p style="margin:0;color:#475569;font-size:11px;">© 2025 Aquafeel Philly · Philadelphia, PA</p>
+          <p style="margin:6px 0 0;color:#334155;font-size:11px;">${clientName} te indicou para esta oportunidade.</p>
+        </td></tr>
+      </table>
+    </td></tr>
+  </table>
+</body>
+</html>`;
+      const { error } = await supabase.functions.invoke('send-email', {
+        body: {
+          to: lastReferral.email,
+          subject: `${clientName} quer te convidar para a equipe Aquafeel Philly! 💰`,
+          html,
+        },
+      });
+      if (error) throw error;
+      setWorkEmailSent(true);
+      toast.success('Email de oportunidade enviado com sucesso!');
+    } catch (err: any) {
+      toast.error(err.message || 'Erro ao enviar email. Tente novamente.');
+    } finally {
+      setSendingWorkEmail(false);
+    }
+  };
 
   const handleSendEmail = async () => {
     if (!lastReferral) return;
@@ -173,6 +243,10 @@ export function ClientReferralTab({ portalData, onSuccess }: Props) {
       toast.success('🎉 Indicação cadastrada! +300 pontos adicionados à sua conta!');
       setLastReferral({ email: form.email, name: form.name, phone: form.phone });
       setEmailSent(false);
+      setWorkEmailSent(false);
+      if (form.referral_type === 'trabalho') {
+        setShowWorkModal(true);
+      }
       setForm({ name: '', phone: '', email: '', address: '', referral_type: 'agua' });
       onSuccess();
     } catch (err: any) {
@@ -417,6 +491,82 @@ export function ClientReferralTab({ portalData, onSuccess }: Props) {
           </div>
         ))}
       </MotionDiv>
+      {/* Work Opportunity Modal — shown after submitting a 'trabalho' referral */}
+      <AnimatePresence>
+        {showWorkModal && lastReferral && (
+          <MotionDiv
+            key="work-modal"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4"
+          >
+            <MotionDiv
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              className="bg-[#0a1929] border border-cyan-500/20 rounded-2xl p-6 md:p-8 w-full max-w-md shadow-2xl"
+            >
+              <div className="flex items-center gap-3 mb-6">
+                <div className="w-12 h-12 bg-cyan-500/10 rounded-xl flex items-center justify-center text-2xl">💼</div>
+                <div>
+                  <h3 className="text-lg font-black text-white">Indicação Enviada!</h3>
+                  <p className="text-slate-400 text-xs">Compartilhe a oportunidade com {lastReferral.name}</p>
+                </div>
+              </div>
+
+              {/* Recruit link display */}
+              <div className="bg-white/5 border border-white/10 rounded-xl p-3 flex items-center gap-2 mb-4">
+                <span className="text-cyan-400 text-xs font-mono flex-1 truncate">{workRecruitLink}</span>
+                <button
+                  onClick={() => { navigator.clipboard.writeText(workRecruitLink); toast.success('Link copiado!'); }}
+                  className="shrink-0 bg-cyan-500/20 hover:bg-cyan-500/40 text-cyan-400 rounded-lg px-3 py-1.5 text-xs font-black transition-colors flex items-center gap-1"
+                >
+                  <Copy size={12} /> Copiar
+                </button>
+              </div>
+
+              {/* WA to candidate */}
+              {lastReferral.phone && (
+                <a
+                  href={`https://wa.me/${lastReferral.phone.replace(/\D/g, '')}?text=${encodeURIComponent(
+                    `Olá ${lastReferral.name}! 👋\n\n${clientName} te indicou para uma oportunidade incrível com a Aquafeel Philly! 💧💰\n\nGanhe entre $1.500 e $6.000/mês trabalhando nos seus próprios horários como consultor(a) de qualidade de água.\n\nVeja todos os detalhes e agende uma conversa:\n👉 ${workRecruitLink}\n\nAquafeel Philly · Philadelphia, PA 🇺🇸`
+                  )}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="w-full flex items-center justify-center gap-2 bg-[#25D366] hover:bg-[#1ebe5d] text-white rounded-xl py-3 font-black text-sm mb-3 transition-colors"
+                >
+                  <MessageCircle size={16} /> Enviar via WhatsApp para {lastReferral.name}
+                </a>
+              )}
+
+              {/* Email to candidate */}
+              {lastReferral.email && (
+                <button
+                  onClick={handleSendWorkEmail}
+                  disabled={sendingWorkEmail || workEmailSent}
+                  className="w-full flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-500 disabled:opacity-50 text-white rounded-xl py-3 font-black text-sm mb-3 transition-colors"
+                >
+                  {workEmailSent ? (
+                    <><CheckCircle2 size={16} /> Email enviado!</>
+                  ) : sendingWorkEmail ? (
+                    <><Loader2 size={16} className="animate-spin" /> Enviando...</>
+                  ) : (
+                    <><Send size={16} /> Enviar Email para {lastReferral.name}</>
+                  )}
+                </button>
+              )}
+
+              <button
+                onClick={() => { setShowWorkModal(false); setLastReferral(null); }}
+                className="w-full py-2.5 text-sm text-slate-500 hover:text-slate-300 font-bold transition-colors"
+              >
+                Fechar
+              </button>
+            </MotionDiv>
+          </MotionDiv>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

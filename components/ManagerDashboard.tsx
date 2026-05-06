@@ -38,6 +38,7 @@ import {
   Pie,
   Cell
 } from 'recharts';
+import { toast } from 'sonner';
 
 // Tipos
 interface Lead {
@@ -393,11 +394,30 @@ export const ManagerDashboard: React.FC<{ onExit: () => void }> = ({ onExit }) =
               >
                 <GitMerge size={16} /> Recomendações
               </button>
+            </div>
+            <div className="pt-2 mt-1 border-t border-white/5">
+              <p className="text-[10px] text-slate-600 uppercase tracking-widest px-4 mb-2 font-black">Links de Indicação</p>
               <button
-                onClick={() => { onExit(); setIsMobileMenuOpen(false); }}
-                className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-xs font-bold border border-transparent text-slate-400 hover:bg-white/5 hover:text-white transition-all"
+                onClick={() => {
+                  const ref = encodeURIComponent(profile?.first_name || user?.email?.split('@')[0] || 'Gestor');
+                  navigator.clipboard.writeText(`https://aquafeelphilly.com/referral?ref=${ref}`);
+                  toast.success('Link de recrutamento copiado! Compartilhe para convidar analistas.');
+                  setIsMobileMenuOpen(false);
+                }}
+                className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-xs font-bold border border-transparent text-slate-400 hover:bg-white/5 hover:text-emerald-400 transition-all"
               >
-                <Star size={16} /> Novo Recrutamento
+                <Star size={16} /> 💼 Recrutar Analista
+              </button>
+              <button
+                onClick={() => {
+                  const ref = encodeURIComponent(profile?.first_name || user?.email?.split('@')[0] || 'Gestor');
+                  navigator.clipboard.writeText(`https://aquafeelphilly.com/invite?ref=${ref}`);
+                  toast.success('Link de análise de água copiado! Compartilhe com clientes em potencial.');
+                  setIsMobileMenuOpen(false);
+                }}
+                className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-xs font-bold border border-transparent text-slate-400 hover:bg-white/5 hover:text-cyan-400 transition-all"
+              >
+                <Star size={16} /> 💧 Análise de Água Gratuita
               </button>
             </div>
           </nav>
