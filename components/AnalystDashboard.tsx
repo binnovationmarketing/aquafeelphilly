@@ -917,7 +917,7 @@ export const AnalystDashboard: React.FC<{ onNewProposal: () => void }> = ({ onNe
                       try {
                         const { data, error } = await supabase.from('client_points').select('referral_token').eq('client_id', selectedLead.id).single();
                         if (error || !data) throw new Error('Portal ainda não ativado ou token não encontrado.');
-                        const url = `${window.location.origin}/referral?token=${data.referral_token}`;
+                        const url = `https://aquafeelphilly.com/vip?token=${data.referral_token}`;
                         await navigator.clipboard.writeText(url);
                         toast.success('Link do Portal VIP copiado para a área de transferência!');
                       } catch (err: any) {

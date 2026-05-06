@@ -6,6 +6,7 @@ import { LoadingScreen } from './components/LoadingScreen';
 // Eager loaded
 import { AuthLanding } from './components/Auth/AuthLanding';
 import { Signup } from './components/Auth/Signup';
+import { RecruitingPage } from './components/RecruitingPage';
 
 // Lazy loaded (code splitting)
 const UpdatePassword    = React.lazy(() => import('./components/Auth/UpdatePassword').then(m => ({ default: m.UpdatePassword })));
@@ -14,6 +15,7 @@ const AnalystDashboard  = React.lazy(() => import('./components/AnalystDashboard
 const WelcomeScreen     = React.lazy(() => import('./components/WelcomeScreen').then(m => ({ default: m.WelcomeScreen })));
 const ProposalView      = React.lazy(() => import('./components/ProposalView').then(m => ({ default: m.ProposalView })));
 const ReferralDashboard = React.lazy(() => import('./components/ReferralDashboard').then(m => ({ default: m.ReferralDashboard })));
+// ReferralDashboard now served at /vip?token=... (old /referral?token=... links redirect here)
 const InviteLandingPage = React.lazy(() => import('./components/InviteLandingPage').then(m => ({ default: m.InviteLandingPage })));
 const ClientPortalLayout = React.lazy(() => import('./components/ClientPortal/ClientPortalLayout').then(m => ({ default: m.ClientPortalLayout })));
 
@@ -79,7 +81,10 @@ export function AppRoutes() {
         <Route path="/recovery" element={<UpdatePassword />} />
 
         {/* ── Public routes ── */}
-        <Route path="/referral"  element={<ReferralDashboard />} />
+        {/* /referral = job recruitment landing page */}
+        <Route path="/referral"  element={<RecruitingPage />} />
+        {/* /vip = client VIP portal (token-gated, no auth required) */}
+        <Route path="/vip"       element={<ReferralDashboard />} />
         <Route path="/invite"    element={<InviteLandingPage />} />
         <Route path="/i/:slug"   element={<InviteLandingPage />} />
         <Route path="/t/:slug"   element={<InviteLandingPage />} />
@@ -108,17 +113,15 @@ export function AppRoutes() {
           }
         />
 
-        {/* ── Analyst Dashboard ── analysts, mentors, students */}
+        {/* ── Analyst Dashboard ── analysts, mentors, students, AND managers (managers can sell too) */}
         <Route
           path="/dashboard/analyst"
           element={
             !user
               ? <Navigate to="/login" replace />
-              : isManager
-                ? <Navigate to="/dashboard/manager" replace />
-                : isClient
-                  ? <Navigate to="/portal/client" replace />
-                  : <AnalystDashboard onNewProposal={() => navigate('/lead/new')} />
+              : isClient
+                ? <Navigate to="/portal/client" replace />
+                : <AnalystDashboard onNewProposal={() => navigate('/lead/new')} />
           }
         />
 

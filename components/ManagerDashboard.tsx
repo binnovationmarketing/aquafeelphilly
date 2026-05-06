@@ -7,7 +7,6 @@ import {
   LogOut,
   Calendar,
   MapPin,
-  Mail,
   CloudLightning,
   UserCheck,
   TrendingUp,
@@ -15,9 +14,9 @@ import {
   DollarSign,
   PieChart as PieChartIcon,
   Download,
-  MessageSquare,
-  CheckCircle,
-  Send
+  BarChart2,
+  GitMerge,
+  Star,
 } from 'lucide-react';
 import AquaFeelLogo from './AquaFeelLogo';
 import { ClientDashboard } from './ClientDashboard';
@@ -39,7 +38,6 @@ import {
   Pie,
   Cell
 } from 'recharts';
-import { MarketingService } from '../lib/marketing';
 
 // Tipos
 interface Lead {
@@ -65,8 +63,6 @@ export const ManagerDashboard: React.FC<{ onExit: () => void }> = ({ onExit }) =
   const [searchTerm, setSearchTerm] = useState("");
   const [currentView, setCurrentView] = useState<string>('DASHBOARD');
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [marketingLogs, setMarketingLogs] = useState<string[]>([]);
-  const [isRunningCampaign, setIsRunningCampaign] = useState(false);
   const [teamAnalysts, setTeamAnalysts] = useState<AnalystStat[]>([]);
 
   useEffect(() => {
@@ -184,40 +180,6 @@ export const ManagerDashboard: React.FC<{ onExit: () => void }> = ({ onExit }) =
     }
   };
 
-  const runNurture = async () => {
-    setIsRunningCampaign(true);
-    setMarketingLogs(prev => [...prev, 'Starting Nurture Campaign (Leads/Lost)...']);
-    try {
-      const result = await MarketingService.runNurtureCampaign();
-      setMarketingLogs(prev => [
-        ...prev,
-        `Processed ${result.processed} leads.`,
-        ...result.logs
-      ]);
-    } catch (err) {
-      setMarketingLogs(prev => [...prev, `Error: ${err}`]);
-    } finally {
-      setIsRunningCampaign(false);
-    }
-  };
-
-  const runMaintenance = async () => {
-    setIsRunningCampaign(true);
-    setMarketingLogs(prev => [...prev, 'Starting Maintenance Campaign (Customers)...']);
-    try {
-      const result = await MarketingService.runMaintenanceCampaign();
-      setMarketingLogs(prev => [
-        ...prev,
-        `Processed ${result.processed} customers.`,
-        ...result.logs
-      ]);
-    } catch (err) {
-      setMarketingLogs(prev => [...prev, `Error: ${err}`]);
-    } finally {
-      setIsRunningCampaign(false);
-    }
-  };
-
   // Métricas
   const totalLeads = leads.length;
   const totalPresentations = leads.filter(l => l.status === 'PRESENTATION' || l.status === 'SALE').length;
@@ -297,9 +259,10 @@ export const ManagerDashboard: React.FC<{ onExit: () => void }> = ({ onExit }) =
             <AquaFeelLogo width="140px" variant="white" />
           </div>
           <nav className="p-4 space-y-1">
-            {[['DASHBOARD','Dashboard'],['HIERARCHY','🌳 Hierarquia'],['COMMISSIONS','💰 Comissões'],['CLIENTS','Clientes'],['MARKETING','Marketing']].map(([k,l]) => (
+            {[['DASHBOARD','Dashboard'],['HIERARCHY','🌳 Hierarquia'],['COMMISSIONS','💰 Comissões'],['CLIENTS','Clientes']].map(([k,l]) => (
               <button key={k} onClick={() => setCurrentView(k)} className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-xs font-bold border transition-all ${currentView === k ? 'bg-white/10 text-white border-white/10' : 'text-slate-400 border-transparent hover:bg-white/5'}`}>{l}</button>
             ))}
+            <button onClick={onExit} className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-xs font-bold border border-transparent text-slate-400 hover:bg-white/5 transition-all">🔬 Portal do Analista</button>
           </nav>
           <div className="mt-auto p-4 border-t border-white/5">
             <button onClick={handleLogout} className="flex items-center gap-2 text-slate-400 hover:text-white text-xs font-bold uppercase tracking-widest transition-colors w-full"><LogOut size={14} /> Sair</button>
@@ -330,9 +293,10 @@ export const ManagerDashboard: React.FC<{ onExit: () => void }> = ({ onExit }) =
             <AquaFeelLogo width="140px" variant="white" />
           </div>
           <nav className="p-4 space-y-1">
-            {[['DASHBOARD','Dashboard Geral'],['COMMISSIONS','💰 Comissões'],['CLIENTS','Clientes'],['MARKETING','Marketing']] .map(([k,l]) => (
+            {[['DASHBOARD','Dashboard Geral'],['COMMISSIONS','💰 Comissões'],['CLIENTS','Clientes']].map(([k,l]) => (
               <button key={k} onClick={() => setCurrentView(k)} className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-xs font-bold border transition-all ${currentView === k ? 'bg-white/10 text-white border-white/10' : 'text-slate-400 border-transparent hover:bg-white/5'}`}>{l}</button>
             ))}
+            <button onClick={onExit} className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-xs font-bold border border-transparent text-slate-400 hover:bg-white/5 transition-all">🔬 Portal do Analista</button>
           </nav>
           <div className="mt-auto p-4 border-t border-white/5">
             <button onClick={handleLogout} className="flex items-center gap-2 text-slate-400 hover:text-white text-xs font-bold uppercase tracking-widest transition-colors w-full"><LogOut size={14} /> Sair</button>
@@ -415,12 +379,27 @@ export const ManagerDashboard: React.FC<{ onExit: () => void }> = ({ onExit }) =
             >
               💰 Comissões & Hierarquia
             </button>
-            <button
-              onClick={() => { setCurrentView('MARKETING'); setIsMobileMenuOpen(false); }}
-              className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-xs font-bold border transition-all ${currentView === 'MARKETING' ? 'bg-white/10 text-white border-white/10' : 'text-slate-400 border-transparent hover:bg-white/5'}`}
-            >
-              <Mail size={16} /> Automação Marketing
-            </button>
+            <div className="pt-2 mt-1 border-t border-white/5">
+              <p className="text-[10px] text-slate-600 uppercase tracking-widest px-4 mb-2 font-black">Vendas & Recrutamento</p>
+              <button
+                onClick={() => { onExit(); setIsMobileMenuOpen(false); }}
+                className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-xs font-bold border border-transparent text-slate-400 hover:bg-white/5 hover:text-white transition-all"
+              >
+                <BarChart2 size={16} /> Portal do Analista
+              </button>
+              <button
+                onClick={() => { onExit(); setIsMobileMenuOpen(false); }}
+                className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-xs font-bold border border-transparent text-slate-400 hover:bg-white/5 hover:text-white transition-all"
+              >
+                <GitMerge size={16} /> Recomendações
+              </button>
+              <button
+                onClick={() => { onExit(); setIsMobileMenuOpen(false); }}
+                className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-xs font-bold border border-transparent text-slate-400 hover:bg-white/5 hover:text-white transition-all"
+              >
+                <Star size={16} /> Novo Recrutamento
+              </button>
+            </div>
           </nav>
         </div>
 
@@ -471,96 +450,7 @@ export const ManagerDashboard: React.FC<{ onExit: () => void }> = ({ onExit }) =
 
         <div className="p-8 space-y-8">
 
-          {currentView === 'MARKETING' ? (
-            <div className="space-y-8">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                {/* Nurture Campaign Card */}
-                <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 relative overflow-hidden">
-                  <div className="absolute top-0 right-0 p-4 opacity-10">
-                    <Mail size={120} />
-                  </div>
-                  <h3 className="text-xl font-bold text-slate-800 mb-2 flex items-center gap-2">
-                    <RefreshCw className="text-blue-500" />
-                    Lead Nurture Automation
-                  </h3>
-                  <p className="text-slate-500 mb-6 text-sm">
-                    Automatically send monthly newsletters to leads who haven't purchased yet.
-                    Uses AI to generate fresh content about water quality and health benefits.
-                  </p>
-                  <div className="flex items-center justify-between mt-auto">
-                    <div className="text-xs font-bold text-slate-400 uppercase tracking-wider">
-                      Target: Leads, Lost, Contacted
-                    </div>
-                    <button
-                      onClick={runNurture}
-                      disabled={isRunningCampaign}
-                      className="bg-blue-600 hover:bg-blue-500 disabled:opacity-50 text-white px-4 py-2 rounded-lg font-bold text-sm flex items-center gap-2 transition-all"
-                    >
-                      {isRunningCampaign ? <RefreshCw className="animate-spin" size={16} /> : <Send size={16} />}
-                      Run Campaign Now
-                    </button>
-                  </div>
-                </div>
-
-                {/* Maintenance Campaign Card */}
-                <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 relative overflow-hidden">
-                  <div className="absolute top-0 right-0 p-4 opacity-10">
-                    <MessageSquare size={120} />
-                  </div>
-                  <h3 className="text-xl font-bold text-slate-800 mb-2 flex items-center gap-2">
-                    <CheckCircle className="text-emerald-500" />
-                    Customer Success & Upsell
-                  </h3>
-                  <p className="text-slate-500 mb-6 text-sm">
-                    Send monthly reminders to existing customers to check salt levels and offer organic soap refills.
-                    Keeps customers engaged and systems running perfectly.
-                  </p>
-                  <div className="flex items-center justify-between mt-auto">
-                    <div className="text-xs font-bold text-slate-400 uppercase tracking-wider">
-                      Target: Active Customers
-                    </div>
-                    <button
-                      onClick={runMaintenance}
-                      disabled={isRunningCampaign}
-                      className="bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 text-white px-4 py-2 rounded-lg font-bold text-sm flex items-center gap-2 transition-all"
-                    >
-                      {isRunningCampaign ? <RefreshCw className="animate-spin" size={16} /> : <Send size={16} />}
-                      Run Campaign Now
-                    </button>
-                  </div>
-                </div>
-              </div>
-
-              {/* Logs Console */}
-              <div className="bg-slate-900 rounded-xl p-6 font-mono text-sm text-slate-300 h-64 overflow-y-auto border border-slate-800 shadow-inner">
-                <div className="flex items-center justify-between mb-4 border-b border-slate-800 pb-2">
-                  <span className="font-bold text-white flex items-center gap-2">
-                    <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-                    System Logs
-                  </span>
-                  <button
-                    onClick={() => setMarketingLogs([])}
-                    className="text-xs text-slate-500 hover:text-white transition-colors"
-                  >
-                    Clear Logs
-                  </button>
-                </div>
-                {marketingLogs.length === 0 ? (
-                  <div className="text-slate-600 italic">Waiting for campaign execution...</div>
-                ) : (
-                  <div className="space-y-1">
-                    {marketingLogs.map((log, i) => (
-                      <div key={i} className="border-l-2 border-slate-700 pl-2 py-0.5 hover:bg-slate-800/50 transition-colors">
-                        <span className="text-slate-500 text-xs mr-2">[{new Date().toLocaleTimeString()}]</span>
-                        {log}
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-            </div>
-          ) : (
-            <>
+          <>
               {/* KPIs Cards */}
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                 <div className="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm">
@@ -743,8 +633,7 @@ export const ManagerDashboard: React.FC<{ onExit: () => void }> = ({ onExit }) =
                   </table>
                 </div>
               </div>
-            </>
-          )}
+          </>
         </div>
       </main>
     </div>
