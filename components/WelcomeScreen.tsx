@@ -42,7 +42,9 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onComplete, onBack
     name: string; spouse: string; lang: Language;
     email: string; phone: string; zip: string;
   }): Promise<string | null> => {
-    const { data: { user: analyst } } = await supabase.auth.getUser();
+    // Use getSession() (reads from sessionStorage, no network call, no Web Lock)
+    const { data: { session } } = await supabase.auth.getSession();
+    const analyst = session?.user;
 
     const { data: row, error } = await supabase
       .from('clients')
@@ -208,7 +210,6 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onComplete, onBack
                   { val: name,   set: setName,   icon: User,   label: t.placeholderName },
                   { val: spouse, set: setSpouse, icon: User,   label: t.placeholderSpouse },
                   { val: email,  set: setEmail,  icon: Mail,   label: t.placeholderEmail,  type: 'email' },
-                  { val: phone,  set: setPhone,  icon: Phone,  label: lang === 'pt' ? 'Telefone *' : lang === 'es' ? 'Teléfono *' : 'Phone *', type: 'tel' },
                   { val: zip,    set: setZip,    icon: MapPin, label: t.placeholderZip },
                 ] as const).map((f, i) => (
                   <div key={i} className="relative">
@@ -222,6 +223,19 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onComplete, onBack
                     />
                   </div>
                 ))}
+
+                {/* Phone — +1 prefix always visible */}
+                <div className="flex items-center bg-black/40 border border-white/10 rounded-2xl overflow-hidden focus-within:ring-2 focus-within:ring-aqua-500 transition-all">
+                  <Phone className="ml-4 text-slate-500 shrink-0" size={18} />
+                  <span className="pl-3 pr-1 text-slate-400 font-bold text-sm shrink-0">+1</span>
+                  <input
+                    type="tel"
+                    value={phone}
+                    onChange={(e) => setPhone(e.target.value.replace(/\D/g, '').slice(0, 10))}
+                    className="flex-1 bg-transparent pr-4 py-4 text-white outline-none text-base placeholder-slate-700"
+                    placeholder={lang === 'pt' ? 'Telefone *' : lang === 'es' ? 'Teléfono *' : 'Phone *'}
+                  />
+                </div>
 
                 <button
                   onClick={handleSubmit}

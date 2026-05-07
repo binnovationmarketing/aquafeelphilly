@@ -11,13 +11,13 @@ import { ClientNetworkTab } from './ClientNetworkTab';
 import { ClientRewardsTab } from './ClientRewardsTab';
 import { toast } from 'sonner';
 
-/** Read session directly from localStorage — NO lock acquisition. */
+/** Read session directly from sessionStorage (no Web Lock, cleared on tab close). */
 function getStoredSession(): { access_token: string; user: any } | null {
   try {
-    const raw = localStorage.getItem('aq_session');
+    // After supabase.ts change, sessions live in sessionStorage
+    const raw = sessionStorage.getItem('aq_session') ?? localStorage.getItem('aq_session');
     if (!raw) return null;
     const parsed = JSON.parse(raw);
-    // Supabase v2 stores the session object directly at storageKey
     const session = parsed?.currentSession ?? parsed;
     if (session?.access_token) return session;
   } catch (_) {}
@@ -39,6 +39,9 @@ function createPortalClient(accessToken: string) {
 /** Remove all Supabase/session storage so a stuck lock can't block reload. */
 function clearSupabaseCache() {
   try {
+    // Clear sessionStorage (new default after supabase.ts change)
+    sessionStorage.clear();
+    // Also clear legacy localStorage entries
     const keysToRemove: string[] = [];
     for (let i = 0; i < localStorage.length; i++) {
       const k = localStorage.key(i);
@@ -47,7 +50,6 @@ function clearSupabaseCache() {
       }
     }
     keysToRemove.forEach(k => localStorage.removeItem(k));
-    sessionStorage.clear();
   } catch (_) {}
 }
 
@@ -76,6 +78,29 @@ export function ClientPortalLayout() {
     const t = setTimeout(() => setLoadingTooLong(true), 8000);
     return () => clearTimeout(t);
   }, [loading]);
+
+  // Real-time-like sync: poll every 30s + refresh when tab regains focus
+  useEffect(() => {
+    const poll = setInterval(() => {
+      if (!loadingRef.current) {
+        loadingRef.current = false; // allow re-fetch without showing full spinner
+        initializePortal();
+      }
+    }, 30_000);
+
+    const onVisibility = () => {
+      if (document.visibilityState === 'visible' && !loadingRef.current) {
+        initializePortal();
+      }
+    };
+    document.addEventListener('visibilitychange', onVisibility);
+
+    return () => {
+      clearInterval(poll);
+      document.removeEventListener('visibilitychange', onVisibility);
+    };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const initializePortal = async () => {
     if (loadingRef.current) return;

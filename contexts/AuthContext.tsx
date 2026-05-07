@@ -194,7 +194,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setUser(null);
     setSession(null);
     await supabase.auth.signOut();
-    // Only remove the supabase session key, not all localStorage
+    // Clear session from sessionStorage (new default) + legacy localStorage
+    sessionStorage.removeItem('aq_session');
     localStorage.removeItem('aq_session');
   };
 

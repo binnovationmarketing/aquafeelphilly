@@ -8,16 +8,34 @@ import { AuthLanding } from './components/Auth/AuthLanding';
 import { Signup } from './components/Auth/Signup';
 import { RecruitingPage } from './components/RecruitingPage';
 
-// Lazy loaded (code splitting)
-const UpdatePassword    = React.lazy(() => import('./components/Auth/UpdatePassword').then(m => ({ default: m.UpdatePassword })));
-const ManagerDashboard  = React.lazy(() => import('./components/ManagerDashboard').then(m => ({ default: m.ManagerDashboard })));
-const AnalystDashboard  = React.lazy(() => import('./components/AnalystDashboard').then(m => ({ default: m.AnalystDashboard })));
-const WelcomeScreen     = React.lazy(() => import('./components/WelcomeScreen').then(m => ({ default: m.WelcomeScreen })));
-const ProposalView      = React.lazy(() => import('./components/ProposalView').then(m => ({ default: m.ProposalView })));
-const ReferralDashboard = React.lazy(() => import('./components/ReferralDashboard').then(m => ({ default: m.ReferralDashboard })));
+/** Wraps a lazy import with automatic reload on chunk-hash miss after Vercel redeploy. */
+function lazyWithRetry<T extends React.ComponentType<any>>(
+  factory: () => Promise<{ default: T }>
+): React.LazyExoticComponent<T> {
+  return React.lazy(() =>
+    factory().catch(() => {
+      // Chunk 404 = stale HTML referencing old hash → force full reload once
+      const reloaded = sessionStorage.getItem('chunk_reload');
+      if (!reloaded) {
+        sessionStorage.setItem('chunk_reload', '1');
+        window.location.reload();
+      }
+      // Return empty component if already retried (avoid infinite reload)
+      return { default: (() => null) as unknown as T };
+    })
+  );
+}
+
+// Lazy loaded (code splitting) — wrapped in retry for post-deploy resilience
+const UpdatePassword    = lazyWithRetry(() => import('./components/Auth/UpdatePassword').then(m => ({ default: m.UpdatePassword })));
+const ManagerDashboard  = lazyWithRetry(() => import('./components/ManagerDashboard').then(m => ({ default: m.ManagerDashboard })));
+const AnalystDashboard  = lazyWithRetry(() => import('./components/AnalystDashboard').then(m => ({ default: m.AnalystDashboard })));
+const WelcomeScreen     = lazyWithRetry(() => import('./components/WelcomeScreen').then(m => ({ default: m.WelcomeScreen })));
+const ProposalView      = lazyWithRetry(() => import('./components/ProposalView').then(m => ({ default: m.ProposalView })));
+const ReferralDashboard = lazyWithRetry(() => import('./components/ReferralDashboard').then(m => ({ default: m.ReferralDashboard })));
 // ReferralDashboard now served at /vip?token=... (old /referral?token=... links redirect here)
-const InviteLandingPage = React.lazy(() => import('./components/InviteLandingPage').then(m => ({ default: m.InviteLandingPage })));
-const ClientPortalLayout = React.lazy(() => import('./components/ClientPortal/ClientPortalLayout').then(m => ({ default: m.ClientPortalLayout })));
+const InviteLandingPage = lazyWithRetry(() => import('./components/InviteLandingPage').then(m => ({ default: m.InviteLandingPage })));
+const ClientPortalLayout = lazyWithRetry(() => import('./components/ClientPortal/ClientPortalLayout').then(m => ({ default: m.ClientPortalLayout })));
 
 /** Resolve where a logged-in user should land. */
 function AuthRedirect({ isManager, isClient }: { isManager: boolean; isClient: boolean }) {

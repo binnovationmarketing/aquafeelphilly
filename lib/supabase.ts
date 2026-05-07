@@ -24,17 +24,26 @@ if (missingVars.length > 0) {
   }
 }
 
+/**
+ * Main authenticated Supabase client.
+ *
+ * Uses sessionStorage so:
+ *  1. Each browser tab has its own isolated session → no Web Lock contention.
+ *  2. Session is automatically cleared when the browser/tab is closed
+ *     (sessionStorage lifetime = tab lifetime).
+ *  3. Hundreds of concurrent users never share state.
+ */
 export const supabase = createClient(
   supabaseUrl ?? 'https://placeholder.supabase.co',
   supabaseAnonKey ?? 'placeholder-key',
   {
     auth: {
-      // Persist session so users don't re-login on every page visit
       persistSession: true,
       autoRefreshToken: true,
-      // Detect session from URL hash (required for OAuth redirects)
       detectSessionInUrl: true,
       storageKey: 'aq_session',
+      // sessionStorage: tab-isolated (no cross-tab Web Lock), clears on close
+      storage: typeof window !== 'undefined' ? window.sessionStorage : undefined,
     },
   }
 );

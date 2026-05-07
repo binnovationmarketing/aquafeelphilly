@@ -1,5 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../contexts/AuthContext';
 import {
@@ -45,6 +46,7 @@ interface Lead {
 }
 
 export const AnalystDashboard: React.FC<{ onNewProposal: () => void }> = ({ onNewProposal }) => {
+  const navigate = useNavigate();
   const { user, profile, signOut, refreshProfile } = useAuth();
   const [metrics, setMetrics] = useState<DashboardMetrics | null>(null);
   const [loading, setLoading] = useState(true);
@@ -731,10 +733,10 @@ export const AnalystDashboard: React.FC<{ onNewProposal: () => void }> = ({ onNe
                               <Share2 size={15} />
                             </button>
                             <button
-                              onClick={() => setSelectedLead(lead)}
+                              onClick={() => navigate(`/proposal?id=${lead.id}`)}
                               className="text-aqua-600 hover:text-aqua-500 font-bold text-xs uppercase"
                             >
-                              View
+                              Proposta
                             </button>
                           </div>
                         </td>
@@ -1045,7 +1047,7 @@ export const AnalystDashboard: React.FC<{ onNewProposal: () => void }> = ({ onNe
             {signupPhone.length >= 7 && (
               <div className="bg-slate-50 border border-slate-100 rounded-xl p-3 mb-4 text-xs text-slate-600 leading-relaxed">
                 <p className="font-bold text-slate-400 uppercase tracking-widest text-[10px] mb-1">Mensagem que será enviada:</p>
-                Olá! Aqui é da Aquafeel Philly 💧<br/>
+                Ola! Aqui e da Aquafeel Philly.<br/>
                 Clique no link para criar sua conta gratuita no Portal VIP e acompanhar seus pontos:<br/>
                 <span className="text-emerald-600 font-bold">https://aquafeelphilly.com/login?tab=client</span>
               </div>
@@ -1060,7 +1062,7 @@ export const AnalystDashboard: React.FC<{ onNewProposal: () => void }> = ({ onNe
               </button>
               <a
                 href={signupPhone.length >= 7
-                  ? `https://wa.me/1${signupPhone}?text=${encodeURIComponent(`Olá! Aqui é da Aquafeel Philly 💧\n\nClique no link abaixo para criar sua conta gratuita no Portal VIP Aquafeel e começar a acompanhar seus pontos e recompensas:\n\n👉 https://aquafeelphilly.com/login?tab=client\n\nQualquer dúvida, estou à disposição! 😊`)}`
+                  ? `https://wa.me/1${signupPhone}?text=${encodeURIComponent(`Ola! Aqui e da Aquafeel Philly.\n\nClique no link abaixo para criar sua conta gratuita no Portal VIP Aquafeel e comecar a acompanhar seus pontos e recompensas:\n\nhttps://aquafeelphilly.com/login?tab=client\n\nQualquer duvida, estou a disposicao!`)}`
                   : undefined
                 }
                 target="_blank" rel="noopener noreferrer"

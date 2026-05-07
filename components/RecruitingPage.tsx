@@ -11,8 +11,9 @@
  *   ?ref=ANALYST_NAME   — pre-fills "recommended by" in form
  */
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
+import { supabaseAnon } from '../lib/supabase';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Clock, DollarSign, Users, CheckCircle, Star, ArrowRight,
@@ -193,6 +194,25 @@ export function RecruitingPage() {
   const [form, setForm] = useState({ name: '', phone: '', date: '', time: '', message: '' });
   const [submitted, setSubmitted] = useState(false);
 
+  // Look up inviting analyst's email by first_name (from ?ref=)
+  const [analystEmail, setAnalystEmail] = useState<string | null>(null);
+  const [analystPhone, setAnalystPhone] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!analystRef) return;
+    supabaseAnon
+      .from('analysts')
+      .select('email, phone')
+      .ilike('first_name', analystRef.trim())
+      .maybeSingle()
+      .then(({ data }) => {
+        if (data) {
+          setAnalystEmail(data.email ?? null);
+          setAnalystPhone(data.phone ?? null);
+        }
+      });
+  }, [analystRef]);
+
   const breakdown = useMemo(() => computeBreakdown(calc), [calc]);
 
   const set = (key: keyof CalcData) => (v: number | boolean) =>
@@ -336,31 +356,76 @@ export function RecruitingPage() {
 
   /* ── Calendar & WA links ── */
   const googleCalUrl = () => {
-    const text      = encodeURIComponent('Entrevista Aquafeel Philly');
-    const details   = encodeURIComponent(
-      `Entrevista com o gestor da Aquafeel Philly.\n\nNome: ${form.name}\nTelefone: ${form.phone}\n${analystRef ? `Recomendado por: ${analystRef}` : ''}\n\nEndereço: ${OFFICE}`
+    const text    = encodeURIComponent('Entrevista Aquafeel Philly');
+    const details = encodeURIComponent(
+      `Entrevista com o gestor da Aquafeel Philly.\n\n` +
+      `Nome: ${form.name}\nTelefone: ${form.phone}\n` +
+      (analystRef ? `Convidado por: ${analystRef}` : '') +
+      `\n\nEndereco: ${OFFICE}`
     );
-    const location  = encodeURIComponent(OFFICE);
-    return `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${text}&details=${details}&location=${location}&add=${encodeURIComponent(MANAGER_EMAIL)}`;
+    const location = encodeURIComponent(OFFICE);
+    // Add both manager AND inviting analyst as guests
+    const guests = ([MANAGER_EMAIL, analystEmail] as string[]).filter(Boolean).map(encodeURIComponent).join('&add=');
+    return `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${text}&details=${details}&location=${location}&add=${guests}`;
   };
 
   const waUrl = () => {
     const msg = encodeURIComponent(
-      `Olá! Gostaria de agendar uma entrevista com a Aquafeel Philly.\n\n` +
-      `👤 Nome: ${form.name}\n📞 Telefone: ${form.phone}\n` +
-      (form.date ? `📅 Data: ${form.date}${form.time ? ' às ' + form.time : ''}\n` : '') +
-      (analystRef ? `🔗 Recomendado por: ${analystRef}\n` : '') +
-      `\nAguardo retorno! 😊`
+      `Ola! Gostaria de agendar uma entrevista com a Aquafeel Philly.\n\n` +
+      `Nome: ${form.name}\nTelefone: ${form.phone}\n` +
+      (form.date ? `Data: ${form.date}${form.time ? ' as ' + form.time : ''}\n` : '') +
+      (analystRef ? `Convidado por: ${analystRef}\n` : '') +
+      `\nAguardo retorno!`
     );
     return `https://wa.me/${MANAGER_WA}?text=${msg}`;
+  };
+
+  // WA to the inviting analyst (if phone known)
+  const waAnalystUrl = () => {
+    if (!analystPhone) return null;
+    const clean = analystPhone.replace(/\D/g, '');
+    const msg = encodeURIComponent(
+      `Novo candidato via seu link de recrutamento!\n\n` +
+      `Nome: ${form.name}\nTelefone: ${form.phone}\n` +
+      (form.date ? `Data preferida: ${form.date}${form.time ? ' as ' + form.time : ''}\n` : '') +
+      `\nEntrevista agendada em: ${OFFICE}`
+    );
+    return `https://wa.me/${clean}?text=${msg}`;
+  };
+
+  const notifyViaEdgeFunction = async () => {
+    // Fire-and-forget: send email to analyst + manager CC
+    try {
+      await supabaseAnon.functions.invoke('send-email', {
+        body: {
+          to: analystEmail || MANAGER_EMAIL,
+          cc: analystEmail ? MANAGER_EMAIL : undefined,
+          subject: `Novo candidato via seu link — ${form.name}`,
+          html: `
+            <h2>Novo candidato agendado</h2>
+            <p><strong>Nome:</strong> ${form.name}</p>
+            <p><strong>Telefone:</strong> ${form.phone}</p>
+            ${form.date ? `<p><strong>Data/Hora:</strong> ${form.date}${form.time ? ' às ' + form.time : ''}</p>` : ''}
+            ${analystRef ? `<p><strong>Convidado por:</strong> ${analystRef}</p>` : ''}
+            <p><strong>Local:</strong> ${OFFICE}</p>
+            <hr/>
+            <p style="color:#888;font-size:12px">Se nao houver resposta em 1 hora, contate o gerente: ${MANAGER_EMAIL}</p>
+          `,
+        },
+      });
+    } catch (_) { /* silent — not blocking */ }
   };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setSubmitted(true);
-    // Open both links
     window.open(googleCalUrl(), '_blank');
     setTimeout(() => window.open(waUrl(), '_blank'), 800);
+    // Also notify analyst via WA if we have their phone
+    const analystWa = waAnalystUrl();
+    if (analystWa) setTimeout(() => window.open(analystWa, '_blank'), 1600);
+    // Send email notification (async, non-blocking)
+    notifyViaEdgeFunction();
   };
 
   /* ── time budget bar ── */
