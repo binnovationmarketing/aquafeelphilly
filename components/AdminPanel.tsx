@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { supabase } from '../lib/supabase';
+import { createClient } from '@supabase/supabase-js';
+import { supabase, supabaseUrl, supabaseAnonKey } from '../lib/supabase';
 import { toast } from 'sonner';
 import { ROLE_LABELS, useAuth } from '../contexts/AuthContext';
 import {
@@ -256,6 +257,28 @@ const StatsHeader: React.FC<{
 
 // ─── main component ───────────────────────────────────────────────────────────
 
+/** Read the stored access token directly from sessionStorage — no Web Lock. */
+function getStoredToken(): string | null {
+  try {
+    const raw = sessionStorage.getItem('aq_session') ?? localStorage.getItem('aq_session');
+    if (!raw) return null;
+    const parsed = JSON.parse(raw);
+    return (parsed?.currentSession ?? parsed)?.access_token ?? null;
+  } catch (_) { return null; }
+}
+
+/** Lock-free Supabase client authenticated via Bearer header. Avoids navigator.locks hang. */
+function createLockFreeClient(token: string) {
+  return createClient(
+    supabaseUrl ?? 'https://placeholder.supabase.co',
+    supabaseAnonKey ?? 'placeholder-key',
+    {
+      auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false },
+      global: { headers: { Authorization: `Bearer ${token}` } },
+    }
+  );
+}
+
 export const AdminPanel: React.FC = () => {
   const { user } = useAuth();
   const isAdminUser = user?.email?.toLowerCase() === ADMIN_EMAIL.toLowerCase();
@@ -308,9 +331,21 @@ export const AdminPanel: React.FC = () => {
   const loadAll = async () => {
     setLoading(true);
     setError(null);
+
+    // Safety timeout: never hang forever if Web Lock is held by another tab
+    const timeoutId = setTimeout(() => {
+      setLoading(false);
+      setError('Tempo esgotado. Feche outras abas e tente novamente.');
+    }, 12_000);
+
     try {
+      // Use lock-free client to avoid navigator.locks contention across tabs
+      const token = getStoredToken();
+      if (!token) throw new Error('Sem sessão ativa. Faça login novamente.');
+      const db = createLockFreeClient(token);
+
       // 1. analysts
-      const { data: analystData, error: aErr } = await supabase
+      const { data: analystData, error: aErr } = await db
         .from('analysts')
         .select('*')
         .order('first_name');
@@ -318,7 +353,7 @@ export const AdminPanel: React.FC = () => {
       const team: Analyst[] = analystData || [];
 
       // 2. monthly clients
-      const { data: monthlyData, error: mErr } = await supabase
+      const { data: monthlyData, error: mErr } = await db
         .from('clients')
         .select('analyst_id')
         .in('status', ['SALE', 'INSTALLED', 'ACTIVE'])
@@ -326,7 +361,7 @@ export const AdminPanel: React.FC = () => {
       if (mErr) throw mErr;
 
       // 3. annual clients
-      const { data: annualData, error: yErr } = await supabase
+      const { data: annualData, error: yErr } = await db
         .from('clients')
         .select('analyst_id')
         .in('status', ['SALE', 'INSTALLED', 'ACTIVE'])
@@ -364,13 +399,17 @@ export const AdminPanel: React.FC = () => {
       setError(msg);
       toast.error('Erro ao carregar dados: ' + msg);
     } finally {
+      clearTimeout(timeoutId);
       setLoading(false);
     }
   };
 
   const updateRole = async (analystId: string, newRole: string) => {
     try {
-      const { error } = await supabase.from('analysts').update({ role: newRole }).eq('id', analystId);
+      const token = getStoredToken();
+      if (!token) throw new Error('Sem sessão ativa.');
+      const db = createLockFreeClient(token);
+      const { error } = await db.from('analysts').update({ role: newRole }).eq('id', analystId);
       if (error) throw error;
       toast.success('Cargo atualizado com sucesso!');
       setAnalysts((prev) => prev.map((a) => (a.id === analystId ? { ...a, role: newRole } : a)));

@@ -44,6 +44,9 @@ interface Lead {
   status: string;
   created_at: string;
   analyst?: string;
+  water_consumption?: number;
+  cleaning_consumption?: number;
+  total_annual_cost?: number;
 }
 
 export const AnalystDashboard: React.FC<{ onNewProposal: () => void }> = ({ onNewProposal }) => {
@@ -76,6 +79,36 @@ export const AnalystDashboard: React.FC<{ onNewProposal: () => void }> = ({ onNe
     notes: ''
   });
   const [monthlyEarnings, setMonthlyEarnings] = useState({ personal: 0, team: 0, total: 0 });
+
+  // ── Dynamic filters ──────────────────────────────────────────────────────
+  const [showFilters, setShowFilters] = useState(false);
+  const [filterAnalyst, setFilterAnalyst] = useState('');
+  const [filterPhone, setFilterPhone] = useState('');
+  const [filterAddress, setFilterAddress] = useState('');
+  const [filterEmail, setFilterEmail] = useState('');
+  const [filterHasProposal, setFilterHasProposal] = useState<'ALL' | 'YES' | 'NO'>('ALL');
+  const [filterWaterMin, setFilterWaterMin] = useState<string>('');
+  const [filterWaterMax, setFilterWaterMax] = useState<string>('');
+  const [filterCleaningMin, setFilterCleaningMin] = useState<string>('');
+  const [filterCleaningMax, setFilterCleaningMax] = useState<string>('');
+  const [filterTotalMin, setFilterTotalMin] = useState<string>('');
+  const [filterTotalMax, setFilterTotalMax] = useState<string>('');
+
+  const activeFilterCount = [
+    filterAnalyst, filterPhone, filterAddress, filterEmail,
+    filterHasProposal !== 'ALL' ? 'x' : '',
+    filterWaterMin, filterWaterMax, filterCleaningMin, filterCleaningMax,
+    filterTotalMin, filterTotalMax
+  ].filter(Boolean).length;
+
+  const resetFilters = () => {
+    setFilterAnalyst(''); setFilterPhone(''); setFilterAddress('');
+    setFilterEmail(''); setFilterHasProposal('ALL');
+    setFilterWaterMin(''); setFilterWaterMax('');
+    setFilterCleaningMin(''); setFilterCleaningMax('');
+    setFilterTotalMin(''); setFilterTotalMax('');
+    setSearchTerm(''); setStatusFilter('ALL');
+  };
 
   useEffect(() => {
     fetchDashboardData();
@@ -316,13 +349,57 @@ export const AnalystDashboard: React.FC<{ onNewProposal: () => void }> = ({ onNe
   const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8'];
 
   const filteredLeads = allLeads.filter(lead => {
-    const matchesSearch =
-      lead.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      lead.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    const q = searchTerm.toLowerCase();
+    const matchesSearch = !searchTerm || (
+      lead.name?.toLowerCase().includes(q) ||
+      lead.email?.toLowerCase().includes(q) ||
       lead.phone?.includes(searchTerm) ||
-      lead.zip_code?.includes(searchTerm);
+      lead.zip_code?.includes(searchTerm)
+    );
     const matchesStatus = statusFilter === 'ALL' || lead.status === statusFilter;
-    return matchesSearch && matchesStatus;
+    const matchesAnalyst = !filterAnalyst || (lead.analyst || '').toLowerCase().includes(filterAnalyst.toLowerCase());
+    const matchesPhone = !filterPhone || (lead.phone || '').includes(filterPhone);
+    const matchesAddress = !filterAddress || (lead.zip_code || '').toLowerCase().includes(filterAddress.toLowerCase());
+    const matchesEmail = !filterEmail || (lead.email || '').toLowerCase().includes(filterEmail.toLowerCase());
+    const matchesProposal =
+      filterHasProposal === 'ALL' ? true :
+      filterHasProposal === 'YES' ? !!lead.proposal_token :
+      !lead.proposal_token;
+    const water = lead.water_consumption ?? 0;
+    const cleaning = lead.cleaning_consumption ?? 0;
+    const total = lead.total_annual_cost ?? (water + cleaning) * 12;
+    const matchesWater =
+      (filterWaterMin === '' || water >= Number(filterWaterMin)) &&
+      (filterWaterMax === '' || water <= Number(filterWaterMax));
+    const matchesCleaning =
+      (filterCleaningMin === '' || cleaning >= Number(filterCleaningMin)) &&
+      (filterCleaningMax === '' || cleaning <= Number(filterCleaningMax));
+    const matchesTotal =
+      (filterTotalMin === '' || total >= Number(filterTotalMin)) &&
+      (filterTotalMax === '' || total <= Number(filterTotalMax));
+    return matchesSearch && matchesStatus && matchesAnalyst && matchesPhone &&
+      matchesAddress && matchesEmail && matchesProposal &&
+      matchesWater && matchesCleaning && matchesTotal;
+  });
+
+  // Chart data derived from filteredLeads so filters affect charts too
+  const filteredStatusCounts = filteredLeads.reduce((acc: Record<string, number>, l) => {
+    acc[l.status] = (acc[l.status] || 0) + 1;
+    return acc;
+  }, {});
+  const filteredLeadsByStatus = Object.keys(filteredStatusCounts).map(k => ({ name: k, value: filteredStatusCounts[k] }));
+
+  const months6 = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  const filteredSalesTrend = Array.from({ length: 6 }, (_, i) => {
+    const d = new Date(new Date().getFullYear(), new Date().getMonth() - (5 - i), 1);
+    return {
+      name: months6[d.getMonth()],
+      sales: filteredLeads.filter(l => {
+        if (l.status !== 'SALE' && l.status !== 'INSTALLED' && l.status !== 'ACTIVE') return false;
+        const cd = new Date(l.created_at);
+        return cd.getMonth() === d.getMonth() && cd.getFullYear() === d.getFullYear();
+      }).length
+    };
   });
 
   const displayedLeads = showAllLeads ? filteredLeads : filteredLeads.slice(0, 5);
@@ -482,15 +559,6 @@ export const AnalystDashboard: React.FC<{ onNewProposal: () => void }> = ({ onNe
               <UserPlus size={15} /> Cadastro Analista
             </button>
             <button
-              onClick={() => {
-                const latest = allLeads[0];
-                if (latest) setShareTarget({ id: latest.proposal_token || latest.id, dbId: latest.id, name: latest.name });
-              }}
-              className="flex-1 sm:flex-none flex items-center justify-center gap-2 border border-aqua-200 bg-aqua-50 hover:bg-aqua-100 text-aqua-700 px-4 py-3 rounded-xl font-bold text-xs transition-all"
-            >
-              <Share2 size={15} /> Compartilhar
-            </button>
-            <button
               onClick={onNewProposal}
               className="flex-1 sm:flex-none flex items-center justify-center gap-2 bg-aqua-600 hover:bg-aqua-500 text-white px-4 sm:px-6 py-3 rounded-xl font-bold shadow-lg shadow-aqua-500/30 transition-all transform hover:-translate-y-1 active:scale-95 text-xs sm:text-sm"
             >
@@ -618,7 +686,7 @@ export const AnalystDashboard: React.FC<{ onNewProposal: () => void }> = ({ onNe
                 <h3 className="text-lg font-bold text-slate-800 mb-6">Sales Performance</h3>
                 <div className="h-64">
                   <ResponsiveContainer width="100%" height="100%">
-                    <BarChart data={metrics?.salesTrend}>
+                    <BarChart data={filteredSalesTrend}>
                       <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
                       <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: '#64748b', fontSize: 12 }} />
                       <YAxis axisLine={false} tickLine={false} tick={{ fill: '#64748b', fontSize: 12 }} />
@@ -638,7 +706,7 @@ export const AnalystDashboard: React.FC<{ onNewProposal: () => void }> = ({ onNe
                   <ResponsiveContainer width="100%" height="100%">
                     <PieChart>
                       <Pie
-                        data={metrics?.leadsByStatus}
+                        data={filteredLeadsByStatus}
                         cx="50%"
                         cy="50%"
                         innerRadius={60}
@@ -646,7 +714,7 @@ export const AnalystDashboard: React.FC<{ onNewProposal: () => void }> = ({ onNe
                         paddingAngle={5}
                         dataKey="value"
                       >
-                        {metrics?.leadsByStatus.map((_, index) => (
+                        {filteredLeadsByStatus.map((_, index) => (
                           <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                         ))}
                       </Pie>
@@ -655,7 +723,7 @@ export const AnalystDashboard: React.FC<{ onNewProposal: () => void }> = ({ onNe
                   </ResponsiveContainer>
                 </div>
                 <div className="flex flex-wrap gap-2 justify-center mt-4">
-                  {metrics?.leadsByStatus.map((entry, index) => (
+                  {filteredLeadsByStatus.map((entry, index) => (
                     <div key={index} className="flex items-center gap-1 text-xs text-slate-500">
                       <span className="w-2 h-2 rounded-full" style={{ backgroundColor: COLORS[index % COLORS.length] }}></span>
                       {entry.name}
@@ -665,32 +733,60 @@ export const AnalystDashboard: React.FC<{ onNewProposal: () => void }> = ({ onNe
               </div>
             </div>
 
-            {/* Leads Table with Search & Filter */}
+            {/* Leads Table with Dynamic Filters */}
             <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
-              <div className="p-6 border-b border-slate-100">
-                <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-                  <h3 className="text-lg font-bold text-slate-800">
-                    {showAllLeads ? `All Leads (${filteredLeads.length})` : 'Recent Leads'}
+              {/* Header row */}
+              <div className="p-5 border-b border-slate-100">
+                <div className="flex flex-wrap items-center gap-3">
+                  <h3 className="text-lg font-bold text-slate-800 mr-auto">
+                    Leads
+                    <span className="ml-2 text-sm font-normal text-slate-400">({filteredLeads.length}{allLeads.length !== filteredLeads.length ? ` de ${allLeads.length}` : ''})</span>
                   </h3>
-                  <div className="flex flex-col sm:flex-row gap-3 w-full md:w-auto">
-                    {/* Search */}
-                    <div className="relative">
-                      <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
-                      <input
-                        type="text"
-                        placeholder="Search leads..."
-                        value={searchTerm}
-                        onChange={e => setSearchTerm(e.target.value)}
-                        className="w-full sm:w-48 pl-9 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-aqua-500 outline-none"
-                      />
-                    </div>
-                    {/* Filter */}
-                    <div className="relative">
-                      <Filter size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+                  {/* Quick search */}
+                  <div className="relative">
+                    <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+                    <input
+                      type="text"
+                      placeholder="Buscar leads..."
+                      value={searchTerm}
+                      onChange={e => setSearchTerm(e.target.value)}
+                      className="w-44 pl-9 pr-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-aqua-500 outline-none"
+                    />
+                  </div>
+                  {/* Filtros button */}
+                  <button
+                    onClick={() => setShowFilters(prev => !prev)}
+                    className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-sm font-bold border transition-colors ${showFilters || activeFilterCount > 0 ? 'bg-aqua-600 text-white border-aqua-600' : 'bg-slate-50 text-slate-600 border-slate-200 hover:border-aqua-400'}`}
+                  >
+                    <Filter size={14} />
+                    Filtros
+                    {activeFilterCount > 0 && (
+                      <span className="ml-0.5 bg-white text-aqua-700 text-[10px] font-black px-1.5 rounded-full">{activeFilterCount}</span>
+                    )}
+                  </button>
+                  {activeFilterCount > 0 && (
+                    <button onClick={resetFilters} className="text-xs text-slate-400 hover:text-red-500 font-bold flex items-center gap-1">
+                      <X size={12} /> Limpar
+                    </button>
+                  )}
+                  <button
+                    onClick={() => setShowAllLeads(prev => !prev)}
+                    className="text-sm text-aqua-600 font-bold hover:text-aqua-500 whitespace-nowrap"
+                  >
+                    {showAllLeads ? 'Recolher' : 'Ver todos'}
+                  </button>
+                </div>
+
+                {/* Expanded filter panel */}
+                {showFilters && (
+                  <div className="mt-4 pt-4 border-t border-slate-100 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
+                    {/* Status */}
+                    <div>
+                      <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Status</label>
                       <select
                         value={statusFilter}
                         onChange={e => setStatusFilter(e.target.value)}
-                        className="pl-9 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-aqua-500 outline-none appearance-none cursor-pointer"
+                        className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-aqua-500 appearance-none cursor-pointer"
                       >
                         <option value="ALL">Todos</option>
                         <option value="LEAD">Lead</option>
@@ -705,17 +801,99 @@ export const AnalystDashboard: React.FC<{ onNewProposal: () => void }> = ({ onNe
                         <option value="LOST">Perdido</option>
                       </select>
                     </div>
-                    <button
-                      onClick={() => setShowAllLeads(prev => !prev)}
-                      className="text-sm text-aqua-600 font-bold hover:text-aqua-500 whitespace-nowrap"
-                    >
-                      {showAllLeads ? 'Show Less' : 'View All'}
-                    </button>
+                    {/* Analista */}
+                    <div>
+                      <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Analista</label>
+                      <input
+                        type="text"
+                        placeholder="Nome do analista"
+                        value={filterAnalyst}
+                        onChange={e => setFilterAnalyst(e.target.value)}
+                        className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-aqua-500"
+                      />
+                    </div>
+                    {/* Telefone */}
+                    <div>
+                      <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Telefone</label>
+                      <input
+                        type="text"
+                        placeholder="215..."
+                        value={filterPhone}
+                        onChange={e => setFilterPhone(e.target.value)}
+                        className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-aqua-500"
+                      />
+                    </div>
+                    {/* Endereço / ZIP */}
+                    <div>
+                      <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Endereço / ZIP</label>
+                      <input
+                        type="text"
+                        placeholder="191..."
+                        value={filterAddress}
+                        onChange={e => setFilterAddress(e.target.value)}
+                        className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-aqua-500"
+                      />
+                    </div>
+                    {/* Email */}
+                    <div>
+                      <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Email</label>
+                      <input
+                        type="text"
+                        placeholder="@"
+                        value={filterEmail}
+                        onChange={e => setFilterEmail(e.target.value)}
+                        className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-aqua-500"
+                      />
+                    </div>
+                    {/* Proposta */}
+                    <div>
+                      <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Proposta</label>
+                      <select
+                        value={filterHasProposal}
+                        onChange={e => setFilterHasProposal(e.target.value as 'ALL' | 'YES' | 'NO')}
+                        className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-aqua-500 appearance-none cursor-pointer"
+                      >
+                        <option value="ALL">Todos</option>
+                        <option value="YES">Com proposta</option>
+                        <option value="NO">Sem proposta</option>
+                      </select>
+                    </div>
+                    {/* Gastos Água */}
+                    <div>
+                      <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Água ($/mês)</label>
+                      <div className="flex gap-1">
+                        <input type="number" placeholder="Min" value={filterWaterMin} onChange={e => setFilterWaterMin(e.target.value)}
+                          className="w-full px-2 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-aqua-500" />
+                        <input type="number" placeholder="Max" value={filterWaterMax} onChange={e => setFilterWaterMax(e.target.value)}
+                          className="w-full px-2 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-aqua-500" />
+                      </div>
+                    </div>
+                    {/* Gastos Sabão */}
+                    <div>
+                      <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Sabão ($/mês)</label>
+                      <div className="flex gap-1">
+                        <input type="number" placeholder="Min" value={filterCleaningMin} onChange={e => setFilterCleaningMin(e.target.value)}
+                          className="w-full px-2 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-aqua-500" />
+                        <input type="number" placeholder="Max" value={filterCleaningMax} onChange={e => setFilterCleaningMax(e.target.value)}
+                          className="w-full px-2 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-aqua-500" />
+                      </div>
+                    </div>
+                    {/* Total Anual */}
+                    <div>
+                      <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Total Anual ($)</label>
+                      <div className="flex gap-1">
+                        <input type="number" placeholder="Min" value={filterTotalMin} onChange={e => setFilterTotalMin(e.target.value)}
+                          className="w-full px-2 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-aqua-500" />
+                        <input type="number" placeholder="Max" value={filterTotalMax} onChange={e => setFilterTotalMax(e.target.value)}
+                          className="w-full px-2 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-aqua-500" />
+                      </div>
+                    </div>
                   </div>
-                </div>
+                )}
               </div>
+
               <div className="overflow-x-auto max-h-[520px] overflow-y-auto">
-                <table className="w-full min-w-[900px] text-left text-sm text-slate-600">
+                <table className="w-full min-w-[1100px] text-left text-sm text-slate-600">
                   <thead className="bg-slate-50 text-xs uppercase font-bold text-slate-400 sticky top-0 z-10">
                     <tr>
                       <th className="px-4 py-3 whitespace-nowrap">Cliente</th>
@@ -723,13 +901,20 @@ export const AnalystDashboard: React.FC<{ onNewProposal: () => void }> = ({ onNe
                       <th className="px-4 py-3 whitespace-nowrap">Data</th>
                       <th className="px-4 py-3 whitespace-nowrap">Email</th>
                       <th className="px-4 py-3 whitespace-nowrap">Telefone</th>
-                      <th className="px-4 py-3 whitespace-nowrap">ZIP</th>
+                      <th className="px-4 py-3 whitespace-nowrap">Endereço</th>
                       <th className="px-4 py-3 whitespace-nowrap">Analista</th>
+                      <th className="px-4 py-3 whitespace-nowrap text-right">Água/mês</th>
+                      <th className="px-4 py-3 whitespace-nowrap text-right">Sabão/mês</th>
+                      <th className="px-4 py-3 whitespace-nowrap text-right">Total Anual</th>
                       <th className="px-4 py-3 text-right whitespace-nowrap">Ações</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-100">
-                    {displayedLeads.map((lead) => (
+                    {displayedLeads.map((lead) => {
+                      const water = lead.water_consumption ?? (lead as any).water_consumption ?? 0;
+                      const cleaning = lead.cleaning_consumption ?? (lead as any).cleaning_consumption ?? 0;
+                      const totalAnnual = lead.total_annual_cost ?? (lead as any).total_annual_cost ?? ((water + cleaning) * 12 || 0);
+                      return (
                       <tr key={lead.id} className="hover:bg-slate-50 transition-colors">
                         <td className="px-4 py-3 font-bold text-slate-900 whitespace-nowrap">{lead.name}</td>
                         <td className="px-4 py-3">
@@ -762,10 +947,13 @@ export const AnalystDashboard: React.FC<{ onNewProposal: () => void }> = ({ onNe
                           </select>
                         </td>
                         <td className="px-4 py-3 whitespace-nowrap">{new Date(lead.created_at).toLocaleDateString()}</td>
-                        <td className="px-4 py-3 text-slate-500 whitespace-nowrap">{(lead as any).email || '-'}</td>
-                        <td className="px-4 py-3 text-slate-500 whitespace-nowrap">{(lead as any).phone || '-'}</td>
-                        <td className="px-4 py-3 text-slate-500 whitespace-nowrap">{(lead as any).zip_code || '-'}</td>
-                        <td className="px-4 py-3 text-slate-500 whitespace-nowrap text-xs">{(lead as any).analyst || '-'}</td>
+                        <td className="px-4 py-3 text-slate-500 whitespace-nowrap">{lead.email || '-'}</td>
+                        <td className="px-4 py-3 text-slate-500 whitespace-nowrap">{lead.phone || '-'}</td>
+                        <td className="px-4 py-3 text-slate-500 whitespace-nowrap">{lead.zip_code || '-'}</td>
+                        <td className="px-4 py-3 text-slate-500 whitespace-nowrap text-xs">{lead.analyst || '-'}</td>
+                        <td className="px-4 py-3 text-right text-slate-500 whitespace-nowrap">{water ? `$${Number(water).toLocaleString()}` : '-'}</td>
+                        <td className="px-4 py-3 text-right text-slate-500 whitespace-nowrap">{cleaning ? `$${Number(cleaning).toLocaleString()}` : '-'}</td>
+                        <td className="px-4 py-3 text-right text-slate-700 font-bold whitespace-nowrap">{totalAnnual ? `$${Number(totalAnnual).toLocaleString()}` : '-'}</td>
                         <td className="px-4 py-3 text-right">
                           <div className="flex items-center justify-end gap-2">
                             <button
@@ -784,11 +972,14 @@ export const AnalystDashboard: React.FC<{ onNewProposal: () => void }> = ({ onNe
                           </div>
                         </td>
                       </tr>
-                    ))}
+                      );
+                    })}
                     {displayedLeads.length === 0 && (
                       <tr>
-                        <td colSpan={8} className="px-6 py-8 text-center text-slate-400">
-                          {searchTerm || statusFilter !== 'ALL' ? 'Nenhum lead encontrado para o filtro.' : 'Nenhum lead. Inicie uma nova proposta!'}
+                        <td colSpan={11} className="px-6 py-8 text-center text-slate-400">
+                          {activeFilterCount > 0 || searchTerm || statusFilter !== 'ALL'
+                            ? 'Nenhum lead encontrado para os filtros aplicados.'
+                            : 'Nenhum lead. Inicie uma nova proposta!'}
                         </td>
                       </tr>
                     )}
@@ -801,7 +992,7 @@ export const AnalystDashboard: React.FC<{ onNewProposal: () => void }> = ({ onNe
                     onClick={() => setShowAllLeads(true)}
                     className="text-sm text-aqua-600 font-bold hover:text-aqua-500"
                   >
-                    Show all {filteredLeads.length} leads →
+                    Ver todos {filteredLeads.length} leads →
                   </button>
                 </div>
               )}
@@ -1158,7 +1349,7 @@ export const AnalystDashboard: React.FC<{ onNewProposal: () => void }> = ({ onNe
                 <UserPlus size={20} />
               </div>
               <div>
-                <h3 className="font-black text-slate-800">Enviar Convite de Analista</h3>
+                <h3 className="font-black text-slate-800">Enviar Convite de {profile?.first_name || profile?.full_name || 'Analista'}</h3>
                 <p className="text-slate-500 text-xs">Candidato recebe link da landing page de recrutamento</p>
               </div>
             </div>

@@ -5,7 +5,8 @@ import { createClient } from '@supabase/supabase-js';
 /** Read stored access token without acquiring any Web Lock. */
 function getStoredToken(): string | null {
   try {
-    const raw = localStorage.getItem('aq_session');
+    // Session lives in sessionStorage (per-tab, no Web Lock). Fall back to localStorage for older sessions.
+    const raw = sessionStorage.getItem('aq_session') ?? localStorage.getItem('aq_session');
     if (!raw) return null;
     const parsed = JSON.parse(raw);
     return (parsed?.currentSession ?? parsed)?.access_token ?? null;

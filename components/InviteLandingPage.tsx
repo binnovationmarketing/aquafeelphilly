@@ -125,15 +125,12 @@ export function InviteLandingPage() {
         if (result?.error) throw new Error(result.error);
         if (result?.referral_id) setReferralId(result.referral_id);
       } else {
-        // No token — loose lead
-        const { error } = await supabase.from('clients').insert({
-          name: leadData.name,
-          phone: leadData.phone,
-          email: leadData.email,
-          zip_code: leadData.address,
-          status: 'LEAD',
-          observations: ['Agendamento pendente — entrada pelo link de convite'],
-          created_at: new Date().toISOString(),
+        // No token — loose lead (use SECURITY DEFINER RPC so anon users can insert, bypassing RLS)
+        const { error } = await supabaseAnon.rpc('create_loose_lead', {
+          p_name:    leadData.name,
+          p_phone:   leadData.phone,
+          p_email:   leadData.email || null,
+          p_address: leadData.address || null,
         });
         if (error) throw error;
       }
