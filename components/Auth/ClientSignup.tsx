@@ -63,7 +63,7 @@ export const ClientSignup: React.FC = () => {
           lang: 'pt',
           created_at: new Date().toISOString(),
         }, { onConflict: 'email' });
-        if (clientError) console.error('Client insert error:', clientError);
+        if (clientError) throw clientError;
       }
       setSuccess(true);
     } catch (err: any) {

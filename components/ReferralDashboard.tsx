@@ -1,12 +1,15 @@
 import React, { useState, useEffect } from 'react';
-import { useSearchParams } from 'react-router-dom';
-import { User, Droplet, Share2, Award, Clock, CheckCircle } from 'lucide-react';
-import { supabase } from '../lib/supabase';
+import { useSearchParams, useNavigate } from 'react-router-dom';
+import { User, Droplet, Share2, Award, Clock, CheckCircle, LogOut } from 'lucide-react';
+import { supabaseAnon } from '../lib/supabase';
 import { ReferralTree } from './ui/ReferralTree';
 import { toast } from 'sonner';
 
+const PROD_URL = 'https://aquafeelphilly.com';
+
 export function ReferralDashboard() {
   const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
   const token = searchParams.get('token');
   const [activeTab, setActiveTab] = useState<'dashboard' | 'cadastro' | 'arvore' | 'premios'>('dashboard');
   const [loading, setLoading] = useState(true);
@@ -25,7 +28,7 @@ export function ReferralDashboard() {
 
   const loadPortalData = async () => {
     try {
-      const { data: result, error } = await supabase.rpc('get_client_referral_portal', { p_token: token });
+      const { data: result, error } = await supabaseAnon.rpc('get_client_referral_portal', { p_token: token });
       if (error) throw error;
       if (result && result.error) {
         toast.error(result.error);
@@ -49,7 +52,7 @@ export function ReferralDashboard() {
 
     if (window.confirm(`Confirmar resgate do ${item} por ${pontos} pontos?`)) {
       try {
-        const { data: result, error } = await supabase.rpc('redeem_prize_from_portal', {
+        const { data: result, error } = await supabaseAnon.rpc('redeem_prize_from_portal', {
           p_token: token,
           p_prize_name: item,
           p_points_cost: pontos
@@ -72,7 +75,7 @@ export function ReferralDashboard() {
     if (!token || !newRef.name) return;
     setIsSubmitting(true);
     try {
-      const { data: result, error } = await supabase.rpc('add_referral_from_portal', {
+      const { data: result, error } = await supabaseAnon.rpc('add_referral_from_portal', {
         p_token: token,
         p_name: newRef.name,
         p_phone: newRef.phone,
@@ -116,7 +119,7 @@ export function ReferralDashboard() {
   const { client, points, referrals, history } = data;
   const isElite = points.level === 2;
 
-  const referralLink = `${window.location.origin}/invite?ref=${token}`;
+  const referralLink = `${PROD_URL}/invite?ref=${token}`;
   const whatsappMessage = encodeURIComponent(`Oi! Estou usando a Aquafeel na minha casa e adorando. Use meu link VIP para agendar uma análise grátis e ganhar descontos: ${referralLink}`);
 
   return (
@@ -130,7 +133,7 @@ export function ReferralDashboard() {
               Aquafeel <span className="text-[#11caa0]">Philly</span>
             </h1>
           </div>
-          <div className="flex items-center gap-6">
+          <div className="flex items-center gap-4">
             <div className="text-right">
               <p className="text-xs text-slate-400 uppercase tracking-widest">Saldo Atual</p>
               <p className="text-xl font-bold text-[#11caa0]">{points.points.toLocaleString()} Points</p>
@@ -138,6 +141,13 @@ export function ReferralDashboard() {
             <div className={`w-12 h-12 rounded-full flex items-center justify-center border-2 ${isElite ? 'bg-yellow-500/20 border-yellow-500 text-yellow-500' : 'bg-slate-700 border-[#11caa0] text-white'}`}>
               <User size={20} />
             </div>
+            <button
+              onClick={() => navigate('/')}
+              title="Sair do Portal"
+              className="flex items-center gap-2 px-4 py-2 rounded-xl bg-slate-700 hover:bg-red-600/80 text-slate-300 hover:text-white transition-all text-sm font-bold border border-slate-600 hover:border-red-500"
+            >
+              <LogOut size={16} /> Sair
+            </button>
           </div>
         </div>
       </nav>
@@ -270,7 +280,16 @@ export function ReferralDashboard() {
               </div>
               <div>
                 <label className="block text-xs uppercase tracking-wider text-slate-400 mb-1">Telefone de Contato</label>
-                <input type="tel" value={newRef.phone} onChange={e => setNewRef({...newRef, phone: e.target.value})} placeholder="Ex: (215) 000-0000" className="w-full bg-slate-900 border border-slate-700 rounded-lg p-3.5 focus:outline-none focus:border-[#11caa0] transition-colors" />
+                <div className="flex items-center bg-slate-900 border border-slate-700 rounded-lg overflow-hidden focus-within:border-[#11caa0] transition-colors">
+                  <span className="pl-3.5 pr-1 text-slate-400 font-bold text-sm shrink-0">+1</span>
+                  <input
+                    type="tel"
+                    value={newRef.phone}
+                    onChange={e => setNewRef({...newRef, phone: e.target.value.replace(/\D/g,'').slice(0,10)})}
+                    placeholder="215-000-0000"
+                    className="flex-1 bg-transparent pr-3.5 py-3.5 text-white focus:outline-none"
+                  />
+                </div>
               </div>
               <div>
                 <label className="block text-xs uppercase tracking-wider text-slate-400 mb-1">E-mail (Opcional)</label>

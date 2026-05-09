@@ -1,6 +1,6 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
-  TrendingUp, DollarSign, Users, Star, ArrowUp, Award, Target
+  TrendingUp, DollarSign, Users, Star, ArrowUp, Award, Target, Calculator
 } from 'lucide-react';
 import {
   HierarchyRole,
@@ -296,6 +296,176 @@ const TeamLeaderboard: React.FC<{ analysts: AnalystStat[]; myRole: HierarchyRole
   );
 };
 
+/* ─────────────────── Commission Calculator ─────────────────── */
+
+const APPROVAL_PCTS = [0.60, 0.65, 0.70, 0.75, 0.80, 0.85, 0.90, 0.95, 1.00];
+const FIXED_COSTS = 50; // Convention $25 + Insurance $25
+const BASE_DEDUCTION = 4790;
+
+interface CalcState {
+  saleType: 'city' | 'well';
+  salePrice: number;
+  approvalPct: number;
+  installCost: number;
+}
+
+const CommissionCalculator: React.FC<{ role: HierarchyRole }> = ({ role }) => {
+  const maxCommission = ROLE_COMMISSION[role];
+
+  const [c, setC] = useState<CalcState>({
+    saleType: 'city',
+    salePrice: 7990,
+    approvalPct: 0.80,
+    installCost: 550,
+  });
+
+  const minPrice = c.saleType === 'city' ? 7990 : 8990;
+  const maxPrice = c.saleType === 'city' ? 8790 : 11990;
+
+  // Clamp price when type changes
+  const setType = (t: 'city' | 'well') => {
+    const newMin = t === 'city' ? 7990 : 8990;
+    const newMax = t === 'city' ? 8790 : 11990;
+    setC(prev => ({
+      ...prev,
+      saleType: t,
+      salePrice: Math.min(Math.max(prev.salePrice, newMin), newMax),
+    }));
+  };
+
+  const gross    = c.salePrice * c.approvalPct;
+  const netComm  = Math.max(0, gross - BASE_DEDUCTION - c.installCost - FIXED_COSTS);
+  const earned   = Math.min(netComm, maxCommission);
+  const cappedAt = netComm > maxCommission;
+
+  return (
+    <div className="rounded-2xl border border-teal-200 bg-gradient-to-br from-teal-50 to-white shadow-sm overflow-hidden">
+      <div className="p-5 border-b border-teal-100 flex items-center gap-3">
+        <div className="w-8 h-8 rounded-lg bg-teal-100 flex items-center justify-center">
+          <Calculator size={16} className="text-teal-600" />
+        </div>
+        <div>
+          <h3 className="font-black text-slate-900">Calculadora de Comissão</h3>
+          <p className="text-xs text-slate-500">Simule quanto você ganha por venda</p>
+        </div>
+      </div>
+
+      <div className="p-5 space-y-5">
+        {/* Sale type */}
+        <div>
+          <p className="text-xs font-black text-slate-500 uppercase tracking-widest mb-2">Tipo de Água</p>
+          <div className="grid grid-cols-2 gap-3">
+            {(['city', 'well'] as const).map(t => (
+              <button
+                key={t}
+                onClick={() => setType(t)}
+                className={`py-3 rounded-xl font-black text-sm border-2 transition-all ${
+                  c.saleType === t
+                    ? 'border-teal-500 bg-teal-500 text-white shadow-md'
+                    : 'border-slate-200 bg-white text-slate-600 hover:border-teal-300'
+                }`}
+              >
+                {t === 'city' ? 'Agua de Cidade' : 'Agua de Poco'}
+                <span className="block text-[10px] font-normal mt-0.5 opacity-80">
+                  {t === 'city' ? '$7,990 – $8,790' : '$8,990 – $11,990'}
+                </span>
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Sale price */}
+        <div>
+          <div className="flex justify-between mb-1">
+            <p className="text-xs font-black text-slate-500 uppercase tracking-widest">Valor da Venda</p>
+            <p className="text-xs font-black text-teal-700">{fmt(c.salePrice)}</p>
+          </div>
+          <input
+            type="range" min={minPrice} max={maxPrice} step={10}
+            value={c.salePrice}
+            onChange={e => setC(prev => ({ ...prev, salePrice: +e.target.value }))}
+            className="w-full accent-teal-500"
+          />
+          <div className="flex justify-between text-[10px] text-slate-400 mt-0.5">
+            <span>{fmt(minPrice)}</span><span>{fmt(maxPrice)}</span>
+          </div>
+        </div>
+
+        {/* Approval % */}
+        <div>
+          <p className="text-xs font-black text-slate-500 uppercase tracking-widest mb-2">Aprovação Financeira</p>
+          <div className="flex flex-wrap gap-2">
+            {APPROVAL_PCTS.map(p => (
+              <button
+                key={p}
+                onClick={() => setC(prev => ({ ...prev, approvalPct: p }))}
+                className={`px-3 py-1.5 rounded-lg text-xs font-black border transition-all ${
+                  c.approvalPct === p
+                    ? 'bg-teal-500 border-teal-500 text-white shadow'
+                    : 'bg-white border-slate-200 text-slate-600 hover:border-teal-300'
+                }`}
+              >
+                {(p * 100).toFixed(0)}%
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Installation cost */}
+        <div>
+          <div className="flex justify-between mb-1">
+            <p className="text-xs font-black text-slate-500 uppercase tracking-widest">Custo de Instalação</p>
+            <p className="text-xs font-black text-slate-700">{fmt(c.installCost)}</p>
+          </div>
+          <input
+            type="range" min={450} max={650} step={10}
+            value={c.installCost}
+            onChange={e => setC(prev => ({ ...prev, installCost: +e.target.value }))}
+            className="w-full accent-slate-400"
+          />
+          <div className="flex justify-between text-[10px] text-slate-400 mt-0.5">
+            <span>$450</span><span>$650</span>
+          </div>
+        </div>
+
+        {/* Breakdown */}
+        <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 space-y-2 text-sm">
+          <div className="flex justify-between text-slate-500">
+            <span>Valor aprovado ({(c.approvalPct * 100).toFixed(0)}%)</span>
+            <span>{fmt(gross)}</span>
+          </div>
+          <div className="flex justify-between text-slate-500">
+            <span>Deducao base</span>
+            <span className="text-red-400">- {fmt(BASE_DEDUCTION)}</span>
+          </div>
+          <div className="flex justify-between text-slate-500">
+            <span>Instalacao</span>
+            <span className="text-red-400">- {fmt(c.installCost)}</span>
+          </div>
+          <div className="flex justify-between text-slate-500">
+            <span>Custos fixos (Convencao + Seguro)</span>
+            <span className="text-red-400">- {fmt(FIXED_COSTS)}</span>
+          </div>
+          <div className="border-t border-slate-200 pt-2 flex justify-between font-black text-lg">
+            <span className="text-slate-800">Sua Comissao</span>
+            <span className={earned > 0 ? 'text-teal-600' : 'text-red-500'}>{fmt(earned)}</span>
+          </div>
+          {cappedAt && (
+            <p className="text-[10px] text-amber-600 font-bold text-center pt-1">
+              Cap de {fmt(maxCommission)} aplicado ({ROLE_LABELS_PT[role]})
+            </p>
+          )}
+          {earned <= 0 && (
+            <p className="text-[10px] text-red-500 font-bold text-center pt-1">
+              Aprovacao insuficiente para cobrir custos nesta venda.
+            </p>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+};
+
 /* ─────────────────── Main Export ─────────────────── */
 export const CommissionPanel: React.FC<CommissionPanelProps> = ({
   role, personalSales, teamSales, teamAnalysts = [], monthlyEarnings
@@ -324,6 +494,9 @@ export const CommissionPanel: React.FC<CommissionPanelProps> = ({
       ) : (
         <CommissionTableCard currentRole={safeRole} />
       )}
+
+      {/* Commission Calculator */}
+      <CommissionCalculator role={safeRole} />
 
       {/* Stats banner - Stacks on mobile */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">

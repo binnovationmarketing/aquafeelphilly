@@ -31,6 +31,8 @@ export interface Referral {
 
 export interface ClientData {
   id: string;
+  proposalToken?: string;
+  proposalPdfUrl?: string;
   name: string;
   spouseName?: string;
   email: string;

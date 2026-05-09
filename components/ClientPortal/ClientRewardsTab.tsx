@@ -79,6 +79,11 @@ export function ClientRewardsTab({ portalData, onSuccess }: Props) {
       return;
     }
 
+    if (!points.referral_token) {
+      toast.error('Token de conta não encontrado. Recarregue a página e tente novamente.');
+      return;
+    }
+
     const confirmed = window.confirm(`Confirmar resgate de "${prize.name}" por ${prize.points.toLocaleString()} pontos?`);
     if (!confirmed) return;
 

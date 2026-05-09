@@ -10,7 +10,7 @@
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts';
 import { Resend } from 'npm:resend';
 
-const FROM_NAME = 'Aquafeel Solutions Tech';
+const FROM_NAME = 'Aquos Tech';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin':  '*',
