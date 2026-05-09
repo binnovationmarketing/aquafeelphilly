@@ -1,11 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
 import { toast } from 'sonner';
-import { ROLE_LABELS } from '../contexts/AuthContext';
+import { ROLE_LABELS, useAuth } from '../contexts/AuthContext';
 import {
   Star, Trophy, MapPin, Shield, UserCog, Check,
-  TrendingUp, Users, DollarSign, Calendar,
+  TrendingUp, Users, DollarSign, Calendar, KeyRound, Loader2, Eye, EyeOff,
 } from 'lucide-react';
+
+const ADMIN_EMAIL = 'binnovationmarketing@gmail.com';
+const RESET_FN_URL = 'https://dznjduuyxwndqgrayxgw.supabase.co/functions/v1/admin-reset-password';
 import {
   ROLE_COMMISSION,
   ROLE_COLORS,
@@ -254,11 +257,49 @@ const StatsHeader: React.FC<{
 // ─── main component ───────────────────────────────────────────────────────────
 
 export const AdminPanel: React.FC = () => {
+  const { user } = useAuth();
+  const isAdminUser = user?.email?.toLowerCase() === ADMIN_EMAIL.toLowerCase();
+
   const [tab, setTab] = useState<'equipe' | 'cargos'>('equipe');
   const [analysts, setAnalysts] = useState<Analyst[]>([]);
   const [statsMap, setStatsMap] = useState<Record<string, AnalystStats>>({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  // Password reset modal state
+  const [resetTarget, setResetTarget] = useState<Analyst | null>(null);
+  const [resetPwd, setResetPwd] = useState('');
+  const [showResetPwd, setShowResetPwd] = useState(false);
+  const [resetting, setResetting] = useState(false);
+
+  const handleResetPassword = async () => {
+    if (!resetTarget || resetPwd.length < 6) return;
+    setResetting(true);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      const token = session?.access_token;
+      if (!token) throw new Error('Sem sessão ativa.');
+
+      const res = await fetch(RESET_FN_URL, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ userId: resetTarget.id, newPassword: resetPwd }),
+      });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error || 'Erro desconhecido');
+
+      toast.success(`Senha de ${displayName(resetTarget)} atualizada!`);
+      setResetTarget(null);
+      setResetPwd('');
+    } catch (err: any) {
+      toast.error('Erro ao redefinir senha: ' + err.message);
+    } finally {
+      setResetting(false);
+    }
+  };
 
   useEffect(() => {
     loadAll();
@@ -426,6 +467,7 @@ export const AdminPanel: React.FC = () => {
                   <th className="p-4 border-b border-slate-200">Usuário</th>
                   <th className="p-4 border-b border-slate-200">Email</th>
                   <th className="p-4 border-b border-slate-200">Cargo Atual</th>
+                  {isAdminUser && <th className="p-4 border-b border-slate-200 text-center">Senha</th>}
                   <th className="p-4 border-b border-slate-200 text-right">Ações</th>
                 </tr>
               </thead>
@@ -453,6 +495,18 @@ export const AdminPanel: React.FC = () => {
                         {ROLE_LABELS[analyst.role as keyof typeof ROLE_LABELS] || analyst.role}
                       </span>
                     </td>
+                    {isAdminUser && (
+                      <td className="p-4 text-center">
+                        <button
+                          onClick={() => { setResetTarget(analyst); setResetPwd(''); setShowResetPwd(false); }}
+                          className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-amber-50 border border-amber-200 text-amber-700 text-xs font-bold hover:bg-amber-100 transition-colors"
+                          title="Redefinir senha"
+                        >
+                          <KeyRound size={13} />
+                          Redefinir
+                        </button>
+                      </td>
+                    )}
                     <td className="p-4 text-right">
                       <select
                         value={analyst.role}
@@ -468,6 +522,58 @@ export const AdminPanel: React.FC = () => {
                 ))}
               </tbody>
             </table>
+          </div>
+        </div>
+      )}
+
+      {/* ── Admin Password Reset Modal ── */}
+      {resetTarget && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[300] p-4">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-sm w-full p-6">
+            <div className="flex items-center gap-3 mb-5">
+              <div className="w-10 h-10 rounded-full bg-amber-100 text-amber-600 flex items-center justify-center">
+                <KeyRound size={20} />
+              </div>
+              <div>
+                <h3 className="font-black text-slate-900">Redefinir Senha</h3>
+                <p className="text-xs text-slate-500">{displayName(resetTarget)} — {resetTarget.email}</p>
+              </div>
+            </div>
+
+            <div className="relative mb-4">
+              <input
+                type={showResetPwd ? 'text' : 'password'}
+                value={resetPwd}
+                onChange={(e) => setResetPwd(e.target.value)}
+                placeholder="Nova senha (mín. 6 caracteres)"
+                className="w-full rounded-xl px-4 py-3 pr-11 border border-slate-200 focus:outline-none focus:ring-2 focus:ring-amber-400 text-sm font-medium"
+                autoFocus
+              />
+              <button
+                type="button"
+                onClick={() => setShowResetPwd(v => !v)}
+                className="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-slate-700"
+              >
+                {showResetPwd ? <EyeOff size={16} /> : <Eye size={16} />}
+              </button>
+            </div>
+
+            <div className="flex gap-2">
+              <button
+                onClick={() => setResetTarget(null)}
+                className="flex-1 py-2.5 rounded-xl border border-slate-200 text-slate-600 font-bold text-sm hover:bg-slate-50 transition-colors"
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={handleResetPassword}
+                disabled={resetting || resetPwd.length < 6}
+                className="flex-1 py-2.5 rounded-xl bg-amber-500 text-white font-black text-sm hover:bg-amber-600 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 transition-colors"
+              >
+                {resetting ? <Loader2 size={16} className="animate-spin" /> : <KeyRound size={16} />}
+                {resetting ? 'Salvando...' : 'Salvar'}
+              </button>
+            </div>
           </div>
         </div>
       )}

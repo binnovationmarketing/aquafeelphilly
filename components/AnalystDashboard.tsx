@@ -692,15 +692,17 @@ export const AnalystDashboard: React.FC<{ onNewProposal: () => void }> = ({ onNe
                         onChange={e => setStatusFilter(e.target.value)}
                         className="pl-9 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-aqua-500 outline-none appearance-none cursor-pointer"
                       >
-                        <option value="ALL">All Status</option>
+                        <option value="ALL">Todos</option>
                         <option value="LEAD">Lead</option>
-                        <option value="PRESENTATION">Presentation</option>
-                        <option value="SCHEDULED">Scheduled</option>
-                        <option value="QUALIFIED">Qualified</option>
-                        <option value="SALE">Sale</option>
-                        <option value="NO SALE">No Sale</option>
-                        <option value="INSTALLED">Installed</option>
-                        <option value="LOST">Lost</option>
+                        <option value="PENDING">Pendente</option>
+                        <option value="SCHEDULED">Agendado</option>
+                        <option value="SALE">Venda</option>
+                        <option value="NO SALE">Sem Venda</option>
+                        <option value="NOT INTERESTED">Sem Interesse</option>
+                        <option value="RESCHEDULE">Reagendar</option>
+                        <option value="APPLY">Aplicar</option>
+                        <option value="INSTALLED">Instalado</option>
+                        <option value="LOST">Perdido</option>
                       </select>
                     </div>
                     <button
@@ -712,22 +714,25 @@ export const AnalystDashboard: React.FC<{ onNewProposal: () => void }> = ({ onNe
                   </div>
                 </div>
               </div>
-              <div className="overflow-x-auto">
-                <table className="w-full text-left text-sm text-slate-600">
-                  <thead className="bg-slate-50 text-xs uppercase font-bold text-slate-400">
+              <div className="overflow-x-auto max-h-[520px] overflow-y-auto">
+                <table className="w-full min-w-[900px] text-left text-sm text-slate-600">
+                  <thead className="bg-slate-50 text-xs uppercase font-bold text-slate-400 sticky top-0 z-10">
                     <tr>
-                      <th className="px-6 py-4">Client Name</th>
-                      <th className="px-6 py-4">Status</th>
-                      <th className="px-6 py-4">Date</th>
-                      <th className="px-6 py-4">Email</th>
-                      <th className="px-6 py-4 text-right">Action</th>
+                      <th className="px-4 py-3 whitespace-nowrap">Cliente</th>
+                      <th className="px-4 py-3 whitespace-nowrap">Status</th>
+                      <th className="px-4 py-3 whitespace-nowrap">Data</th>
+                      <th className="px-4 py-3 whitespace-nowrap">Email</th>
+                      <th className="px-4 py-3 whitespace-nowrap">Telefone</th>
+                      <th className="px-4 py-3 whitespace-nowrap">ZIP</th>
+                      <th className="px-4 py-3 whitespace-nowrap">Analista</th>
+                      <th className="px-4 py-3 text-right whitespace-nowrap">Ações</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-100">
                     {displayedLeads.map((lead) => (
                       <tr key={lead.id} className="hover:bg-slate-50 transition-colors">
-                        <td className="px-6 py-4 font-bold text-slate-900">{lead.name}</td>
-                        <td className="px-6 py-4">
+                        <td className="px-4 py-3 font-bold text-slate-900 whitespace-nowrap">{lead.name}</td>
+                        <td className="px-4 py-3">
                           <select
                             value={lead.status}
                             onChange={async (e) => {
@@ -756,10 +761,13 @@ export const AnalystDashboard: React.FC<{ onNewProposal: () => void }> = ({ onNe
                             <option value="APPLY">Aplicar</option>
                           </select>
                         </td>
-                        <td className="px-6 py-4">{new Date(lead.created_at).toLocaleDateString()}</td>
-                        <td className="px-6 py-4 text-slate-500">{lead.email || '-'}</td>
-                        <td className="px-6 py-4 text-right">
-                          <div className="flex items-center justify-end gap-3">
+                        <td className="px-4 py-3 whitespace-nowrap">{new Date(lead.created_at).toLocaleDateString()}</td>
+                        <td className="px-4 py-3 text-slate-500 whitespace-nowrap">{(lead as any).email || '-'}</td>
+                        <td className="px-4 py-3 text-slate-500 whitespace-nowrap">{(lead as any).phone || '-'}</td>
+                        <td className="px-4 py-3 text-slate-500 whitespace-nowrap">{(lead as any).zip_code || '-'}</td>
+                        <td className="px-4 py-3 text-slate-500 whitespace-nowrap text-xs">{(lead as any).analyst || '-'}</td>
+                        <td className="px-4 py-3 text-right">
+                          <div className="flex items-center justify-end gap-2">
                             <button
                               onClick={() => setShareTarget({ id: lead.proposal_token || lead.id, name: lead.name })}
                               className="p-1.5 text-slate-400 hover:text-aqua-600 hover:bg-aqua-50 rounded-lg transition-colors"
@@ -769,7 +777,7 @@ export const AnalystDashboard: React.FC<{ onNewProposal: () => void }> = ({ onNe
                             </button>
                             <button
                               onClick={() => navigate(`/proposal?id=${lead.proposal_token || lead.id}`)}
-                              className="text-aqua-600 hover:text-aqua-500 font-bold text-xs uppercase"
+                              className="text-aqua-600 hover:text-aqua-500 font-bold text-xs uppercase whitespace-nowrap"
                             >
                               Proposta
                             </button>
@@ -779,8 +787,8 @@ export const AnalystDashboard: React.FC<{ onNewProposal: () => void }> = ({ onNe
                     ))}
                     {displayedLeads.length === 0 && (
                       <tr>
-                        <td colSpan={5} className="px-6 py-8 text-center text-slate-400">
-                          {searchTerm || statusFilter !== 'ALL' ? 'No leads match your search.' : 'No leads found. Start a new proposal!'}
+                        <td colSpan={8} className="px-6 py-8 text-center text-slate-400">
+                          {searchTerm || statusFilter !== 'ALL' ? 'Nenhum lead encontrado para o filtro.' : 'Nenhum lead. Inicie uma nova proposta!'}
                         </td>
                       </tr>
                     )}
