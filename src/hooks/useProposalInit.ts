@@ -24,6 +24,7 @@ export function useProposalInit() {
   const clientData = useAppStore((state: any) => state.clientData);
   const [isLoaded, setIsLoaded] = useState(false);
   const [proposalOpenedAt, setProposalOpenedAt] = useState<string | null>(null);
+  const [shareExpiresAt, setShareExpiresAt] = useState<string | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -88,6 +89,11 @@ export function useProposalInit() {
           } else {
             // Just opened for the first time — use now as the anchor
             setProposalOpenedAt(new Date().toISOString());
+          }
+
+          // Expose share expiry for public-access guard in ProposalView
+          if (row.share_expires_at) {
+            setShareExpiresAt(row.share_expires_at);
           }
 
           setIsLoaded(true);
@@ -187,5 +193,5 @@ export function useProposalInit() {
     return () => { cancelled = true; };
   }, [searchParams, navigate, setClientData]);
 
-  return { isLoaded, clientData, proposalOpenedAt };
+  return { isLoaded, clientData, proposalOpenedAt, shareExpiresAt };
 }

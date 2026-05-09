@@ -26,7 +26,7 @@ import { useAppStore } from '../src/store/useAppStore';
 const SECTIONS = ['hero', 'malefices', 'logic', 'soap', 'proposal', 'testimonials', 'faq'];
 
 export function ProposalView() {
-  const { signOut } = useAuth();
+  const { signOut, user: authUser } = useAuth();
   const navigate = useNavigate();
 
   const [isAnalystModalOpen, setIsAnalystModalOpen] = useState(false);
@@ -44,7 +44,12 @@ export function ProposalView() {
   const INTERNAL_NUMBERS = ['+19842206002', '+12407064966', '+12407806473'];
 
   // 1. Load client data + server-side timer anchor
-  const { isLoaded, clientData, proposalOpenedAt } = useProposalInit();
+  const { isLoaded, clientData, proposalOpenedAt, shareExpiresAt } = useProposalInit();
+
+  // 1b. Public share-link expiry guard (only for unauthenticated viewers)
+  const isShareLinkExpired = !authUser && !!shareExpiresAt && new Date() > new Date(shareExpiresAt);
+  // If share_expires_at not set yet, treat as not-yet-shared (analyst-internal view — no restriction)
+  const isShareNotYetSent = !authUser && !shareExpiresAt && isLoaded;
 
   // 2. Countdown anchored to server timestamp (not localStorage)
   const { expirationDate, isExpired, timeLeft } = useCountdownTimer(proposalOpenedAt, 48);
@@ -316,6 +321,28 @@ export function ProposalView() {
   };
 
   if (!isLoaded || !expirationDate || !clientData) return null;
+
+  // Share link expired — show gate for unauthenticated public viewers
+  if (isShareLinkExpired) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-[#020d1a] text-white px-4">
+        <div className="max-w-md text-center space-y-5">
+          <div className="text-6xl">🔒</div>
+          <h1 className="text-2xl font-black uppercase tracking-tight">Link Expirado</h1>
+          <p className="text-slate-400 text-sm leading-relaxed">
+            Este link de proposta era válido por 24 horas e já expirou.<br />
+            Solicite um novo link ao seu consultor Aquafeel.
+          </p>
+          <a
+            href="https://aquafeelphilly.com"
+            className="inline-block mt-4 px-6 py-3 rounded-2xl bg-gradient-to-r from-cyan-500 to-blue-600 text-white font-black text-sm uppercase tracking-widest hover:opacity-90 transition"
+          >
+            Voltar ao Início
+          </a>
+        </div>
+      </div>
+    );
+  }
 
   const { lang, name, spouseName, zipCode } = clientData;
   const safeLang = lang as Language;

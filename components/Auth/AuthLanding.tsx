@@ -660,7 +660,7 @@ export const AuthLanding: React.FC = () => {
         </AnimatePresence>
 
         <p className="text-center text-[10px] text-slate-700 font-bold uppercase tracking-widest">
-          Aquafeel Solutions Tech © {new Date().getFullYear()}
+          Aquos Tech © {new Date().getFullYear()}
         </p>
       </div>
     </div>

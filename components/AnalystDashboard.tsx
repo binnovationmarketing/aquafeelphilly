@@ -57,7 +57,7 @@ export const AnalystDashboard: React.FC<{ onNewProposal: () => void }> = ({ onNe
   const [statusFilter, setStatusFilter] = useState<string>('ALL');
   const [selectedLead, setSelectedLead] = useState<Lead | null>(null);
   const [showAllLeads, setShowAllLeads] = useState(false);
-  const [shareTarget, setShareTarget] = useState<{ id: string; name: string } | null>(null);
+  const [shareTarget, setShareTarget] = useState<{ id: string; dbId: string; name: string } | null>(null);
   const [activeTab, setActiveTab] = useState<'OVERVIEW' | 'RECOMMENDATIONS' | 'COMMISSIONS' | 'TEAM_MANAGEMENT'>('OVERVIEW');
   const [isScheduling, setIsScheduling] = useState(false);
   const [showProfileModal, setShowProfileModal] = useState(false);
@@ -484,7 +484,7 @@ export const AnalystDashboard: React.FC<{ onNewProposal: () => void }> = ({ onNe
             <button
               onClick={() => {
                 const latest = allLeads[0];
-                if (latest) setShareTarget({ id: latest.proposal_token || latest.id, name: latest.name });
+                if (latest) setShareTarget({ id: latest.proposal_token || latest.id, dbId: latest.id, name: latest.name });
               }}
               className="flex-1 sm:flex-none flex items-center justify-center gap-2 border border-aqua-200 bg-aqua-50 hover:bg-aqua-100 text-aqua-700 px-4 py-3 rounded-xl font-bold text-xs transition-all"
             >
@@ -769,7 +769,7 @@ export const AnalystDashboard: React.FC<{ onNewProposal: () => void }> = ({ onNe
                         <td className="px-4 py-3 text-right">
                           <div className="flex items-center justify-end gap-2">
                             <button
-                              onClick={() => setShareTarget({ id: lead.proposal_token || lead.id, name: lead.name })}
+                              onClick={() => setShareTarget({ id: lead.proposal_token || lead.id, dbId: lead.id, name: lead.name })}
                               className="p-1.5 text-slate-400 hover:text-aqua-600 hover:bg-aqua-50 rounded-lg transition-colors"
                               title="Compartilhar proposta"
                             >
@@ -1058,6 +1058,7 @@ export const AnalystDashboard: React.FC<{ onNewProposal: () => void }> = ({ onNe
           isOpen={true}
           onClose={() => setShareTarget(null)}
           clientId={shareTarget.id}
+          clientDbId={shareTarget.dbId}
           clientName={shareTarget.name}
         />
       )}
