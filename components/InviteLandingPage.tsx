@@ -6,7 +6,7 @@ import {
   CheckCircle, User, Phone, MapPin, Loader2, Building2, Clock,
   Briefcase, Star, Award,
 } from 'lucide-react';
-import { supabase, supabaseAnon } from '../lib/supabase';
+import { supabaseAnon } from '../lib/supabase';
 import { toast } from 'sonner';
 
 // Suppress framer type issues
@@ -287,7 +287,7 @@ export function InviteLandingPage() {
 
       if (analystEmail) {
         notifications.push(
-          supabase.functions.invoke('send-email', {
+          supabaseAnon.functions.invoke('send-email', {
             body: {
               to: analystEmail,
               subject: `📅 Nova Análise Agendada: ${leadData.name} — ${dateLabel}`,
@@ -303,7 +303,7 @@ export function InviteLandingPage() {
 
       if (referrerEmail) {
         notifications.push(
-          supabase.functions.invoke('send-email', {
+          supabaseAnon.functions.invoke('send-email', {
             body: {
               to: referrerEmail,
               subject: `✅ Sua indicação ${leadData.name} agendou uma análise!`,
