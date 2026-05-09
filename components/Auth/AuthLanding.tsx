@@ -130,7 +130,8 @@ export const AuthLanding: React.FC = () => {
       const { data: exists } = await supabaseAnon.rpc('check_client_exists', { p_email: trimmed });
       setClientStep(exists ? 'login' : 'signup');
     } catch {
-      setClientStep('signup');
+      // RPC failed — default to login (returning clients outnumber new signups at this entry)
+      setClientStep('login');
     } finally {
       setClientLoading(false);
     }

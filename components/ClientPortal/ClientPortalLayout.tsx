@@ -108,10 +108,13 @@ export function ClientPortalLayout() {
     setLoading(true);
     setLoadingTooLong(false);
     try {
-      // ── Read session from localStorage — NO Web Lock acquired ──
+      // ── Read session from sessionStorage — NO Web Lock acquired ──
       const session = getStoredSession();
       if (!session?.access_token) {
-        navigate('/client-login');
+        // No session — sign out cleanly and go to login
+        supabase.auth.signOut().catch(() => {});
+        clearSupabaseCache();
+        navigate('/login?tab=client', { replace: true });
         return;
       }
 
@@ -129,7 +132,10 @@ export function ClientPortalLayout() {
       if (error) throw error;
       if (data?.error) {
         toast.error(data.error);
-        navigate('/client-login');
+        // Sign out first to break any redirect loop, then go to login
+        supabase.auth.signOut().catch(() => {});
+        clearSupabaseCache();
+        navigate('/login?tab=client', { replace: true });
         return;
       }
       setPortalData(data);
@@ -148,10 +154,10 @@ export function ClientPortalLayout() {
 
   const handleSignOut = () => {
     // Don't await signOut — it acquires Web Lock and can hang.
-    // Clear session from localStorage directly, then navigate.
+    // Clear session from sessionStorage directly, then navigate.
     clearSupabaseCache();
     supabase.auth.signOut().catch(() => {});
-    navigate('/client-login');
+    navigate('/login?tab=client', { replace: true });
   };
 
   const TABS = [
@@ -395,7 +401,7 @@ export function ClientPortalLayout() {
       {/* Footer */}
       <div className="relative z-10 border-t border-white/5 py-6 text-center mt-4">
         <p className="text-xs text-slate-700 font-bold uppercase tracking-widest">
-          Aquafeel Solutions Philly © {new Date().getFullYear()} · Portal VIP do Cliente
+          Aquos Tech © {new Date().getFullYear()} · Portal VIP do Cliente
         </p>
       </div>
     </div>
