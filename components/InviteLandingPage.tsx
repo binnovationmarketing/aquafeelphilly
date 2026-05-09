@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useSearchParams, useParams, useLocation } from 'react-router-dom';
+import { useSearchParams, useParams, useLocation, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Droplet, ShieldCheck, Heart, ArrowRight, Calendar as CalendarIcon,
@@ -40,6 +40,7 @@ const US_STATES = [
 ];
 
 export function InviteLandingPage() {
+  const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const location = useLocation();
   // Support both ?ref=token/slug AND route param /i/:slug or /t/:slug
@@ -360,11 +361,19 @@ export function InviteLandingPage() {
             Aquafeel <span className="text-[#11caa0]">Philly</span>
           </span>
         </M.div>
-        {referrerName && (
-          <M.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="hidden sm:flex items-center gap-2 bg-[#11caa0]/10 border border-[#11caa0]/20 text-[#11caa0] text-xs font-bold px-4 py-2 rounded-full">
-            👋 Convite de <strong className="ml-1">{referrerName.split(' ')[0]}</strong>
-          </M.div>
-        )}
+        <div className="flex items-center gap-3">
+          {referrerName && (
+            <M.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="hidden sm:flex items-center gap-2 bg-[#11caa0]/10 border border-[#11caa0]/20 text-[#11caa0] text-xs font-bold px-4 py-2 rounded-full">
+              👋 Convite de <strong className="ml-1">{referrerName.split(' ')[0]}</strong>
+            </M.div>
+          )}
+          <button
+            onClick={() => navigate('/login')}
+            className="text-xs font-bold text-slate-400 hover:text-white border border-white/10 hover:border-white/20 px-4 py-2 rounded-full transition-all"
+          >
+            Acessar Portal
+          </button>
+        </div>
       </nav>
 
       <main className="relative z-10 max-w-6xl mx-auto px-6 py-10 md:py-16 grid md:grid-cols-2 gap-12 items-start">

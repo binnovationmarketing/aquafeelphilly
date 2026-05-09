@@ -55,16 +55,16 @@ export function AppRoutes() {
   return (
     <Suspense fallback={<LoadingScreen />}>
       <Routes>
-        {/* ── Root ── redirect to login or dashboard */}
+        {/* ── Root ── public landing page ($5/day lead capture) */}
         <Route
           path="/"
           element={
             user
               ? <AuthRedirect isManager={isManager} isClient={isClient} />
-              : <Navigate to="/login" replace />
+              : <InviteLandingPage />
           }
         />
-        <Route path="/intro" element={<Navigate to="/login" replace />} />
+        <Route path="/intro" element={<Navigate to="/" replace />} />
 
         {/* ── Auth entry (unified) ── */}
         <Route
