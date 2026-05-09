@@ -83,7 +83,7 @@ export const AuthLanding: React.FC = () => {
         // redirect handled by useEffect above
       } else {
         const { error } = await supabase.auth.resetPasswordForEmail(analystEmail, {
-          redirectTo: `${window.location.origin}/recovery`,
+          redirectTo: `https://aquafeelphilly.com/recovery`,
         });
         if (error) throw error;
         toast.success('Link enviado! Verifique seu email.');
@@ -148,12 +148,15 @@ export const AuthLanding: React.FC = () => {
       if (error) {
         if (/invalid login credentials/i.test(error.message)) {
           toast.error('Senha incorreta. Tente novamente ou clique em "Esqueci minha senha".');
+        } else if (/email not confirmed/i.test(error.message)) {
+          toast.error('Conta criada! Verifique seu email para confirmar, ou peça ao administrador para ativar sua conta.');
         } else {
           throw error;
         }
         return;
       }
-      navigate('/portal/client');
+      // Do NOT call navigate() here — let onAuthStateChange fire first,
+      // then the useEffect redirect handles navigation (avoids race condition).
     } catch (err: any) {
       toast.error(err.message || 'Erro ao entrar. Tente novamente.');
     } finally {
@@ -209,7 +212,14 @@ export const AuthLanding: React.FC = () => {
         }
       }
 
-      setClientStep('success');
+      // After signup: if session returned immediately (email confirmation disabled),
+      // redirect will happen via onAuthStateChange. If confirmation required, show success.
+      if (signUpData.session) {
+        // Session active immediately — onAuthStateChange will redirect
+        toast.success('Conta criada! Bem-vindo ao Portal VIP.');
+      } else {
+        setClientStep('success');
+      }
     } catch (err: any) {
       toast.error(err.message || 'Erro ao criar conta.');
     } finally {
@@ -220,9 +230,10 @@ export const AuthLanding: React.FC = () => {
   const handleClientReset = async (e: React.FormEvent) => {
     e.preventDefault();
     setClientLoading(true);
+    const PROD_URL = 'https://aquafeelphilly.com';
     try {
       const { error } = await supabase.auth.resetPasswordForEmail(clientEmail.trim(), {
-        redirectTo: `${window.location.origin}/recovery`,
+        redirectTo: `${PROD_URL}/recovery`,
       });
       if (error) throw error;
       toast.success('Email enviado! Verifique sua caixa de entrada.');

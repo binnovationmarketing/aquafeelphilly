@@ -16,7 +16,8 @@ interface WelcomeScreenProps {
     email: string,
     zip: string,
     phone: string,
-    clientId?: string
+    clientId?: string,
+    proposalToken?: string,
   ) => void;
   onBack: () => void;
 }
@@ -41,7 +42,7 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onComplete, onBack
   const saveLeadToSupabase = async (data: {
     name: string; spouse: string; lang: Language;
     email: string; phone: string; zip: string;
-  }): Promise<string | null> => {
+  }): Promise<{ clientId: string | null; proposalToken: string | null }> => {
     // Use getSession() (reads from sessionStorage, no network call, no Web Lock)
     const { data: { session } } = await supabase.auth.getSession();
     const analyst = session?.user;
@@ -49,26 +50,29 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onComplete, onBack
     const { data: row, error } = await supabase
       .from('clients')
       .insert([{
-        name:        data.name,
+        name: data.name,
         spouse_name: data.spouse,
-        email:       data.email,
-        phone:       data.phone,
-        zip_code:    data.zip,
-        lang:        data.lang,
-        status:      'LEAD',
-        analyst:     analyst?.email || 'System',
-        analyst_id:  analyst?.id    || null,
-        source:      'VIP_WEBAPP',
+        email: data.email,
+        phone: data.phone,
+        zip_code: data.zip,
+        lang: data.lang,
+        status: 'LEAD',
+        analyst: analyst?.email || 'System',
+        analyst_id: analyst?.id || null,
+        source: 'VIP_WEBAPP',
       }])
       .select('id, proposal_token')
       .single();
 
     if (error) {
       console.error('Failed to save lead to Supabase:', error);
-      return null;
+      return { clientId: null, proposalToken: null };
     }
 
-    return row?.id ?? null;
+    return {
+      clientId: row?.id ?? null,
+      proposalToken: row?.proposal_token ?? null,
+    };
   };
 
   const handleSubmit = async () => {
@@ -83,8 +87,8 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onComplete, onBack
     if (!phone.trim()) {
       toast.error(
         lang === 'pt' ? 'Telefone é obrigatório.'
-        : lang === 'es' ? 'Teléfono es obligatorio.'
-        : 'Phone number is required.'
+          : lang === 'es' ? 'Teléfono es obligatorio.'
+            : 'Phone number is required.'
       );
       return;
     }
@@ -95,8 +99,8 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onComplete, onBack
     if (!/^\d{5}$/.test(zip.trim())) {
       toast.error(
         lang === 'pt' ? 'ZIP code inválido. Use 5 dígitos (ex: 19103).'
-        : lang === 'es' ? 'ZIP code inválido. Use 5 dígitos.'
-        : 'Invalid ZIP code. Use 5 digits (e.g. 19103).'
+          : lang === 'es' ? 'ZIP code inválido. Use 5 dígitos.'
+            : 'Invalid ZIP code. Use 5 digits (e.g. 19103).'
       );
       return;
     }
@@ -104,31 +108,40 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onComplete, onBack
     setIsLoading(true);
 
     const leadData = {
-      name:   name.trim(),
+      name: name.trim(),
       spouse: spouse.trim(),
       lang,
-      email:  email.trim(),
-      phone:  phone.trim(),
-      zip:    zip.trim(),
+      email: email.trim(),
+      phone: phone.trim(),
+      zip: zip.trim(),
     };
 
     try {
-      const clientId = await saveLeadToSupabase(leadData);
+      const { clientId, proposalToken } = await saveLeadToSupabase(leadData);
 
       toast.success(
         lang === 'pt' ? 'Bem-vindo! Preparando sua proposta...'
-        : lang === 'es' ? '¡Bienvenido! Preparando tu propuesta...'
-        : 'Welcome! Preparing your proposal...'
+          : lang === 'es' ? '¡Bienvenido! Preparando tu propuesta...'
+            : 'Welcome! Preparing your proposal...'
       );
 
       // Small UX delay so the toast is visible
       await new Promise(r => setTimeout(r, 600));
 
-      onComplete(leadData.name, leadData.spouse, lang, leadData.email, leadData.zip, leadData.phone, clientId ?? undefined);
+      onComplete(
+        leadData.name,
+        leadData.spouse,
+        lang,
+        leadData.email,
+        leadData.zip,
+        leadData.phone,
+        clientId ?? undefined,
+        proposalToken ?? undefined,
+      );
     } catch (err) {
       console.error(err);
       // Still allow the flow to continue even if Supabase fails
-      onComplete(leadData.name, leadData.spouse, lang, leadData.email, leadData.zip, leadData.phone, undefined);
+      onComplete(leadData.name, leadData.spouse, lang, leadData.email, leadData.zip, leadData.phone, undefined, undefined);
     } finally {
       setIsLoading(false);
     }
@@ -169,17 +182,16 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onComplete, onBack
               <div className="grid gap-4 w-full">
                 {([
                   { id: 'pt' as Language, label: 'Português 🇧🇷', flag: 'br', primary: true },
-                  { id: 'en' as Language, label: 'English 🇺🇸',  flag: 'us', primary: false },
-                  { id: 'es' as Language, label: 'Español 🇪🇸',  flag: 'es', primary: false },
+                  { id: 'en' as Language, label: 'English 🇺🇸', flag: 'us', primary: false },
+                  { id: 'es' as Language, label: 'Español 🇪🇸', flag: 'es', primary: false },
                 ] as const).map((item) => (
                   <button
                     key={item.id}
                     onClick={() => { setLang(item.id); setStep('form'); }}
-                    className={`flex items-center gap-4 border p-5 rounded-2xl transition-all w-full text-left active:scale-[0.98] ${
-                      item.primary
+                    className={`flex items-center gap-4 border p-5 rounded-2xl transition-all w-full text-left active:scale-[0.98] ${item.primary
                         ? 'bg-aqua-600/20 hover:bg-aqua-600/30 border-aqua-500/50 ring-1 ring-aqua-500/30'
                         : 'bg-white/5 hover:bg-white/10 border-white/10 hover:border-aqua-500/30'
-                    }`}
+                      }`}
                   >
                     <img src={`https://flagcdn.com/w80/${item.flag}.png`} alt="" className="w-8 h-5 object-cover rounded shadow-sm border border-white/10" />
                     <span className="font-bold text-white text-lg flex-1">{item.label}</span>
@@ -207,10 +219,10 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onComplete, onBack
 
               <div className="space-y-4">
                 {([
-                  { val: name,   set: setName,   icon: User,   label: t.placeholderName },
-                  { val: spouse, set: setSpouse, icon: User,   label: t.placeholderSpouse },
-                  { val: email,  set: setEmail,  icon: Mail,   label: t.placeholderEmail,  type: 'email' },
-                  { val: zip,    set: setZip,    icon: MapPin, label: t.placeholderZip },
+                  { val: name, set: setName, icon: User, label: t.placeholderName },
+                  { val: spouse, set: setSpouse, icon: User, label: t.placeholderSpouse },
+                  { val: email, set: setEmail, icon: Mail, label: t.placeholderEmail, type: 'email' },
+                  { val: zip, set: setZip, icon: MapPin, label: t.placeholderZip },
                 ] as const).map((f, i) => (
                   <div key={i} className="relative">
                     <f.icon className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500" size={18} />

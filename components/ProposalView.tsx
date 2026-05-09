@@ -38,7 +38,7 @@ export function ProposalView() {
   const [saveFormData, setSaveFormData] = useState({ phone: '', email: '', status: 'PENDING' });
   const [proposalCalcData, setProposalCalcData] = useState<any>(null);
   const [isSavingProposal, setIsSavingProposal] = useState(false);
-  const [saveResult, setSaveResult] = useState<{ clientWaLink: string; pdfUrl: string } | null>(null);
+  const [saveResult, setSaveResult] = useState<{ clientWaLink: string; pdfUrl: string; proposalUrl: string } | null>(null);
   const [saveError, setSaveError] = useState<string | null>(null);
 
   const INTERNAL_NUMBERS = ['+19842206002', '+12407064966', '+12407806473'];
@@ -93,25 +93,32 @@ export function ProposalView() {
       RANGE1: 740, RANGE2: 690, RANGE3: 660, RANGE4: 600, RANGE5: 580,
     };
 
+    let shareToken = clientData.proposalToken || clientData.id;
+
     try {
       // ── STEP 1: Save core data to DB immediately (non-negotiable) ──
-      const { error: dbError } = await supabase
+      const payload: any = {
+        id: clientData.id,
+        phone: saveFormData.phone || null,
+        email: saveFormData.email || null,
+        status: saveFormData.status,
+        water_consumption: Number(proposalCalcData.waterMonthly) || 0,
+        cleaning_consumption: Number(proposalCalcData.cleaningMonthly) || 0,
+        credit_score: rangeToScore[proposalCalcData.creditRange] || null,
+        updated_at: new Date().toISOString(),
+      };
+      if (clientData.proposalToken) payload.proposal_token = clientData.proposalToken;
+
+      const { data: savedClient, error: dbError } = await supabase
         .from('clients')
-        .update({
-          phone: saveFormData.phone || null,
-          email: saveFormData.email || null,
-          status: saveFormData.status,
-          water_consumption: Number(proposalCalcData.waterMonthly) || 0,
-          cleaning_consumption: Number(proposalCalcData.cleaningMonthly) || 0,
-          credit_score: rangeToScore[proposalCalcData.creditRange] || null,
-          updated_at: new Date().toISOString(),
-        })
-        .eq('id', clientData.id);
+        .upsert([payload], { onConflict: 'id' })
+        .select('id, proposal_token, proposal_pdf_url')
+        .single();
 
       if (dbError) throw dbError;
+      if (savedClient?.proposal_token) shareToken = savedClient.proposal_token;
 
-      // Update local app state immediately
-      setClientData({
+      const updatedClientData = {
         ...clientData,
         phone: saveFormData.phone,
         email: saveFormData.email,
@@ -119,7 +126,13 @@ export function ProposalView() {
         waterConsumption: proposalCalcData.waterMonthly,
         cleaningConsumption: proposalCalcData.cleaningMonthly,
         creditScore: rangeToScore[proposalCalcData.creditRange] || undefined,
-      });
+        proposalToken: shareToken,
+        proposalPdfUrl: savedClient?.proposal_pdf_url || clientData.proposalPdfUrl,
+      };
+
+      setClientData(updatedClientData);
+      localStorage.setItem('proposalClientData', JSON.stringify(updatedClientData));
+      localStorage.setItem('proposalToken', shareToken);
 
       // Follow-up task for reschedule
       if (saveFormData.status === 'RESCHEDULE') {
@@ -260,6 +273,15 @@ export function ProposalView() {
           pdfUrl = publicUrl;
           // Update PDF URL in DB (best-effort)
           await supabase.from('clients').update({ proposal_pdf_url: pdfUrl }).eq('id', clientData.id);
+
+          if (pdfUrl) {
+            const finalClientData = {
+              ...updatedClientData,
+              proposalPdfUrl: pdfUrl,
+            };
+            setClientData(finalClientData);
+            localStorage.setItem('proposalClientData', JSON.stringify(finalClientData));
+          }
         } else {
           console.warn('PDF upload skipped:', uploadResult.error.message);
         }
@@ -269,18 +291,22 @@ export function ProposalView() {
       }
 
       // ── STEP 3: Build WhatsApp links and show success ──
+      const proposalUrl = `https://aquafeelphilly.com/proposal?id=${shareToken}&lang=${clientData.lang}`;
       const waMsg = [
         `Ola ${clientData.name}! Aqui esta sua proposta VIP Aquafeel!`,
         pdfUrl ? `PDF com todos os beneficios:\n${pdfUrl}` : '',
-        `Proposta interativa:\n${window.location.origin}/proposal?id=${clientData.id}&lang=${clientData.lang}`,
+        `Proposta interativa:\n${proposalUrl}`,
         `Qualquer duvida, estou a disposicao!`,
       ].filter(Boolean).join('\n\n');
 
       const rawDigits = saveFormData.phone.replace(/\D/g, '');
-      const phoneE164 = rawDigits.startsWith('1') ? rawDigits : `1${rawDigits}`;
-      const clientWaLink = `https://wa.me/${phoneE164}?text=${encodeURIComponent(waMsg)}`;
+      const hasValidPhone = rawDigits.length >= 10;
+      const phoneE164 = hasValidPhone ? (rawDigits.startsWith('1') ? rawDigits : `1${rawDigits}`) : '';
+      const clientWaLink = hasValidPhone
+        ? `https://wa.me/${phoneE164}?text=${encodeURIComponent(waMsg)}`
+        : '';
 
-      setSaveResult({ clientWaLink, pdfUrl });
+      setSaveResult({ clientWaLink, pdfUrl, proposalUrl });
     } catch (err: any) {
       console.error('Save proposal error:', err);
       setSaveError(err.message || 'Erro desconhecido. Tente novamente.');
@@ -292,10 +318,10 @@ export function ProposalView() {
   if (!isLoaded || !expirationDate || !clientData) return null;
 
   const { lang, name, spouseName, zipCode } = clientData;
-  const safeLang    = lang as Language;
-  const t           = translations[safeLang || 'pt'];
+  const safeLang = lang as Language;
+  const t = translations[safeLang || 'pt'];
   const displayName = spouseName ? `${name} & ${spouseName}` : name;
-  const mainMargin  = isSidebarCollapsed ? 'lg:ml-20' : 'lg:ml-[260px]';
+  const mainMargin = isSidebarCollapsed ? 'lg:ml-20' : 'lg:ml-[260px]';
 
   return (
     <div className="min-h-screen bg-slate-50 font-sans selection:bg-aqua-200 selection:text-aqua-900 pb-0 flex">
@@ -430,11 +456,10 @@ export function ProposalView() {
                     recordCtaClicked();
                     setIsAnalystModalOpen(true);
                   }}
-                  className={`w-full md:w-auto px-10 py-5 rounded-2xl font-black text-sm uppercase tracking-widest flex items-center justify-center gap-3 transition-all transform hover:-translate-y-1 active:scale-95 shadow-2xl ${
-                    isExpired
-                      ? 'bg-white text-red-600'
-                      : 'bg-red-600 text-white hover:bg-red-500'
-                  }`}
+                  className={`w-full md:w-auto px-10 py-5 rounded-2xl font-black text-sm uppercase tracking-widest flex items-center justify-center gap-3 transition-all transform hover:-translate-y-1 active:scale-95 shadow-2xl ${isExpired
+                    ? 'bg-white text-red-600'
+                    : 'bg-red-600 text-white hover:bg-red-500'
+                    }`}
                 >
                   <Phone size={20} />
                   {isExpired ? t.urgency.expiredButton : t.footer.button}
@@ -520,88 +545,95 @@ export function ProposalView() {
                   })}
                 </div>
 
-                <button onClick={() => { setSaveResult(null); setIsSaveModalOpen(false); setSaveError(null); }}
-                  className="w-full py-3 rounded-xl bg-slate-100 text-slate-600 font-bold text-sm hover:bg-slate-200 transition-colors">
-                  Fechar
+                <button onClick={() => {
+                    setSaveResult(null);
+                    setIsSaveModalOpen(false);
+                    setSaveError(null);
+                    // Redirect to analyst dashboard with organic products orientation
+                    toast.success('Proposta salva! Lembre o cliente de indicar 3 familias para ganhar 1 ano de produtos organicos Pure Selects!', { duration: 6000 });
+                    navigate('/dashboard/analyst');
+                  }}
+                  className="w-full py-3 rounded-xl bg-aqua-600 text-white font-black text-sm hover:bg-aqua-500 transition-colors shadow-md">
+                  Ir para o Painel do Analista
                 </button>
               </div>
             ) : (
               <>
-            <div className="px-6 py-4 flex items-center justify-between border-b border-slate-100">
-              <h3 className="font-black text-slate-800 flex items-center justify-center gap-2">
-                <FileText size={18} className="text-aqua-600" /> Confirmar Proposta
-              </h3>
-              <button disabled={isSavingProposal} onClick={() => { setIsSaveModalOpen(false); setSaveError(null); }} className="text-slate-400 hover:text-slate-600 p-1">
-                <X size={20} />
-              </button>
-            </div>
-            
-            <div className="p-6 space-y-4">
-              <div>
-                <label className="block text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1">Status do Lead</label>
-                <select
-                  value={saveFormData.status}
-                  onChange={(e) => setSaveFormData({ ...saveFormData, status: e.target.value })}
-                  className="w-full text-sm font-bold border border-slate-200 rounded-xl px-3 py-3 outline-none focus:border-aqua-500 bg-slate-50 text-slate-700 hover:bg-white transition-colors"
-                >
-                  <option value="PENDING">PENDING (Aguardando Decisão)</option>
-                  <option value="SALE">SALE (Fechado/Vendido)</option>
-                  <option value="NO SALE">NO SALE (Não Fechou)</option>
-                  <option value="NOT INTERESTED">NOT INTERESTED (Não tem interesse)</option>
-                  <option value="RESCHEDULE">RESCHEDULE (Reagendar para depois)</option>
-                </select>
-                {saveFormData.status === 'RESCHEDULE' && (
-                  <p className="text-[10px] text-amber-600 font-bold mt-2 flex items-center gap-1">
-                    <Calendar size={12} /> Tarefa de follow-up será criada (Daqui a 2 dias).
-                  </p>
+                <div className="px-6 py-4 flex items-center justify-between border-b border-slate-100">
+                  <h3 className="font-black text-slate-800 flex items-center justify-center gap-2">
+                    <FileText size={18} className="text-aqua-600" /> Confirmar Proposta
+                  </h3>
+                  <button disabled={isSavingProposal} onClick={() => { setIsSaveModalOpen(false); setSaveError(null); }} className="text-slate-400 hover:text-slate-600 p-1">
+                    <X size={20} />
+                  </button>
+                </div>
+
+                <div className="p-6 space-y-4">
+                  <div>
+                    <label className="block text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1">Status do Lead</label>
+                    <select
+                      value={saveFormData.status}
+                      onChange={(e) => setSaveFormData({ ...saveFormData, status: e.target.value })}
+                      className="w-full text-sm font-bold border border-slate-200 rounded-xl px-3 py-3 outline-none focus:border-aqua-500 bg-slate-50 text-slate-700 hover:bg-white transition-colors"
+                    >
+                      <option value="PENDING">PENDING (Aguardando Decisão)</option>
+                      <option value="SALE">SALE (Fechado/Vendido)</option>
+                      <option value="NO SALE">NO SALE (Não Fechou)</option>
+                      <option value="NOT INTERESTED">NOT INTERESTED (Não tem interesse)</option>
+                      <option value="RESCHEDULE">RESCHEDULE (Reagendar para depois)</option>
+                    </select>
+                    {saveFormData.status === 'RESCHEDULE' && (
+                      <p className="text-[10px] text-amber-600 font-bold mt-2 flex items-center gap-1">
+                        <Calendar size={12} /> Tarefa de follow-up será criada (Daqui a 2 dias).
+                      </p>
+                    )}
+                  </div>
+
+                  <div className="space-y-3 pt-2 border-t border-slate-100">
+                    <div>
+                      <label className="block text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1">Telefone (WhatsApp)</label>
+                      <input
+                        type="tel"
+                        value={saveFormData.phone}
+                        onChange={(e) => setSaveFormData({ ...saveFormData, phone: e.target.value })}
+                        className="w-full text-sm font-medium border border-slate-200 rounded-xl px-3 py-2 outline-none focus:border-aqua-500 bg-white text-slate-900 placeholder:text-slate-300"
+                        placeholder="(99) 99999-9999"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1">E-mail</label>
+                      <input
+                        type="email"
+                        value={saveFormData.email}
+                        onChange={(e) => setSaveFormData({ ...saveFormData, email: e.target.value })}
+                        className="w-full text-sm font-medium border border-slate-200 rounded-xl px-3 py-2 outline-none focus:border-aqua-500 bg-white text-slate-900 placeholder:text-slate-300"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {saveError && (
+                  <div className="mx-6 mb-2 p-3 bg-red-50 border border-red-200 rounded-xl text-red-600 text-xs font-bold">
+                    {saveError}
+                  </div>
                 )}
-              </div>
-              
-              <div className="space-y-3 pt-2 border-t border-slate-100">
-                <div>
-                  <label className="block text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1">Telefone (WhatsApp)</label>
-                  <input
-                    type="tel"
-                    value={saveFormData.phone}
-                    onChange={(e) => setSaveFormData({ ...saveFormData, phone: e.target.value })}
-                    className="w-full text-sm font-medium border border-slate-200 rounded-xl px-3 py-2 outline-none focus:border-aqua-500 bg-white text-slate-900 placeholder:text-slate-300"
-                    placeholder="(99) 99999-9999"
-                  />
-                </div>
-                <div>
-                  <label className="block text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1">E-mail</label>
-                  <input
-                    type="email"
-                    value={saveFormData.email}
-                    onChange={(e) => setSaveFormData({ ...saveFormData, email: e.target.value })}
-                    className="w-full text-sm font-medium border border-slate-200 rounded-xl px-3 py-2 outline-none focus:border-aqua-500 bg-white text-slate-900 placeholder:text-slate-300"
-                  />
-                </div>
-              </div>
-            </div>
 
-            {saveError && (
-              <div className="mx-6 mb-2 p-3 bg-red-50 border border-red-200 rounded-xl text-red-600 text-xs font-bold">
-                {saveError}
-              </div>
-            )}
-
-            <div className="p-4 bg-slate-50 border-t border-slate-100 gap-2 flex">
-              <button
-                disabled={isSavingProposal}
-                onClick={() => { setIsSaveModalOpen(false); setSaveError(null); }}
-                className="flex-1 py-3 text-sm font-bold text-slate-500 border-2 border-slate-200 rounded-xl hover:bg-slate-100 disabled:opacity-50 transition-colors"
-              >
-                Cancelar
-              </button>
-              <button
-                disabled={isSavingProposal}
-                onClick={handleConfirmSave}
-                className="flex-[2] flex justify-center items-center py-3 text-sm font-black bg-aqua-600 text-white rounded-xl hover:bg-aqua-500 disabled:opacity-50 transition-all shadow-md shadow-aqua-500/20"
-              >
-                {isSavingProposal ? 'Salvando...' : 'Guardar Info & Status'}
-              </button>
-            </div>
+                <div className="p-4 bg-slate-50 border-t border-slate-100 gap-2 flex">
+                  <button
+                    disabled={isSavingProposal}
+                    onClick={() => { setIsSaveModalOpen(false); setSaveError(null); }}
+                    className="flex-1 py-3 text-sm font-bold text-slate-500 border-2 border-slate-200 rounded-xl hover:bg-slate-100 disabled:opacity-50 transition-colors"
+                  >
+                    Cancelar
+                  </button>
+                  <button
+                    disabled={isSavingProposal}
+                    onClick={handleConfirmSave}
+                    className="flex-[2] flex justify-center items-center py-3 text-sm font-black bg-aqua-600 text-white rounded-xl hover:bg-aqua-500 disabled:opacity-50 transition-all shadow-md shadow-aqua-500/20"
+                  >
+                    {isSavingProposal ? 'Salvando...' : 'Guardar Info & Status'}
+                  </button>
+                </div>
               </>
             )}
           </div>

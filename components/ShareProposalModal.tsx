@@ -6,7 +6,7 @@ import { toast } from 'sonner';
 interface ShareProposalModalProps {
   isOpen: boolean;
   onClose: () => void;
-  clientId: string;       // UUID of the client record — used as share token
+  clientId: string;       // UUID of the proposal token or client token used for secure share links
   clientName?: string;    // Display-only, never goes in the URL
 }
 
@@ -106,11 +106,10 @@ export const ShareProposalModal: React.FC<ShareProposalModalProps> = ({
               </div>
               <button
                 onClick={handleCopy}
-                className={`px-4 py-3 rounded-xl font-bold text-xs flex items-center gap-2 transition-all shrink-0 ${
-                  copied
+                className={`px-4 py-3 rounded-xl font-bold text-xs flex items-center gap-2 transition-all shrink-0 ${copied
                     ? 'bg-emerald-500 text-white'
                     : 'bg-aqua-600 hover:bg-aqua-500 text-white shadow-md shadow-aqua-500/30'
-                }`}
+                  }`}
               >
                 {copied ? <Check size={14} /> : <Copy size={14} />}
                 {copied ? 'Copiado!' : 'Copiar'}

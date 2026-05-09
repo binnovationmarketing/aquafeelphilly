@@ -41,19 +41,21 @@ export const UpdatePassword: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
   const [accessToken, setAccessToken] = useState<string | null>(null);
+  const [refreshToken, setRefreshToken] = useState<string | null>(null);
   const [tokenError, setTokenError] = useState(false);
 
-  // Parse recovery token from URL hash on mount
-  // Supabase recovery link format: /recovery#access_token=XXX&type=recovery
+  // Parse recovery tokens from URL hash on mount.
+  // Supabase recovery link format: /recovery#access_token=XXX&refresh_token=YYY&type=recovery
   useEffect(() => {
     const hash = new URLSearchParams(window.location.hash.replace('#', ''));
-    const token = hash.get('access_token');
-    const type = hash.get('type');
+    const token   = hash.get('access_token');
+    const refresh = hash.get('refresh_token');
+    const type    = hash.get('type');
 
     if (token && type === 'recovery') {
       setAccessToken(token);
+      if (refresh) setRefreshToken(refresh);
     } else {
-      // No recovery token — link expired or already used
       setTokenError(true);
     }
   }, []);
@@ -67,19 +69,22 @@ export const UpdatePassword: React.FC = () => {
     setLoading(true);
     setError(null);
     try {
-      // Lock-free client — no Web Lock acquired
       const recoveryClient = createRecoveryClient(accessToken);
+
+      // Establish a real session on the client so updateUser has auth context.
+      // setSession requires both tokens; use empty string fallback if only access_token available.
+      if (refreshToken) {
+        await recoveryClient.auth.setSession({ access_token: accessToken, refresh_token: refreshToken });
+      }
+
       const { error: updateError } = await recoveryClient.auth.updateUser({ password });
       if (updateError) throw updateError;
 
       setSuccess(true);
-      // Clear hash so token can't be replayed
       window.history.replaceState(null, '', window.location.pathname);
 
-      setTimeout(() => {
-        // Detect user type from hash metadata — clients go to /client-login, analysts to /login
-        navigate('/client-login');
-      }, 3000);
+      // Auto-redirect to login after success
+      setTimeout(() => navigate('/login'), 2500);
     } catch (err: any) {
       setError(err.message || 'Erro ao atualizar senha. Tente novamente.');
     } finally {

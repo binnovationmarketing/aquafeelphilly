@@ -21,8 +21,8 @@ export function useProposalInit() {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const setClientData = useAppStore((state: any) => state.setClientData);
-  const clientData    = useAppStore((state: any) => state.clientData);
-  const [isLoaded, setIsLoaded]           = useState(false);
+  const clientData = useAppStore((state: any) => state.clientData);
+  const [isLoaded, setIsLoaded] = useState(false);
   const [proposalOpenedAt, setProposalOpenedAt] = useState<string | null>(null);
 
   useEffect(() => {
@@ -45,36 +45,38 @@ export function useProposalInit() {
           const row = Array.isArray(data) ? data[0] : data;
 
           const client: ClientData = {
-            id:           row.id,
-            name:         row.name         || '',
-            spouseName:   row.spouse_name  || '',
-            email:        row.email        || '',
-            phone:        row.phone        || '',
-            zipCode:      row.zip_code     || '',
-            address:      row.address      || '',
-            city:         row.city         || '',
-            state:        row.state        || '',
-            lang:         (row.lang as ClientData['lang']) || 'pt',
-            status:       row.status       || 'LEAD',
+            id: row.id,
+            proposalToken: row.proposal_token || tokenId,
+            proposalPdfUrl: row.proposal_pdf_url || undefined,
+            name: row.name || '',
+            spouseName: row.spouse_name || '',
+            email: row.email || '',
+            phone: row.phone || '',
+            zipCode: row.zip_code || '',
+            address: row.address || '',
+            city: row.city || '',
+            state: row.state || '',
+            lang: (row.lang as ClientData['lang']) || 'pt',
+            status: row.status || 'LEAD',
             observations: row.observations || [],
-            referrals:    row.referrals    || [],
-            analyst:      row.analyst      || 'System',
-            creditScore:  row.credit_score,
-            waterConsumption:    row.water_consumption,
+            referrals: row.referrals || [],
+            analyst: row.analyst || 'System',
+            creditScore: row.credit_score,
+            waterConsumption: row.water_consumption,
             cleaningConsumption: row.cleaning_consumption,
-            peopleCount:         row.people_count,
-            installationDate:    row.installation_date,
-            nextWaterAnalysis:   row.next_water_analysis,
-            saltReminder:        row.salt_reminder,
-            createdAt:    row.created_at,
-            updatedAt:    row.updated_at,
+            peopleCount: row.people_count,
+            installationDate: row.installation_date,
+            nextWaterAnalysis: row.next_water_analysis,
+            saltReminder: row.salt_reminder,
+            createdAt: row.created_at,
+            updatedAt: row.updated_at,
           };
 
           if (cancelled) return;
 
           setClientData(client);
           // Store token in localStorage so page refresh keeps the link
-          localStorage.setItem('proposalToken', tokenId);
+          localStorage.setItem('proposalToken', client.proposalToken || tokenId);
           localStorage.setItem('proposalClientData', JSON.stringify(client));
 
           // Track this view server-side (sets proposal_opened_at on first open)
@@ -97,28 +99,28 @@ export function useProposalInit() {
       }
 
       // ── Strategy 2: legacy URL params ─────────────────────────────────────
-      const urlName   = searchParams.get('n') || searchParams.get('name');
+      const urlName = searchParams.get('n') || searchParams.get('name');
       const urlSpouse = searchParams.get('s') || searchParams.get('spouse');
-      const urlLang   = searchParams.get('l') || searchParams.get('lang');
-      const urlEmail  = searchParams.get('e') || searchParams.get('email');
-      const urlZip    = searchParams.get('z') || searchParams.get('zip');
+      const urlLang = searchParams.get('l') || searchParams.get('lang');
+      const urlEmail = searchParams.get('e') || searchParams.get('email');
+      const urlZip = searchParams.get('z') || searchParams.get('zip');
 
       if (urlName) {
         const selectedLang =
           urlLang === 'en' || urlLang === 'es' || urlLang === 'pt' ? urlLang : 'pt';
         const data: ClientData = {
-          id:           crypto.randomUUID(),
-          name:         urlName,
-          spouseName:   urlSpouse || '',
-          lang:         selectedLang as ClientData['lang'],
-          email:        urlEmail  || '',
-          phone:        '',
-          zipCode:      urlZip    || '',
-          status:       'LEAD',
+          id: crypto.randomUUID(),
+          name: urlName,
+          spouseName: urlSpouse || '',
+          lang: selectedLang as ClientData['lang'],
+          email: urlEmail || '',
+          phone: '',
+          zipCode: urlZip || '',
+          status: 'LEAD',
           observations: [],
-          referrals:    [],
-          analyst:      'System',
-          createdAt:    new Date().toISOString(),
+          referrals: [],
+          analyst: 'System',
+          createdAt: new Date().toISOString(),
         };
 
         if (cancelled) return;
@@ -138,7 +140,10 @@ export function useProposalInit() {
           if (!error && data && (Array.isArray(data) ? data.length > 0 : true)) {
             const row = Array.isArray(data) ? data[0] : data;
             const client: ClientData = {
-              id: row.id, name: row.name || '', spouseName: row.spouse_name || '',
+              id: row.id,
+              proposalToken: row.proposal_token || storedToken,
+              proposalPdfUrl: row.proposal_pdf_url || undefined,
+              name: row.name || '', spouseName: row.spouse_name || '',
               email: row.email || '', phone: row.phone || '', zipCode: row.zip_code || '',
               address: row.address || '', city: row.city || '', state: row.state || '',
               lang: (row.lang as ClientData['lang']) || 'pt', status: row.status || 'LEAD',

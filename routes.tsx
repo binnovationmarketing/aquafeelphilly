@@ -27,11 +27,11 @@ function lazyWithRetry<T extends React.ComponentType<any>>(
 }
 
 // Lazy loaded (code splitting) — wrapped in retry for post-deploy resilience
-const UpdatePassword    = lazyWithRetry(() => import('./components/Auth/UpdatePassword').then(m => ({ default: m.UpdatePassword })));
-const ManagerDashboard  = lazyWithRetry(() => import('./components/ManagerDashboard').then(m => ({ default: m.ManagerDashboard })));
-const AnalystDashboard  = lazyWithRetry(() => import('./components/AnalystDashboard').then(m => ({ default: m.AnalystDashboard })));
-const WelcomeScreen     = lazyWithRetry(() => import('./components/WelcomeScreen').then(m => ({ default: m.WelcomeScreen })));
-const ProposalView      = lazyWithRetry(() => import('./components/ProposalView').then(m => ({ default: m.ProposalView })));
+const UpdatePassword = lazyWithRetry(() => import('./components/Auth/UpdatePassword').then(m => ({ default: m.UpdatePassword })));
+const ManagerDashboard = lazyWithRetry(() => import('./components/ManagerDashboard').then(m => ({ default: m.ManagerDashboard })));
+const AnalystDashboard = lazyWithRetry(() => import('./components/AnalystDashboard').then(m => ({ default: m.AnalystDashboard })));
+const WelcomeScreen = lazyWithRetry(() => import('./components/WelcomeScreen').then(m => ({ default: m.WelcomeScreen })));
+const ProposalView = lazyWithRetry(() => import('./components/ProposalView').then(m => ({ default: m.ProposalView })));
 const ReferralDashboard = lazyWithRetry(() => import('./components/ReferralDashboard').then(m => ({ default: m.ReferralDashboard })));
 // ReferralDashboard now served at /vip?token=... (old /referral?token=... links redirect here)
 const InviteLandingPage = lazyWithRetry(() => import('./components/InviteLandingPage').then(m => ({ default: m.InviteLandingPage })));
@@ -87,11 +87,11 @@ export function AppRoutes() {
             user
               ? <AuthRedirect isManager={isManager} isClient={isClient} />
               : <Signup onBack={(msg) => {
-                  if (msg) {
-                    // Toast shown by AuthLanding; navigate there
-                  }
-                  navigate('/login');
-                }} />
+                if (msg) {
+                  // Toast shown by AuthLanding; navigate there
+                }
+                navigate('/login');
+              }} />
           }
         />
 
@@ -100,14 +100,14 @@ export function AppRoutes() {
 
         {/* ── Public routes ── */}
         {/* /referral = job recruitment landing page */}
-        <Route path="/referral"  element={<RecruitingPage />} />
+        <Route path="/referral" element={<RecruitingPage />} />
         {/* /vip = client VIP portal (token-gated, no auth required) */}
-        <Route path="/vip"       element={<ReferralDashboard />} />
-        <Route path="/invite"    element={<InviteLandingPage />} />
-        <Route path="/i/:slug"   element={<InviteLandingPage />} />
-        <Route path="/t/:slug"   element={<InviteLandingPage />} />
-        <Route path="/trabalho"  element={<InviteLandingPage />} />
-        <Route path="/proposal"  element={<ProposalView />} />
+        <Route path="/vip" element={<ReferralDashboard />} />
+        <Route path="/invite" element={<InviteLandingPage />} />
+        <Route path="/i/:slug" element={<InviteLandingPage />} />
+        <Route path="/t/:slug" element={<InviteLandingPage />} />
+        <Route path="/trabalho" element={<InviteLandingPage />} />
+        <Route path="/proposal" element={<ProposalView />} />
 
         {/* ── Client Portal ── */}
         <Route
@@ -152,9 +152,9 @@ export function AppRoutes() {
               : (
                 <WelcomeScreen
                   onBack={() => navigate('/dashboard/analyst')}
-                  onComplete={async (name, spouse, lang, email, zip, phone, clientId) => {
-                    if (clientId) {
-                      navigate(`/proposal?id=${clientId}`);
+                  onComplete={async (name, spouse, lang, email, zip, phone, clientId, proposalToken) => {
+                    if (proposalToken || clientId) {
+                      navigate(`/proposal?id=${proposalToken || clientId}`);
                     } else {
                       const data = {
                         id: crypto.randomUUID(),

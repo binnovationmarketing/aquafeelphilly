@@ -36,6 +36,7 @@ interface DashboardMetrics {
 
 interface Lead {
   id: string;
+  proposal_token?: string;
   name: string;
   email: string;
   phone?: string;
@@ -62,6 +63,9 @@ export const AnalystDashboard: React.FC<{ onNewProposal: () => void }> = ({ onNe
   const [showProfileModal, setShowProfileModal] = useState(false);
   const [showSignupLinkModal, setShowSignupLinkModal] = useState(false);
   const [signupPhone, setSignupPhone] = useState('');
+  const [showAnalystSignupModal, setShowAnalystSignupModal] = useState(false);
+  const [analystSignupPhone, setAnalystSignupPhone] = useState('');
+  const [applyPopupLead, setApplyPopupLead] = useState<Lead | null>(null);
   const [profileData, setProfileData] = useState({ full_name: '', avatar_url: '' });
   const [isSavingProfile, setIsSavingProfile] = useState(false);
   const [executingTask, setExecutingTask] = useState<Task | null>(null);
@@ -110,14 +114,14 @@ export const AnalystDashboard: React.FC<{ onNewProposal: () => void }> = ({ onNe
       .on(
         'postgres_changes',
         {
-          event:  'UPDATE',
+          event: 'UPDATE',
           schema: 'public',
-          table:  'clients',
+          table: 'clients',
           filter: `analyst_id=eq.${user.id}`,
         },
         (payload) => {
           const updated = payload.new as any;
-          const old     = payload.old as any;
+          const old = payload.old as any;
 
           // Detect first proposal open (proposal_opened_at just got set)
           if (!old.proposal_opened_at && updated.proposal_opened_at) {
@@ -163,9 +167,9 @@ export const AnalystDashboard: React.FC<{ onNewProposal: () => void }> = ({ onNe
     const ch = supabase
       .channel('commission-notifications')
       .on('postgres_changes', {
-          event: 'INSERT', schema: 'public', table: 'commissions_log',
-          filter: `beneficiary_id=eq.${user.id}`,
-        },
+        event: 'INSERT', schema: 'public', table: 'commissions_log',
+        filter: `beneficiary_id=eq.${user.id}`,
+      },
         (payload) => {
           const row = payload.new as any;
           if (row.commission_type === 'personal') return; // personal shown separately
@@ -415,11 +419,10 @@ export const AnalystDashboard: React.FC<{ onNewProposal: () => void }> = ({ onNe
               {(profile?.role !== 'analyst_jr' || user?.email === 'binnovationmarketing@gmail.com') && (
                 <button
                   onClick={() => setActiveTab('TEAM_MANAGEMENT')}
-                  className={`px-3 py-2 text-xs font-bold rounded-lg transition-all flex items-center gap-1.5 ${
-                    activeTab === 'TEAM_MANAGEMENT'
+                  className={`px-3 py-2 text-xs font-bold rounded-lg transition-all flex items-center gap-1.5 ${activeTab === 'TEAM_MANAGEMENT'
                       ? 'bg-indigo-600 text-white shadow-sm'
                       : 'text-slate-500 hover:text-slate-700'
-                  }`}
+                    }`}
                 >
                   <Shield size={14} /> Equipe
                 </button>
@@ -435,7 +438,7 @@ export const AnalystDashboard: React.FC<{ onNewProposal: () => void }> = ({ onNe
                 {profile?.role ? (ROLE_LABELS_PT[profile.role as HierarchyRole] ?? profile.role) : 'Analista'}
               </p>
             </div>
-            <div 
+            <div
               onClick={() => setShowProfileModal(true)}
               className="w-10 h-10 rounded-full bg-slate-200 border-2 border-aqua-500 flex items-center justify-center overflow-hidden cursor-pointer hover:shadow-lg transition-all"
               title="Editar Perfil"
@@ -473,9 +476,15 @@ export const AnalystDashboard: React.FC<{ onNewProposal: () => void }> = ({ onNe
               <UserPlus size={15} /> Cadastro Cliente
             </button>
             <button
+              onClick={() => setShowAnalystSignupModal(true)}
+              className="flex-1 sm:flex-none flex items-center justify-center gap-2 border border-blue-200 bg-blue-50 hover:bg-blue-100 text-blue-700 px-4 py-3 rounded-xl font-bold text-xs transition-all"
+            >
+              <UserPlus size={15} /> Cadastro Analista
+            </button>
+            <button
               onClick={() => {
                 const latest = allLeads[0];
-                if (latest) setShareTarget({ id: latest.id, name: latest.name });
+                if (latest) setShareTarget({ id: latest.proposal_token || latest.id, name: latest.name });
               }}
               className="flex-1 sm:flex-none flex items-center justify-center gap-2 border border-aqua-200 bg-aqua-50 hover:bg-aqua-100 text-aqua-700 px-4 py-3 rounded-xl font-bold text-xs transition-all"
             >
@@ -719,21 +728,47 @@ export const AnalystDashboard: React.FC<{ onNewProposal: () => void }> = ({ onNe
                       <tr key={lead.id} className="hover:bg-slate-50 transition-colors">
                         <td className="px-6 py-4 font-bold text-slate-900">{lead.name}</td>
                         <td className="px-6 py-4">
-                          <StatusBadge status={lead.status} />
+                          <select
+                            value={lead.status}
+                            onChange={async (e) => {
+                              const newStatus = e.target.value;
+                              if (newStatus === 'APPLY') {
+                                setApplyPopupLead(lead);
+                                return;
+                              }
+                              try {
+                                await supabase.from('clients').update({ status: newStatus }).eq('id', lead.id);
+                                setAllLeads(prev => prev.map(l => l.id === lead.id ? { ...l, status: newStatus } : l));
+                                toast.success('Status atualizado!');
+                              } catch (err: any) {
+                                toast.error('Erro ao atualizar status: ' + err.message);
+                              }
+                            }}
+                            className="text-xs font-bold border border-slate-200 rounded-lg px-2 py-1 outline-none focus:border-aqua-500 bg-slate-50 cursor-pointer"
+                          >
+                            <option value="LEAD">Lead</option>
+                            <option value="PENDING">Pendente</option>
+                            <option value="SCHEDULED">Agendado</option>
+                            <option value="SALE">Venda</option>
+                            <option value="NO SALE">Sem Venda</option>
+                            <option value="NOT INTERESTED">Sem Interesse</option>
+                            <option value="RESCHEDULE">Reagendar</option>
+                            <option value="APPLY">Aplicar</option>
+                          </select>
                         </td>
                         <td className="px-6 py-4">{new Date(lead.created_at).toLocaleDateString()}</td>
                         <td className="px-6 py-4 text-slate-500">{lead.email || '-'}</td>
                         <td className="px-6 py-4 text-right">
                           <div className="flex items-center justify-end gap-3">
                             <button
-                              onClick={() => setShareTarget({ id: lead.id, name: lead.name })}
+                              onClick={() => setShareTarget({ id: lead.proposal_token || lead.id, name: lead.name })}
                               className="p-1.5 text-slate-400 hover:text-aqua-600 hover:bg-aqua-50 rounded-lg transition-colors"
                               title="Compartilhar proposta"
                             >
                               <Share2 size={15} />
                             </button>
                             <button
-                              onClick={() => navigate(`/proposal?id=${lead.id}`)}
+                              onClick={() => navigate(`/proposal?id=${lead.proposal_token || lead.id}`)}
                               className="text-aqua-600 hover:text-aqua-500 font-bold text-xs uppercase"
                             >
                               Proposta
@@ -771,13 +806,13 @@ export const AnalystDashboard: React.FC<{ onNewProposal: () => void }> = ({ onNe
         {showProfileModal && (
           <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4">
             <div className="bg-white rounded-3xl p-6 md:p-8 w-full max-w-md shadow-2xl relative animate-in zoom-in-95 duration-300">
-              <button 
+              <button
                 onClick={() => setShowProfileModal(false)}
                 className="absolute top-4 right-4 text-slate-400 hover:text-slate-600 bg-slate-100 p-2 rounded-full"
               >
                 <X size={20} />
               </button>
-              
+
               <div className="flex items-center gap-3 mb-6">
                 <div className="w-12 h-12 bg-aqua-100 text-aqua-600 rounded-full flex items-center justify-center">
                   <UserCog size={24} />
@@ -791,20 +826,20 @@ export const AnalystDashboard: React.FC<{ onNewProposal: () => void }> = ({ onNe
               <form onSubmit={handleSaveProfile} className="space-y-4">
                 <div>
                   <label className="block text-sm font-bold text-slate-700 mb-1">Nome de Exibição / Nickname</label>
-                  <input 
+                  <input
                     type="text"
                     value={profileData.full_name}
-                    onChange={(e) => setProfileData({...profileData, full_name: e.target.value})}
+                    onChange={(e) => setProfileData({ ...profileData, full_name: e.target.value })}
                     className="w-full bg-slate-50 border border-slate-200 text-slate-900 text-sm rounded-xl focus:ring-aqua-500 focus:border-aqua-500 block p-3 outline-none"
                     placeholder="Seu nome"
                   />
                 </div>
                 <div>
                   <label className="block text-sm font-bold text-slate-700 mb-1">URL da Foto de Perfil (Opcional)</label>
-                  <input 
+                  <input
                     type="url"
                     value={profileData.avatar_url}
-                    onChange={(e) => setProfileData({...profileData, avatar_url: e.target.value})}
+                    onChange={(e) => setProfileData({ ...profileData, avatar_url: e.target.value })}
                     className="w-full bg-slate-50 border border-slate-200 text-slate-900 text-sm rounded-xl focus:ring-aqua-500 focus:border-aqua-500 block p-3 outline-none"
                     placeholder="https://suafoto.com/imagem.jpg"
                   />
@@ -905,7 +940,7 @@ export const AnalystDashboard: React.FC<{ onNewProposal: () => void }> = ({ onNe
             ) : (
               <div className="mt-6 pt-4 border-t border-slate-100 flex flex-col gap-3">
                 {/* ── Close Sale CTA —  only shown for non-sale statuses ── */}
-                {!['SALE','INSTALLED','ACTIVE'].includes(selectedLead.status) ? (
+                {!['SALE', 'INSTALLED', 'ACTIVE'].includes(selectedLead.status) ? (
                   <button
                     onClick={() => handleCloseSale(selectedLead)}
                     className="w-full py-3 text-sm font-black bg-gradient-to-r from-emerald-500 to-teal-500 text-white rounded-xl hover:from-emerald-400 hover:to-teal-400 transition-all shadow-lg shadow-emerald-500/20 flex items-center justify-center gap-2"
@@ -930,7 +965,7 @@ export const AnalystDashboard: React.FC<{ onNewProposal: () => void }> = ({ onNe
                     👑 Copiar Link do Portal VIP (Indicações)
                   </button>
                 )}
-                
+
                 {(selectedLead as any).proposal_pdf_url && (
                   <a
                     href={(selectedLead as any).proposal_pdf_url}
@@ -1047,8 +1082,8 @@ export const AnalystDashboard: React.FC<{ onNewProposal: () => void }> = ({ onNe
             {signupPhone.length >= 7 && (
               <div className="bg-slate-50 border border-slate-100 rounded-xl p-3 mb-4 text-xs text-slate-600 leading-relaxed">
                 <p className="font-bold text-slate-400 uppercase tracking-widest text-[10px] mb-1">Mensagem que será enviada:</p>
-                Ola! Aqui e da Aquafeel Philly.<br/>
-                Clique no link para criar sua conta gratuita no Portal VIP e acompanhar seus pontos:<br/>
+                Ola! Aqui e da Aquafeel Philly.<br />
+                Clique no link para criar sua conta gratuita no Portal VIP e acompanhar seus pontos:<br />
                 <span className="text-emerald-600 font-bold">https://aquafeelphilly.com/login?tab=client</span>
               </div>
             )}
@@ -1067,13 +1102,101 @@ export const AnalystDashboard: React.FC<{ onNewProposal: () => void }> = ({ onNe
                 }
                 target="_blank" rel="noopener noreferrer"
                 onClick={() => { if (signupPhone.length >= 7) { setShowSignupLinkModal(false); setSignupPhone(''); } }}
-                className={`flex-[2] flex items-center justify-center gap-2 py-3 rounded-xl font-black text-sm transition-all ${
-                  signupPhone.length >= 7
+                className={`flex-[2] flex items-center justify-center gap-2 py-3 rounded-xl font-black text-sm transition-all ${signupPhone.length >= 7
                     ? 'bg-[#25D366] text-white hover:bg-[#1ebe5d] cursor-pointer'
                     : 'bg-slate-100 text-slate-400 cursor-not-allowed pointer-events-none'
-                }`}
+                  }`}
               >
                 <MessageCircle size={16} /> Enviar no WhatsApp
+              </a>
+            </div>
+          </div>
+        </div>
+      )}
+      {/* APPLY Status Popup */}
+      {applyPopupLead && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[200] p-4">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-sm w-full p-6 animate-in zoom-in-95 duration-200">
+            <h3 className="text-lg font-black text-slate-900 mb-2">Iniciar Aplicacao</h3>
+            <p className="text-slate-500 text-sm mb-6">
+              {applyPopupLead.name} sera redirecionado para preencher o formulario de aplicacao financeira.
+            </p>
+            <a
+              href="https://aquafeelphilly.com/referral"
+              target="_blank"
+              rel="noopener noreferrer"
+              onClick={() => setApplyPopupLead(null)}
+              className="w-full flex items-center justify-center gap-3 py-4 rounded-xl font-black text-lg bg-gradient-to-r from-yellow-400 to-amber-500 text-yellow-950 hover:from-yellow-300 hover:to-amber-400 transition-all shadow-lg shadow-amber-300/40 mb-3"
+            >
+              Preencher Aplicacao
+            </a>
+            <button
+              onClick={() => setApplyPopupLead(null)}
+              className="w-full py-2 text-slate-500 text-sm font-bold hover:bg-slate-50 rounded-xl transition-colors"
+            >
+              Cancelar
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Analyst Signup Modal */}
+      {showAnalystSignupModal && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4">
+          <div className="bg-white rounded-2xl max-w-sm w-full p-6 shadow-2xl animate-in zoom-in-95 duration-200">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-10 h-10 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center shrink-0">
+                <UserPlus size={20} />
+              </div>
+              <div>
+                <h3 className="font-black text-slate-800">Enviar Convite de Analista</h3>
+                <p className="text-slate-500 text-xs">Candidato recebe link da landing page de recrutamento</p>
+              </div>
+            </div>
+
+            <div className="flex items-center bg-slate-50 border border-slate-200 rounded-xl overflow-hidden mb-4 focus-within:ring-2 focus-within:ring-blue-400 transition-all">
+              <span className="pl-4 pr-2 flex items-center gap-1.5 text-slate-500 font-bold text-sm shrink-0">+1</span>
+              <input
+                type="tel"
+                placeholder="215-000-0000"
+                value={analystSignupPhone}
+                onChange={e => setAnalystSignupPhone(e.target.value.replace(/\D/g, '').slice(0, 10))}
+                className="flex-1 bg-transparent pr-4 py-3 text-slate-900 text-sm focus:outline-none"
+                autoFocus
+              />
+            </div>
+
+            {analystSignupPhone.length >= 7 && (
+              <div className="bg-slate-50 border border-slate-100 rounded-xl p-3 mb-4 text-xs text-slate-600 leading-relaxed">
+                <p className="font-bold text-slate-400 uppercase tracking-widest text-[10px] mb-1">Mensagem:</p>
+                Ola! Aqui e da Aquafeel Philly.<br/>
+                Vi que voce tem o perfil ideal para fazer parte da nossa equipe!<br/>
+                Acesse a pagina abaixo para conhecer nossa oportunidade e agendar uma entrevista:<br/>
+                <span className="text-blue-600 font-bold">https://aquafeelphilly.com/referral?ref={profile?.first_name || 'Analista'}</span>
+              </div>
+            )}
+
+            <div className="flex gap-3">
+              <button
+                onClick={() => { setShowAnalystSignupModal(false); setAnalystSignupPhone(''); }}
+                className="flex-1 py-3 border border-slate-200 rounded-xl text-slate-500 font-bold text-sm hover:bg-slate-50 transition-colors"
+              >
+                Cancelar
+              </button>
+              <a
+                href={analystSignupPhone.length >= 7
+                  ? `https://wa.me/1${analystSignupPhone}?text=${encodeURIComponent(`Ola! Aqui e da Aquafeel Philly.\n\nVi que voce tem o perfil ideal para fazer parte da nossa equipe!\n\nAcesse a pagina abaixo para conhecer nossa oportunidade e agendar uma entrevista:\n\nhttps://aquafeelphilly.com/referral?ref=${profile?.first_name || 'Analista'}`)}`
+                  : undefined
+                }
+                target="_blank" rel="noopener noreferrer"
+                onClick={() => { if (analystSignupPhone.length >= 7) { setShowAnalystSignupModal(false); setAnalystSignupPhone(''); } }}
+                className={`flex-[2] flex items-center justify-center gap-2 py-3 rounded-xl font-black text-sm transition-all ${
+                  analystSignupPhone.length >= 7
+                    ? 'bg-blue-600 hover:bg-blue-500 text-white cursor-pointer'
+                    : 'bg-slate-100 text-slate-300 pointer-events-none'
+                }`}
+              >
+                Enviar via WhatsApp
               </a>
             </div>
           </div>
