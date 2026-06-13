@@ -98,7 +98,7 @@ export const Login: React.FC = () => {
             {mode === 'login' ? 'Analyst Portal' : mode === 'manager' ? 'Manager Portal' : 'Reset Password'}
           </h2>
           <p className="text-slate-400 text-sm font-medium">
-            {mode === 'login' ? 'Secure access to Aquafeel Solutions Tech' : mode === 'manager' ? 'Restricted Access for Management' : 'Enter your email to receive a reset link'}
+            {mode === 'login' ? 'Secure access to Aquos Tech' : mode === 'manager' ? 'Restricted Access for Management' : 'Enter your email to receive a reset link'}
           </p>
         </div>
 
@@ -244,7 +244,7 @@ export const Login: React.FC = () => {
 
       <div className="absolute bottom-6 text-center w-full">
         <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest">
-          Aquafeel Solutions Tech © {new Date().getFullYear()}
+          Aquos Tech © {new Date().getFullYear()}
         </p>
       </div>
     </div>

@@ -17,6 +17,7 @@ export type AnalystRole =
   | 'analyst_jr'
   | 'analyst'; // legacy fallback
 
+// Mentor and below → analyst dashboard. Manager and above → manager dashboard.
 export const MANAGER_ROLES: AnalystRole[] = [
   'admin',
   'ambassador',
@@ -25,8 +26,6 @@ export const MANAGER_ROLES: AnalystRole[] = [
   'director_jr',
   'manager_sr',
   'manager_jr',
-  'mentor_sr',
-  'mentor_jr',
 ];
 
 export const ROLE_LABELS: Record<AnalystRole, string> = {
@@ -156,7 +155,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setSession(session);
         setUser(session?.user ?? null);
         if (session?.user) {
-          try { await fetchProfile(session.user.id); } catch (_) {}
+          // Skip analyst profile fetch for client users (they have user_type: 'client' in metadata)
+          const userType = session.user.user_metadata?.user_type;
+          if (userType !== 'client') {
+            try { await fetchProfile(session.user.id); } catch (_) {}
+          } else {
+            setProfile(null);
+          }
         } else {
           setProfile(null);
         }
@@ -189,7 +194,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setUser(null);
     setSession(null);
     await supabase.auth.signOut();
-    // Only remove the supabase session key, not all localStorage
+    // Clear session from sessionStorage (new default) + legacy localStorage
+    sessionStorage.removeItem('aq_session');
     localStorage.removeItem('aq_session');
   };
 

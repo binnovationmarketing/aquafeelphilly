@@ -1,7 +1,7 @@
 import { createClient } from '@supabase/supabase-js';
 
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL as string | undefined;
-const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY as string | undefined;
+export const supabaseUrl = import.meta.env.VITE_SUPABASE_URL as string | undefined;
+export const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY as string | undefined;
 
 // Validate required environment variables at startup
 const missingVars: string[] = [];
@@ -24,17 +24,47 @@ if (missingVars.length > 0) {
   }
 }
 
+/**
+ * Main authenticated Supabase client.
+ *
+ * Uses sessionStorage so:
+ *  1. Each browser tab has its own isolated session → no Web Lock contention.
+ *  2. Session is automatically cleared when the browser/tab is closed
+ *     (sessionStorage lifetime = tab lifetime).
+ *  3. Hundreds of concurrent users never share state.
+ */
 export const supabase = createClient(
   supabaseUrl ?? 'https://placeholder.supabase.co',
   supabaseAnonKey ?? 'placeholder-key',
   {
     auth: {
-      // Persist session so users don't re-login on every page visit
       persistSession: true,
       autoRefreshToken: true,
-      // Detect session from URL hash (required for OAuth redirects)
       detectSessionInUrl: true,
       storageKey: 'aq_session',
+      // sessionStorage: tab-isolated (no cross-tab Web Lock), clears on close
+      storage: typeof window !== 'undefined' ? window.sessionStorage : undefined,
+    },
+  }
+);
+
+/**
+ * Anonymous Supabase client — NO Web Lock / LockManager.
+ *
+ * Use this for all unauthenticated RPC calls (InviteLandingPage,
+ * ClientReferralTab, etc.) to avoid the "lock:aq_session timed out"
+ * error that happens when 3+ sessions compete for the same lock.
+ *
+ * NEVER call supabase.auth.* on this client.
+ */
+export const supabaseAnon = createClient(
+  supabaseUrl ?? 'https://placeholder.supabase.co',
+  supabaseAnonKey ?? 'placeholder-key',
+  {
+    auth: {
+      persistSession: false,
+      autoRefreshToken: false,
+      detectSessionInUrl: false,
     },
   }
 );

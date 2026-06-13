@@ -18,8 +18,10 @@ interface TreeNode {
   avatar_url?: string;
 }
 
+const PROD_URL = 'https://aquafeelphilly.com';
+
 export const RecommendationsPanel: React.FC = () => {
-  const { user } = useAuth();
+  const { user, profile } = useAuth();
   const [treeData, setTreeData] = useState<TreeNode[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [hasError, setHasError] = useState(false);
@@ -163,12 +165,21 @@ export const RecommendationsPanel: React.FC = () => {
     return roots;
   };
 
-  const copyInviteLink = (token: string | undefined) => {
+  // Copy RECRUITMENT link — invite new analysts to join the team
+  const copyRecruitLink = () => {
+    const ref = profile?.first_name || user?.email?.split('@')[0] || 'Aquafeel';
+    const url = `${PROD_URL}/referral?ref=${encodeURIComponent(ref)}`;
+    navigator.clipboard.writeText(url);
+    toast.success('Link de recrutamento copiado! Compartilhe para convidar novos analistas.');
+  };
+
+  // Copy CLIENT VIP portal link
+  const copyVipLink = (token: string | undefined) => {
     if (!token) {
-      toast.error('Este cliente ainda não tem um portal VIP ativo (Apenas para clientes convertidos).');
+      toast.error('Este cliente ainda não tem um portal VIP ativo (apenas para clientes convertidos).');
       return;
     }
-    const url = `${window.location.origin}/referral?token=${token}`;
+    const url = `${PROD_URL}/vip?token=${token}`;
     navigator.clipboard.writeText(url);
     toast.success('Link do Portal VIP copiado! Envie para o cliente.');
   };
@@ -276,10 +287,13 @@ export const RecommendationsPanel: React.FC = () => {
             <div className="mt-3 pt-3 border-t border-slate-100 flex gap-2">
               {isClient ? (
                 <>
-                  <button onClick={() => copyInviteLink(node.token)} className="flex-1 bg-slate-50 hover:bg-slate-100 text-slate-700 border border-slate-200 rounded-lg py-1.5 text-xs font-bold flex items-center justify-center gap-1 transition-colors" title="Copiar Link do Portal VIP">
-                    <UserPlus size={14} className="text-[#11caa0]"/> Convidar Time
+                  <button onClick={copyRecruitLink} className="flex-1 bg-slate-50 hover:bg-[#11caa0] hover:text-white text-slate-700 border border-slate-200 hover:border-[#11caa0] rounded-lg py-1.5 text-xs font-bold flex items-center justify-center gap-1 transition-colors" title="Copiar link de recrutamento de analistas">
+                    <UserPlus size={14} className="text-[#11caa0] group-hover:text-white"/> Convidar Time
                   </button>
-                  <button onClick={() => setIsAddMode(node.id)} className="w-8 flex-shrink-0 bg-slate-50 hover:bg-[#11caa0] hover:text-white text-slate-600 border border-slate-200 hover:border-[#11caa0] rounded-lg py-1.5 flex items-center justify-center transition-colors" title="Cadastrar Indicação Manul">
+                  <button onClick={() => copyVipLink(node.token)} className="w-8 flex-shrink-0 bg-slate-50 hover:bg-blue-500 hover:text-white text-slate-600 border border-slate-200 hover:border-blue-500 rounded-lg py-1.5 flex items-center justify-center transition-colors" title="Copiar Link do Portal VIP do Cliente">
+                    <Copy size={14} />
+                  </button>
+                  <button onClick={() => setIsAddMode(node.id)} className="w-8 flex-shrink-0 bg-slate-50 hover:bg-[#11caa0] hover:text-white text-slate-600 border border-slate-200 hover:border-[#11caa0] rounded-lg py-1.5 flex items-center justify-center transition-colors" title="Cadastrar Indicação Manual">
                     <GitMerge size={14} />
                   </button>
                 </>

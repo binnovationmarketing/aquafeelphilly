@@ -1,5 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../contexts/AuthContext';
 import {
@@ -9,13 +10,12 @@ import {
 import {
   Users, TrendingUp,
   CheckCircle, Plus, LogOut, Search, Filter, X, Mail, Phone, MapPin, Clock, Share2,
-  MessageSquare, CalendarCheck, Play, CheckCircle2, Shield, FileText, UserCog,
+  MessageSquare, CalendarCheck, Calendar as CalendarIcon, Play, CheckCircle2, Shield, FileText, UserCog,
   DollarSign, ClipboardList, Users2, UserPlus, MessageCircle
 } from 'lucide-react';
 import AquaFeelLogo from './AquaFeelLogo';
 import { toast } from 'sonner';
 import { ShareProposalModal } from './ShareProposalModal';
-import { MarketingService } from '../lib/marketing';
 import { Task } from '../types';
 import { CommissionPanel } from './CommissionPanel';
 import { RecommendationsPanel } from './RecommendationsPanel';
@@ -36,6 +36,7 @@ interface DashboardMetrics {
 
 interface Lead {
   id: string;
+  proposal_token?: string;
   name: string;
   email: string;
   phone?: string;
@@ -43,10 +44,14 @@ interface Lead {
   status: string;
   created_at: string;
   analyst?: string;
+  water_consumption?: number;
+  cleaning_consumption?: number;
+  total_annual_cost?: number;
 }
 
 export const AnalystDashboard: React.FC<{ onNewProposal: () => void }> = ({ onNewProposal }) => {
-  const { user, profile, signOut } = useAuth();
+  const navigate = useNavigate();
+  const { user, profile, signOut, refreshProfile } = useAuth();
   const [metrics, setMetrics] = useState<DashboardMetrics | null>(null);
   const [loading, setLoading] = useState(true);
   const [allLeads, setAllLeads] = useState<Lead[]>([]);
@@ -55,12 +60,15 @@ export const AnalystDashboard: React.FC<{ onNewProposal: () => void }> = ({ onNe
   const [statusFilter, setStatusFilter] = useState<string>('ALL');
   const [selectedLead, setSelectedLead] = useState<Lead | null>(null);
   const [showAllLeads, setShowAllLeads] = useState(false);
-  const [shareTarget, setShareTarget] = useState<{ id: string; name: string } | null>(null);
+  const [shareTarget, setShareTarget] = useState<{ id: string; dbId: string; name: string } | null>(null);
   const [activeTab, setActiveTab] = useState<'OVERVIEW' | 'RECOMMENDATIONS' | 'COMMISSIONS' | 'TEAM_MANAGEMENT'>('OVERVIEW');
   const [isScheduling, setIsScheduling] = useState(false);
   const [showProfileModal, setShowProfileModal] = useState(false);
   const [showSignupLinkModal, setShowSignupLinkModal] = useState(false);
   const [signupPhone, setSignupPhone] = useState('');
+  const [showAnalystSignupModal, setShowAnalystSignupModal] = useState(false);
+  const [analystSignupPhone, setAnalystSignupPhone] = useState('');
+  const [applyPopupLead, setApplyPopupLead] = useState<Lead | null>(null);
   const [profileData, setProfileData] = useState({ full_name: '', avatar_url: '' });
   const [isSavingProfile, setIsSavingProfile] = useState(false);
   const [executingTask, setExecutingTask] = useState<Task | null>(null);
@@ -71,6 +79,36 @@ export const AnalystDashboard: React.FC<{ onNewProposal: () => void }> = ({ onNe
     notes: ''
   });
   const [monthlyEarnings, setMonthlyEarnings] = useState({ personal: 0, team: 0, total: 0 });
+
+  // ── Dynamic filters ──────────────────────────────────────────────────────
+  const [showFilters, setShowFilters] = useState(false);
+  const [filterAnalyst, setFilterAnalyst] = useState('');
+  const [filterPhone, setFilterPhone] = useState('');
+  const [filterAddress, setFilterAddress] = useState('');
+  const [filterEmail, setFilterEmail] = useState('');
+  const [filterHasProposal, setFilterHasProposal] = useState<'ALL' | 'YES' | 'NO'>('ALL');
+  const [filterWaterMin, setFilterWaterMin] = useState<string>('');
+  const [filterWaterMax, setFilterWaterMax] = useState<string>('');
+  const [filterCleaningMin, setFilterCleaningMin] = useState<string>('');
+  const [filterCleaningMax, setFilterCleaningMax] = useState<string>('');
+  const [filterTotalMin, setFilterTotalMin] = useState<string>('');
+  const [filterTotalMax, setFilterTotalMax] = useState<string>('');
+
+  const activeFilterCount = [
+    filterAnalyst, filterPhone, filterAddress, filterEmail,
+    filterHasProposal !== 'ALL' ? 'x' : '',
+    filterWaterMin, filterWaterMax, filterCleaningMin, filterCleaningMax,
+    filterTotalMin, filterTotalMax
+  ].filter(Boolean).length;
+
+  const resetFilters = () => {
+    setFilterAnalyst(''); setFilterPhone(''); setFilterAddress('');
+    setFilterEmail(''); setFilterHasProposal('ALL');
+    setFilterWaterMin(''); setFilterWaterMax('');
+    setFilterCleaningMin(''); setFilterCleaningMax('');
+    setFilterTotalMin(''); setFilterTotalMax('');
+    setSearchTerm(''); setStatusFilter('ALL');
+  };
 
   useEffect(() => {
     fetchDashboardData();
@@ -89,10 +127,10 @@ export const AnalystDashboard: React.FC<{ onNewProposal: () => void }> = ({ onNe
     try {
       const { error } = await supabase.from('analysts').update(profileData).eq('id', user.id);
       if (error) throw error;
+      // Refresh profile in context without a page reload (prevents white screen)
+      await refreshProfile();
       toast.success('Perfil atualizado com sucesso!');
       setShowProfileModal(false);
-      // reload page to reflect changes in context or let context handle it
-      window.location.reload();
     } catch (err: any) {
       toast.error('Erro ao salvar perfil: ' + err.message);
     } finally {
@@ -109,14 +147,14 @@ export const AnalystDashboard: React.FC<{ onNewProposal: () => void }> = ({ onNe
       .on(
         'postgres_changes',
         {
-          event:  'UPDATE',
+          event: 'UPDATE',
           schema: 'public',
-          table:  'clients',
+          table: 'clients',
           filter: `analyst_id=eq.${user.id}`,
         },
         (payload) => {
           const updated = payload.new as any;
-          const old     = payload.old as any;
+          const old = payload.old as any;
 
           // Detect first proposal open (proposal_opened_at just got set)
           if (!old.proposal_opened_at && updated.proposal_opened_at) {
@@ -162,9 +200,9 @@ export const AnalystDashboard: React.FC<{ onNewProposal: () => void }> = ({ onNe
     const ch = supabase
       .channel('commission-notifications')
       .on('postgres_changes', {
-          event: 'INSERT', schema: 'public', table: 'commissions_log',
-          filter: `beneficiary_id=eq.${user.id}`,
-        },
+        event: 'INSERT', schema: 'public', table: 'commissions_log',
+        filter: `beneficiary_id=eq.${user.id}`,
+      },
         (payload) => {
           const row = payload.new as any;
           if (row.commission_type === 'personal') return; // personal shown separately
@@ -311,13 +349,57 @@ export const AnalystDashboard: React.FC<{ onNewProposal: () => void }> = ({ onNe
   const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8'];
 
   const filteredLeads = allLeads.filter(lead => {
-    const matchesSearch =
-      lead.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      lead.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    const q = searchTerm.toLowerCase();
+    const matchesSearch = !searchTerm || (
+      lead.name?.toLowerCase().includes(q) ||
+      lead.email?.toLowerCase().includes(q) ||
       lead.phone?.includes(searchTerm) ||
-      lead.zip_code?.includes(searchTerm);
+      lead.zip_code?.includes(searchTerm)
+    );
     const matchesStatus = statusFilter === 'ALL' || lead.status === statusFilter;
-    return matchesSearch && matchesStatus;
+    const matchesAnalyst = !filterAnalyst || (lead.analyst || '').toLowerCase().includes(filterAnalyst.toLowerCase());
+    const matchesPhone = !filterPhone || (lead.phone || '').includes(filterPhone);
+    const matchesAddress = !filterAddress || (lead.zip_code || '').toLowerCase().includes(filterAddress.toLowerCase());
+    const matchesEmail = !filterEmail || (lead.email || '').toLowerCase().includes(filterEmail.toLowerCase());
+    const matchesProposal =
+      filterHasProposal === 'ALL' ? true :
+      filterHasProposal === 'YES' ? !!lead.proposal_token :
+      !lead.proposal_token;
+    const water = lead.water_consumption ?? 0;
+    const cleaning = lead.cleaning_consumption ?? 0;
+    const total = lead.total_annual_cost ?? (water + cleaning) * 12;
+    const matchesWater =
+      (filterWaterMin === '' || water >= Number(filterWaterMin)) &&
+      (filterWaterMax === '' || water <= Number(filterWaterMax));
+    const matchesCleaning =
+      (filterCleaningMin === '' || cleaning >= Number(filterCleaningMin)) &&
+      (filterCleaningMax === '' || cleaning <= Number(filterCleaningMax));
+    const matchesTotal =
+      (filterTotalMin === '' || total >= Number(filterTotalMin)) &&
+      (filterTotalMax === '' || total <= Number(filterTotalMax));
+    return matchesSearch && matchesStatus && matchesAnalyst && matchesPhone &&
+      matchesAddress && matchesEmail && matchesProposal &&
+      matchesWater && matchesCleaning && matchesTotal;
+  });
+
+  // Chart data derived from filteredLeads so filters affect charts too
+  const filteredStatusCounts = filteredLeads.reduce((acc: Record<string, number>, l) => {
+    acc[l.status] = (acc[l.status] || 0) + 1;
+    return acc;
+  }, {});
+  const filteredLeadsByStatus = Object.keys(filteredStatusCounts).map(k => ({ name: k, value: filteredStatusCounts[k] }));
+
+  const months6 = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  const filteredSalesTrend = Array.from({ length: 6 }, (_, i) => {
+    const d = new Date(new Date().getFullYear(), new Date().getMonth() - (5 - i), 1);
+    return {
+      name: months6[d.getMonth()],
+      sales: filteredLeads.filter(l => {
+        if (l.status !== 'SALE' && l.status !== 'INSTALLED' && l.status !== 'ACTIVE') return false;
+        const cd = new Date(l.created_at);
+        return cd.getMonth() === d.getMonth() && cd.getFullYear() === d.getFullYear();
+      }).length
+    };
   });
 
   const displayedLeads = showAllLeads ? filteredLeads : filteredLeads.slice(0, 5);
@@ -414,11 +496,10 @@ export const AnalystDashboard: React.FC<{ onNewProposal: () => void }> = ({ onNe
               {(profile?.role !== 'analyst_jr' || user?.email === 'binnovationmarketing@gmail.com') && (
                 <button
                   onClick={() => setActiveTab('TEAM_MANAGEMENT')}
-                  className={`px-3 py-2 text-xs font-bold rounded-lg transition-all flex items-center gap-1.5 ${
-                    activeTab === 'TEAM_MANAGEMENT'
+                  className={`px-3 py-2 text-xs font-bold rounded-lg transition-all flex items-center gap-1.5 ${activeTab === 'TEAM_MANAGEMENT'
                       ? 'bg-indigo-600 text-white shadow-sm'
                       : 'text-slate-500 hover:text-slate-700'
-                  }`}
+                    }`}
                 >
                   <Shield size={14} /> Equipe
                 </button>
@@ -434,7 +515,7 @@ export const AnalystDashboard: React.FC<{ onNewProposal: () => void }> = ({ onNe
                 {profile?.role ? (ROLE_LABELS_PT[profile.role as HierarchyRole] ?? profile.role) : 'Analista'}
               </p>
             </div>
-            <div 
+            <div
               onClick={() => setShowProfileModal(true)}
               className="w-10 h-10 rounded-full bg-slate-200 border-2 border-aqua-500 flex items-center justify-center overflow-hidden cursor-pointer hover:shadow-lg transition-all"
               title="Editar Perfil"
@@ -472,13 +553,10 @@ export const AnalystDashboard: React.FC<{ onNewProposal: () => void }> = ({ onNe
               <UserPlus size={15} /> Cadastro Cliente
             </button>
             <button
-              onClick={() => {
-                const latest = allLeads[0];
-                if (latest) setShareTarget({ id: latest.id, name: latest.name });
-              }}
-              className="flex-1 sm:flex-none flex items-center justify-center gap-2 border border-aqua-200 bg-aqua-50 hover:bg-aqua-100 text-aqua-700 px-4 py-3 rounded-xl font-bold text-xs transition-all"
+              onClick={() => setShowAnalystSignupModal(true)}
+              className="flex-1 sm:flex-none flex items-center justify-center gap-2 border border-blue-200 bg-blue-50 hover:bg-blue-100 text-blue-700 px-4 py-3 rounded-xl font-bold text-xs transition-all"
             >
-              <Share2 size={15} /> Compartilhar
+              <UserPlus size={15} /> Cadastro Analista
             </button>
             <button
               onClick={onNewProposal}
@@ -538,13 +616,77 @@ export const AnalystDashboard: React.FC<{ onNewProposal: () => void }> = ({ onNe
               />
             </div>
 
+            {/* ── Upcoming Appointments ──────────────────────────────── */}
+            {pendingTasks.filter(t => t.type === 'VISIT' && t.scheduled_for).length > 0 && (
+              <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden mb-8">
+                <div className="p-5 border-b border-slate-100 flex items-center gap-3">
+                  <div className="w-9 h-9 rounded-xl bg-aqua-50 flex items-center justify-center">
+                    <CalendarIcon size={18} className="text-aqua-600" />
+                  </div>
+                  <div>
+                    <h3 className="font-bold text-slate-800">Agendamentos Próximos</h3>
+                    <p className="text-xs text-slate-500">Visitas e entrevistas confirmadas pelo portal</p>
+                  </div>
+                  <span className="ml-auto bg-aqua-100 text-aqua-700 text-xs font-black px-2.5 py-1 rounded-full">
+                    {pendingTasks.filter(t => t.type === 'VISIT' && t.scheduled_for).length}
+                  </span>
+                </div>
+                <div className="divide-y divide-slate-50">
+                  {pendingTasks
+                    .filter(t => t.type === 'VISIT' && t.scheduled_for)
+                    .slice(0, 10)
+                    .map(task => {
+                      const dt = new Date(task.scheduled_for);
+                      const dateLabel = dt.toLocaleDateString('pt-BR', { weekday: 'short', day: 'numeric', month: 'short' });
+                      const timeLabel = dt.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+                      const isInterview = task.title?.toLowerCase().includes('entrevista') || task.notes?.toLowerCase().includes('trabalho');
+                      // Parse notes for details
+                      const notesLines = (task.notes || '').split('\n').filter(Boolean);
+                      return (
+                        <div key={task.id} className="flex items-start gap-4 px-5 py-4 hover:bg-slate-50 transition-colors">
+                          {/* Date badge */}
+                          <div className={`shrink-0 w-14 text-center py-2 rounded-xl ${isInterview ? 'bg-purple-50 text-purple-700' : 'bg-aqua-50 text-aqua-700'}`}>
+                            <p className="text-[10px] font-black uppercase tracking-wider">{dateLabel.split(',')[0]}</p>
+                            <p className="text-xl font-black leading-none mt-0.5">{dt.getDate()}</p>
+                            <p className="text-[10px] font-bold">{timeLabel}</p>
+                          </div>
+                          {/* Details */}
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2 mb-1">
+                              <p className="font-bold text-slate-800 text-sm truncate">{task.title?.replace(/^📅\s*/, '')}</p>
+                              <span className={`shrink-0 text-[10px] font-black uppercase px-2 py-0.5 rounded-full ${isInterview ? 'bg-purple-100 text-purple-600' : 'bg-aqua-100 text-aqua-600'}`}>
+                                {isInterview ? 'Entrevista' : 'Visita'}
+                              </span>
+                            </div>
+                            {notesLines.map((line, i) => (
+                              <p key={i} className="text-xs text-slate-500 truncate">{line}</p>
+                            ))}
+                          </div>
+                          {/* Mark done */}
+                          <button
+                            onClick={async () => {
+                              await supabase.from('tasks').update({ status: 'COMPLETED' }).eq('id', task.id);
+                              setPendingTasks(prev => prev.filter(t => t.id !== task.id));
+                            }}
+                            className="shrink-0 text-xs text-slate-400 hover:text-emerald-600 font-bold transition-colors"
+                            title="Marcar como concluído"
+                          >
+                            ✓
+                          </button>
+                        </div>
+                      );
+                    })}
+                </div>
+              </div>
+            )}
+
             {/* Charts Section */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
               <div className="lg:col-span-2 bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
                 <h3 className="text-lg font-bold text-slate-800 mb-6">Sales Performance</h3>
                 <div className="h-64">
                   <ResponsiveContainer width="100%" height="100%">
-                    <BarChart data={metrics?.salesTrend}>
+                    <BarChart data={filteredSalesTrend}>
                       <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
                       <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: '#64748b', fontSize: 12 }} />
                       <YAxis axisLine={false} tickLine={false} tick={{ fill: '#64748b', fontSize: 12 }} />
@@ -564,7 +706,7 @@ export const AnalystDashboard: React.FC<{ onNewProposal: () => void }> = ({ onNe
                   <ResponsiveContainer width="100%" height="100%">
                     <PieChart>
                       <Pie
-                        data={metrics?.leadsByStatus}
+                        data={filteredLeadsByStatus}
                         cx="50%"
                         cy="50%"
                         innerRadius={60}
@@ -572,7 +714,7 @@ export const AnalystDashboard: React.FC<{ onNewProposal: () => void }> = ({ onNe
                         paddingAngle={5}
                         dataKey="value"
                       >
-                        {metrics?.leadsByStatus.map((_, index) => (
+                        {filteredLeadsByStatus.map((_, index) => (
                           <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                         ))}
                       </Pie>
@@ -581,7 +723,7 @@ export const AnalystDashboard: React.FC<{ onNewProposal: () => void }> = ({ onNe
                   </ResponsiveContainer>
                 </div>
                 <div className="flex flex-wrap gap-2 justify-center mt-4">
-                  {metrics?.leadsByStatus.map((entry, index) => (
+                  {filteredLeadsByStatus.map((entry, index) => (
                     <div key={index} className="flex items-center gap-1 text-xs text-slate-500">
                       <span className="w-2 h-2 rounded-full" style={{ backgroundColor: COLORS[index % COLORS.length] }}></span>
                       {entry.name}
@@ -591,96 +733,253 @@ export const AnalystDashboard: React.FC<{ onNewProposal: () => void }> = ({ onNe
               </div>
             </div>
 
-            {/* Leads Table with Search & Filter */}
+            {/* Leads Table with Dynamic Filters */}
             <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
-              <div className="p-6 border-b border-slate-100">
-                <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-                  <h3 className="text-lg font-bold text-slate-800">
-                    {showAllLeads ? `All Leads (${filteredLeads.length})` : 'Recent Leads'}
+              {/* Header row */}
+              <div className="p-5 border-b border-slate-100">
+                <div className="flex flex-wrap items-center gap-3">
+                  <h3 className="text-lg font-bold text-slate-800 mr-auto">
+                    Leads
+                    <span className="ml-2 text-sm font-normal text-slate-400">({filteredLeads.length}{allLeads.length !== filteredLeads.length ? ` de ${allLeads.length}` : ''})</span>
                   </h3>
-                  <div className="flex flex-col sm:flex-row gap-3 w-full md:w-auto">
-                    {/* Search */}
-                    <div className="relative">
-                      <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
-                      <input
-                        type="text"
-                        placeholder="Search leads..."
-                        value={searchTerm}
-                        onChange={e => setSearchTerm(e.target.value)}
-                        className="w-full sm:w-48 pl-9 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-aqua-500 outline-none"
-                      />
-                    </div>
-                    {/* Filter */}
-                    <div className="relative">
-                      <Filter size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+                  {/* Quick search */}
+                  <div className="relative">
+                    <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+                    <input
+                      type="text"
+                      placeholder="Buscar leads..."
+                      value={searchTerm}
+                      onChange={e => setSearchTerm(e.target.value)}
+                      className="w-44 pl-9 pr-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-aqua-500 outline-none"
+                    />
+                  </div>
+                  {/* Filtros button */}
+                  <button
+                    onClick={() => setShowFilters(prev => !prev)}
+                    className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-sm font-bold border transition-colors ${showFilters || activeFilterCount > 0 ? 'bg-aqua-600 text-white border-aqua-600' : 'bg-slate-50 text-slate-600 border-slate-200 hover:border-aqua-400'}`}
+                  >
+                    <Filter size={14} />
+                    Filtros
+                    {activeFilterCount > 0 && (
+                      <span className="ml-0.5 bg-white text-aqua-700 text-[10px] font-black px-1.5 rounded-full">{activeFilterCount}</span>
+                    )}
+                  </button>
+                  {activeFilterCount > 0 && (
+                    <button onClick={resetFilters} className="text-xs text-slate-400 hover:text-red-500 font-bold flex items-center gap-1">
+                      <X size={12} /> Limpar
+                    </button>
+                  )}
+                  <button
+                    onClick={() => setShowAllLeads(prev => !prev)}
+                    className="text-sm text-aqua-600 font-bold hover:text-aqua-500 whitespace-nowrap"
+                  >
+                    {showAllLeads ? 'Recolher' : 'Ver todos'}
+                  </button>
+                </div>
+
+                {/* Expanded filter panel */}
+                {showFilters && (
+                  <div className="mt-4 pt-4 border-t border-slate-100 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
+                    {/* Status */}
+                    <div>
+                      <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Status</label>
                       <select
                         value={statusFilter}
                         onChange={e => setStatusFilter(e.target.value)}
-                        className="pl-9 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-aqua-500 outline-none appearance-none cursor-pointer"
+                        className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-aqua-500 appearance-none cursor-pointer"
                       >
-                        <option value="ALL">All Status</option>
+                        <option value="ALL">Todos</option>
                         <option value="LEAD">Lead</option>
-                        <option value="PRESENTATION">Presentation</option>
-                        <option value="SCHEDULED">Scheduled</option>
-                        <option value="QUALIFIED">Qualified</option>
-                        <option value="SALE">Sale</option>
-                        <option value="NO SALE">No Sale</option>
-                        <option value="INSTALLED">Installed</option>
-                        <option value="LOST">Lost</option>
+                        <option value="PENDING">Pendente</option>
+                        <option value="SCHEDULED">Agendado</option>
+                        <option value="SALE">Venda</option>
+                        <option value="NO SALE">Sem Venda</option>
+                        <option value="NOT INTERESTED">Sem Interesse</option>
+                        <option value="RESCHEDULE">Reagendar</option>
+                        <option value="APPLY">Aplicar</option>
+                        <option value="INSTALLED">Instalado</option>
+                        <option value="LOST">Perdido</option>
                       </select>
                     </div>
-                    <button
-                      onClick={() => setShowAllLeads(prev => !prev)}
-                      className="text-sm text-aqua-600 font-bold hover:text-aqua-500 whitespace-nowrap"
-                    >
-                      {showAllLeads ? 'Show Less' : 'View All'}
-                    </button>
+                    {/* Analista */}
+                    <div>
+                      <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Analista</label>
+                      <input
+                        type="text"
+                        placeholder="Nome do analista"
+                        value={filterAnalyst}
+                        onChange={e => setFilterAnalyst(e.target.value)}
+                        className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-aqua-500"
+                      />
+                    </div>
+                    {/* Telefone */}
+                    <div>
+                      <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Telefone</label>
+                      <input
+                        type="text"
+                        placeholder="215..."
+                        value={filterPhone}
+                        onChange={e => setFilterPhone(e.target.value)}
+                        className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-aqua-500"
+                      />
+                    </div>
+                    {/* Endereço / ZIP */}
+                    <div>
+                      <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Endereço / ZIP</label>
+                      <input
+                        type="text"
+                        placeholder="191..."
+                        value={filterAddress}
+                        onChange={e => setFilterAddress(e.target.value)}
+                        className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-aqua-500"
+                      />
+                    </div>
+                    {/* Email */}
+                    <div>
+                      <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Email</label>
+                      <input
+                        type="text"
+                        placeholder="@"
+                        value={filterEmail}
+                        onChange={e => setFilterEmail(e.target.value)}
+                        className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-aqua-500"
+                      />
+                    </div>
+                    {/* Proposta */}
+                    <div>
+                      <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Proposta</label>
+                      <select
+                        value={filterHasProposal}
+                        onChange={e => setFilterHasProposal(e.target.value as 'ALL' | 'YES' | 'NO')}
+                        className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-aqua-500 appearance-none cursor-pointer"
+                      >
+                        <option value="ALL">Todos</option>
+                        <option value="YES">Com proposta</option>
+                        <option value="NO">Sem proposta</option>
+                      </select>
+                    </div>
+                    {/* Gastos Água */}
+                    <div>
+                      <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Água ($/mês)</label>
+                      <div className="flex gap-1">
+                        <input type="number" placeholder="Min" value={filterWaterMin} onChange={e => setFilterWaterMin(e.target.value)}
+                          className="w-full px-2 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-aqua-500" />
+                        <input type="number" placeholder="Max" value={filterWaterMax} onChange={e => setFilterWaterMax(e.target.value)}
+                          className="w-full px-2 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-aqua-500" />
+                      </div>
+                    </div>
+                    {/* Gastos Sabão */}
+                    <div>
+                      <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Sabão ($/mês)</label>
+                      <div className="flex gap-1">
+                        <input type="number" placeholder="Min" value={filterCleaningMin} onChange={e => setFilterCleaningMin(e.target.value)}
+                          className="w-full px-2 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-aqua-500" />
+                        <input type="number" placeholder="Max" value={filterCleaningMax} onChange={e => setFilterCleaningMax(e.target.value)}
+                          className="w-full px-2 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-aqua-500" />
+                      </div>
+                    </div>
+                    {/* Total Anual */}
+                    <div>
+                      <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Total Anual ($)</label>
+                      <div className="flex gap-1">
+                        <input type="number" placeholder="Min" value={filterTotalMin} onChange={e => setFilterTotalMin(e.target.value)}
+                          className="w-full px-2 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-aqua-500" />
+                        <input type="number" placeholder="Max" value={filterTotalMax} onChange={e => setFilterTotalMax(e.target.value)}
+                          className="w-full px-2 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-aqua-500" />
+                      </div>
+                    </div>
                   </div>
-                </div>
+                )}
               </div>
-              <div className="overflow-x-auto">
-                <table className="w-full text-left text-sm text-slate-600">
-                  <thead className="bg-slate-50 text-xs uppercase font-bold text-slate-400">
+
+              <div className="overflow-x-auto max-h-[520px] overflow-y-auto">
+                <table className="w-full min-w-[1100px] text-left text-sm text-slate-600">
+                  <thead className="bg-slate-50 text-xs uppercase font-bold text-slate-400 sticky top-0 z-10">
                     <tr>
-                      <th className="px-6 py-4">Client Name</th>
-                      <th className="px-6 py-4">Status</th>
-                      <th className="px-6 py-4">Date</th>
-                      <th className="px-6 py-4">Email</th>
-                      <th className="px-6 py-4 text-right">Action</th>
+                      <th className="px-4 py-3 whitespace-nowrap">Cliente</th>
+                      <th className="px-4 py-3 whitespace-nowrap">Status</th>
+                      <th className="px-4 py-3 whitespace-nowrap">Data</th>
+                      <th className="px-4 py-3 whitespace-nowrap">Email</th>
+                      <th className="px-4 py-3 whitespace-nowrap">Telefone</th>
+                      <th className="px-4 py-3 whitespace-nowrap">Endereço</th>
+                      <th className="px-4 py-3 whitespace-nowrap">Analista</th>
+                      <th className="px-4 py-3 whitespace-nowrap text-right">Água/mês</th>
+                      <th className="px-4 py-3 whitespace-nowrap text-right">Sabão/mês</th>
+                      <th className="px-4 py-3 whitespace-nowrap text-right">Total Anual</th>
+                      <th className="px-4 py-3 text-right whitespace-nowrap">Ações</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-100">
-                    {displayedLeads.map((lead) => (
+                    {displayedLeads.map((lead) => {
+                      const water = lead.water_consumption ?? (lead as any).water_consumption ?? 0;
+                      const cleaning = lead.cleaning_consumption ?? (lead as any).cleaning_consumption ?? 0;
+                      const totalAnnual = lead.total_annual_cost ?? (lead as any).total_annual_cost ?? ((water + cleaning) * 12 || 0);
+                      return (
                       <tr key={lead.id} className="hover:bg-slate-50 transition-colors">
-                        <td className="px-6 py-4 font-bold text-slate-900">{lead.name}</td>
-                        <td className="px-6 py-4">
-                          <StatusBadge status={lead.status} />
+                        <td className="px-4 py-3 font-bold text-slate-900 whitespace-nowrap">{lead.name}</td>
+                        <td className="px-4 py-3">
+                          <select
+                            value={lead.status}
+                            onChange={async (e) => {
+                              const newStatus = e.target.value;
+                              if (newStatus === 'APPLY') {
+                                setApplyPopupLead(lead);
+                                return;
+                              }
+                              try {
+                                await supabase.from('clients').update({ status: newStatus }).eq('id', lead.id);
+                                setAllLeads(prev => prev.map(l => l.id === lead.id ? { ...l, status: newStatus } : l));
+                                toast.success('Status atualizado!');
+                              } catch (err: any) {
+                                toast.error('Erro ao atualizar status: ' + err.message);
+                              }
+                            }}
+                            className="text-xs font-bold border border-slate-200 rounded-lg px-2 py-1 outline-none focus:border-aqua-500 bg-slate-50 cursor-pointer"
+                          >
+                            <option value="LEAD">Lead</option>
+                            <option value="PENDING">Pendente</option>
+                            <option value="SCHEDULED">Agendado</option>
+                            <option value="SALE">Venda</option>
+                            <option value="NO SALE">Sem Venda</option>
+                            <option value="NOT INTERESTED">Sem Interesse</option>
+                            <option value="RESCHEDULE">Reagendar</option>
+                            <option value="APPLY">Aplicar</option>
+                          </select>
                         </td>
-                        <td className="px-6 py-4">{new Date(lead.created_at).toLocaleDateString()}</td>
-                        <td className="px-6 py-4 text-slate-500">{lead.email || '-'}</td>
-                        <td className="px-6 py-4 text-right">
-                          <div className="flex items-center justify-end gap-3">
+                        <td className="px-4 py-3 whitespace-nowrap">{new Date(lead.created_at).toLocaleDateString()}</td>
+                        <td className="px-4 py-3 text-slate-500 whitespace-nowrap">{lead.email || '-'}</td>
+                        <td className="px-4 py-3 text-slate-500 whitespace-nowrap">{lead.phone || '-'}</td>
+                        <td className="px-4 py-3 text-slate-500 whitespace-nowrap">{lead.zip_code || '-'}</td>
+                        <td className="px-4 py-3 text-slate-500 whitespace-nowrap text-xs">{lead.analyst || '-'}</td>
+                        <td className="px-4 py-3 text-right text-slate-500 whitespace-nowrap">{water ? `$${Number(water).toLocaleString()}` : '-'}</td>
+                        <td className="px-4 py-3 text-right text-slate-500 whitespace-nowrap">{cleaning ? `$${Number(cleaning).toLocaleString()}` : '-'}</td>
+                        <td className="px-4 py-3 text-right text-slate-700 font-bold whitespace-nowrap">{totalAnnual ? `$${Number(totalAnnual).toLocaleString()}` : '-'}</td>
+                        <td className="px-4 py-3 text-right">
+                          <div className="flex items-center justify-end gap-2">
                             <button
-                              onClick={() => setShareTarget({ id: lead.id, name: lead.name })}
+                              onClick={() => setShareTarget({ id: lead.proposal_token || lead.id, dbId: lead.id, name: lead.name })}
                               className="p-1.5 text-slate-400 hover:text-aqua-600 hover:bg-aqua-50 rounded-lg transition-colors"
                               title="Compartilhar proposta"
                             >
                               <Share2 size={15} />
                             </button>
                             <button
-                              onClick={() => setSelectedLead(lead)}
-                              className="text-aqua-600 hover:text-aqua-500 font-bold text-xs uppercase"
+                              onClick={() => navigate(`/proposal?id=${lead.proposal_token || lead.id}`)}
+                              className="text-aqua-600 hover:text-aqua-500 font-bold text-xs uppercase whitespace-nowrap"
                             >
-                              View
+                              Proposta
                             </button>
                           </div>
                         </td>
                       </tr>
-                    ))}
+                      );
+                    })}
                     {displayedLeads.length === 0 && (
                       <tr>
-                        <td colSpan={5} className="px-6 py-8 text-center text-slate-400">
-                          {searchTerm || statusFilter !== 'ALL' ? 'No leads match your search.' : 'No leads found. Start a new proposal!'}
+                        <td colSpan={11} className="px-6 py-8 text-center text-slate-400">
+                          {activeFilterCount > 0 || searchTerm || statusFilter !== 'ALL'
+                            ? 'Nenhum lead encontrado para os filtros aplicados.'
+                            : 'Nenhum lead. Inicie uma nova proposta!'}
                         </td>
                       </tr>
                     )}
@@ -693,7 +992,7 @@ export const AnalystDashboard: React.FC<{ onNewProposal: () => void }> = ({ onNe
                     onClick={() => setShowAllLeads(true)}
                     className="text-sm text-aqua-600 font-bold hover:text-aqua-500"
                   >
-                    Show all {filteredLeads.length} leads →
+                    Ver todos {filteredLeads.length} leads →
                   </button>
                 </div>
               )}
@@ -706,13 +1005,13 @@ export const AnalystDashboard: React.FC<{ onNewProposal: () => void }> = ({ onNe
         {showProfileModal && (
           <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4">
             <div className="bg-white rounded-3xl p-6 md:p-8 w-full max-w-md shadow-2xl relative animate-in zoom-in-95 duration-300">
-              <button 
+              <button
                 onClick={() => setShowProfileModal(false)}
                 className="absolute top-4 right-4 text-slate-400 hover:text-slate-600 bg-slate-100 p-2 rounded-full"
               >
                 <X size={20} />
               </button>
-              
+
               <div className="flex items-center gap-3 mb-6">
                 <div className="w-12 h-12 bg-aqua-100 text-aqua-600 rounded-full flex items-center justify-center">
                   <UserCog size={24} />
@@ -726,20 +1025,20 @@ export const AnalystDashboard: React.FC<{ onNewProposal: () => void }> = ({ onNe
               <form onSubmit={handleSaveProfile} className="space-y-4">
                 <div>
                   <label className="block text-sm font-bold text-slate-700 mb-1">Nome de Exibição / Nickname</label>
-                  <input 
+                  <input
                     type="text"
                     value={profileData.full_name}
-                    onChange={(e) => setProfileData({...profileData, full_name: e.target.value})}
+                    onChange={(e) => setProfileData({ ...profileData, full_name: e.target.value })}
                     className="w-full bg-slate-50 border border-slate-200 text-slate-900 text-sm rounded-xl focus:ring-aqua-500 focus:border-aqua-500 block p-3 outline-none"
                     placeholder="Seu nome"
                   />
                 </div>
                 <div>
                   <label className="block text-sm font-bold text-slate-700 mb-1">URL da Foto de Perfil (Opcional)</label>
-                  <input 
+                  <input
                     type="url"
                     value={profileData.avatar_url}
-                    onChange={(e) => setProfileData({...profileData, avatar_url: e.target.value})}
+                    onChange={(e) => setProfileData({ ...profileData, avatar_url: e.target.value })}
                     className="w-full bg-slate-50 border border-slate-200 text-slate-900 text-sm rounded-xl focus:ring-aqua-500 focus:border-aqua-500 block p-3 outline-none"
                     placeholder="https://suafoto.com/imagem.jpg"
                   />
@@ -840,7 +1139,7 @@ export const AnalystDashboard: React.FC<{ onNewProposal: () => void }> = ({ onNe
             ) : (
               <div className="mt-6 pt-4 border-t border-slate-100 flex flex-col gap-3">
                 {/* ── Close Sale CTA —  only shown for non-sale statuses ── */}
-                {!['SALE','INSTALLED','ACTIVE'].includes(selectedLead.status) ? (
+                {!['SALE', 'INSTALLED', 'ACTIVE'].includes(selectedLead.status) ? (
                   <button
                     onClick={() => handleCloseSale(selectedLead)}
                     className="w-full py-3 text-sm font-black bg-gradient-to-r from-emerald-500 to-teal-500 text-white rounded-xl hover:from-emerald-400 hover:to-teal-400 transition-all shadow-lg shadow-emerald-500/20 flex items-center justify-center gap-2"
@@ -853,7 +1152,7 @@ export const AnalystDashboard: React.FC<{ onNewProposal: () => void }> = ({ onNe
                       try {
                         const { data, error } = await supabase.from('client_points').select('referral_token').eq('client_id', selectedLead.id).single();
                         if (error || !data) throw new Error('Portal ainda não ativado ou token não encontrado.');
-                        const url = `${window.location.origin}/referral?token=${data.referral_token}`;
+                        const url = `https://aquafeelphilly.com/vip?token=${data.referral_token}`;
                         await navigator.clipboard.writeText(url);
                         toast.success('Link do Portal VIP copiado para a área de transferência!');
                       } catch (err: any) {
@@ -865,7 +1164,7 @@ export const AnalystDashboard: React.FC<{ onNewProposal: () => void }> = ({ onNe
                     👑 Copiar Link do Portal VIP (Indicações)
                   </button>
                 )}
-                
+
                 {(selectedLead as any).proposal_pdf_url && (
                   <a
                     href={(selectedLead as any).proposal_pdf_url}
@@ -950,6 +1249,7 @@ export const AnalystDashboard: React.FC<{ onNewProposal: () => void }> = ({ onNe
           isOpen={true}
           onClose={() => setShareTarget(null)}
           clientId={shareTarget.id}
+          clientDbId={shareTarget.dbId}
           clientName={shareTarget.name}
         />
       )}
@@ -982,9 +1282,9 @@ export const AnalystDashboard: React.FC<{ onNewProposal: () => void }> = ({ onNe
             {signupPhone.length >= 7 && (
               <div className="bg-slate-50 border border-slate-100 rounded-xl p-3 mb-4 text-xs text-slate-600 leading-relaxed">
                 <p className="font-bold text-slate-400 uppercase tracking-widest text-[10px] mb-1">Mensagem que será enviada:</p>
-                Olá! Aqui é da Aquafeel Philly 💧<br/>
-                Clique no link para criar sua conta gratuita no Portal VIP e acompanhar seus pontos:<br/>
-                <span className="text-emerald-600 font-bold">{window.location.origin}/client-signup</span>
+                Ola! Aqui e da Aquafeel Philly.<br />
+                Clique no link para criar sua conta gratuita no Portal VIP e acompanhar seus pontos:<br />
+                <span className="text-emerald-600 font-bold">https://aquafeelphilly.com/login?tab=client</span>
               </div>
             )}
 
@@ -997,18 +1297,106 @@ export const AnalystDashboard: React.FC<{ onNewProposal: () => void }> = ({ onNe
               </button>
               <a
                 href={signupPhone.length >= 7
-                  ? `https://wa.me/1${signupPhone}?text=${encodeURIComponent(`Olá! Aqui é da Aquafeel Philly 💧\n\nClique no link abaixo para criar sua conta gratuita no Portal VIP Aquafeel e começar a acompanhar seus pontos e recompensas:\n\n👉 ${window.location.origin}/client-signup\n\nQualquer dúvida, estou à disposição! 😊`)}`
+                  ? `https://wa.me/1${signupPhone}?text=${encodeURIComponent(`Ola! Aqui e da Aquafeel Philly.\n\nClique no link abaixo para criar sua conta gratuita no Portal VIP Aquafeel e comecar a acompanhar seus pontos e recompensas:\n\nhttps://aquafeelphilly.com/login?tab=client\n\nQualquer duvida, estou a disposicao!`)}`
                   : undefined
                 }
                 target="_blank" rel="noopener noreferrer"
                 onClick={() => { if (signupPhone.length >= 7) { setShowSignupLinkModal(false); setSignupPhone(''); } }}
-                className={`flex-[2] flex items-center justify-center gap-2 py-3 rounded-xl font-black text-sm transition-all ${
-                  signupPhone.length >= 7
+                className={`flex-[2] flex items-center justify-center gap-2 py-3 rounded-xl font-black text-sm transition-all ${signupPhone.length >= 7
                     ? 'bg-[#25D366] text-white hover:bg-[#1ebe5d] cursor-pointer'
                     : 'bg-slate-100 text-slate-400 cursor-not-allowed pointer-events-none'
-                }`}
+                  }`}
               >
                 <MessageCircle size={16} /> Enviar no WhatsApp
+              </a>
+            </div>
+          </div>
+        </div>
+      )}
+      {/* APPLY Status Popup */}
+      {applyPopupLead && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[200] p-4">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-sm w-full p-6 animate-in zoom-in-95 duration-200">
+            <h3 className="text-lg font-black text-slate-900 mb-2">Iniciar Aplicacao</h3>
+            <p className="text-slate-500 text-sm mb-6">
+              {applyPopupLead.name} sera redirecionado para preencher o formulario de aplicacao financeira.
+            </p>
+            <a
+              href="https://aquafeelphilly.com/referral"
+              target="_blank"
+              rel="noopener noreferrer"
+              onClick={() => setApplyPopupLead(null)}
+              className="w-full flex items-center justify-center gap-3 py-4 rounded-xl font-black text-lg bg-gradient-to-r from-yellow-400 to-amber-500 text-yellow-950 hover:from-yellow-300 hover:to-amber-400 transition-all shadow-lg shadow-amber-300/40 mb-3"
+            >
+              Preencher Aplicacao
+            </a>
+            <button
+              onClick={() => setApplyPopupLead(null)}
+              className="w-full py-2 text-slate-500 text-sm font-bold hover:bg-slate-50 rounded-xl transition-colors"
+            >
+              Cancelar
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Analyst Signup Modal */}
+      {showAnalystSignupModal && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4">
+          <div className="bg-white rounded-2xl max-w-sm w-full p-6 shadow-2xl animate-in zoom-in-95 duration-200">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-10 h-10 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center shrink-0">
+                <UserPlus size={20} />
+              </div>
+              <div>
+                <h3 className="font-black text-slate-800">Enviar Convite de {profile?.first_name || profile?.full_name || 'Analista'}</h3>
+                <p className="text-slate-500 text-xs">Candidato recebe link da landing page de recrutamento</p>
+              </div>
+            </div>
+
+            <div className="flex items-center bg-slate-50 border border-slate-200 rounded-xl overflow-hidden mb-4 focus-within:ring-2 focus-within:ring-blue-400 transition-all">
+              <span className="pl-4 pr-2 flex items-center gap-1.5 text-slate-500 font-bold text-sm shrink-0">+1</span>
+              <input
+                type="tel"
+                placeholder="215-000-0000"
+                value={analystSignupPhone}
+                onChange={e => setAnalystSignupPhone(e.target.value.replace(/\D/g, '').slice(0, 10))}
+                className="flex-1 bg-transparent pr-4 py-3 text-slate-900 text-sm focus:outline-none"
+                autoFocus
+              />
+            </div>
+
+            {analystSignupPhone.length >= 7 && (
+              <div className="bg-slate-50 border border-slate-100 rounded-xl p-3 mb-4 text-xs text-slate-600 leading-relaxed">
+                <p className="font-bold text-slate-400 uppercase tracking-widest text-[10px] mb-1">Mensagem:</p>
+                Ola! Aqui e da Aquafeel Philly.<br/>
+                Vi que voce tem o perfil ideal para fazer parte da nossa equipe!<br/>
+                Acesse a pagina abaixo para conhecer nossa oportunidade e agendar uma entrevista:<br/>
+                <span className="text-blue-600 font-bold">https://aquafeelphilly.com/referral?ref={profile?.first_name || 'Analista'}</span>
+              </div>
+            )}
+
+            <div className="flex gap-3">
+              <button
+                onClick={() => { setShowAnalystSignupModal(false); setAnalystSignupPhone(''); }}
+                className="flex-1 py-3 border border-slate-200 rounded-xl text-slate-500 font-bold text-sm hover:bg-slate-50 transition-colors"
+              >
+                Cancelar
+              </button>
+              <a
+                href={analystSignupPhone.length >= 7
+                  ? `https://wa.me/1${analystSignupPhone}?text=${encodeURIComponent(`Ola! Aqui e da Aquafeel Philly.\n\nVi que voce tem o perfil ideal para fazer parte da nossa equipe!\n\nAcesse a pagina abaixo para conhecer nossa oportunidade e agendar uma entrevista:\n\nhttps://aquafeelphilly.com/referral?ref=${profile?.first_name || 'Analista'}`)}`
+                  : undefined
+                }
+                target="_blank" rel="noopener noreferrer"
+                onClick={() => { if (analystSignupPhone.length >= 7) { setShowAnalystSignupModal(false); setAnalystSignupPhone(''); } }}
+                className={`flex-[2] flex items-center justify-center gap-2 py-3 rounded-xl font-black text-sm transition-all ${
+                  analystSignupPhone.length >= 7
+                    ? 'bg-blue-600 hover:bg-blue-500 text-white cursor-pointer'
+                    : 'bg-slate-100 text-slate-300 pointer-events-none'
+                }`}
+              >
+                Enviar via WhatsApp
               </a>
             </div>
           </div>

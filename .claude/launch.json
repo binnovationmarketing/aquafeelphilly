@@ -1,0 +1,14 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "Vite Dev Server",
+      "runtimeExecutable": "/usr/local/bin/node",
+      "runtimeArgs": [
+        "--require", "/tmp/patch_cwd.js",
+        "/tmp/aquafeel-start.mjs"
+      ],
+      "port": 5173
+    }
+  ]
+}

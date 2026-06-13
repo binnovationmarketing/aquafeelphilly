@@ -1,21 +1,39 @@
 import React from 'react';
 
+const PROD_URL = 'https://aquafeelphilly.com';
+
 interface AquaFeelLogoProps {
   width?: string;
   className?: string;
   variant?: 'default' | 'white';
+  /** If true (default), clicking the logo navigates to aquafeelphilly.com */
+  clickable?: boolean;
+  onClick?: () => void;
 }
 
-const AquaFeelLogo: React.FC<AquaFeelLogoProps> = ({ 
-  width = "300px", 
-  className = "", 
-  variant = 'default' 
+const AquaFeelLogo: React.FC<AquaFeelLogoProps> = ({
+  width = "300px",
+  className = "",
+  variant = 'default',
+  clickable = true,
+  onClick,
 }) => {
   const mainTextColor = variant === 'white' ? '#FFFFFF' : '#000000';
   const techColor = '#00AEEF';
 
+  const handleClick = () => {
+    if (onClick) { onClick(); return; }
+    if (clickable) window.open(PROD_URL, '_self');
+  };
+
   return (
-    <div className={`flex items-center transition-all duration-500 ${className}`} style={{ width: width }}>
+    <div
+      className={`flex items-center transition-all duration-500 ${clickable || onClick ? 'cursor-pointer hover:opacity-80' : ''} ${className}`}
+      style={{ width: width }}
+      onClick={handleClick}
+      role={clickable || onClick ? 'link' : undefined}
+      aria-label={clickable || onClick ? 'Aquafeel Philly — página principal' : undefined}
+    >
       <svg
         viewBox="0 0 720 180"
         fill="none"
