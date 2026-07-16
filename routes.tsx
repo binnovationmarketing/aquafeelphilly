@@ -36,6 +36,7 @@ const ReferralDashboard = lazyWithRetry(() => import('./components/ReferralDashb
 // ReferralDashboard now served at /vip?token=... (old /referral?token=... links redirect here)
 const InviteLandingPage = lazyWithRetry(() => import('./components/InviteLandingPage').then(m => ({ default: m.InviteLandingPage })));
 const ClientPortalLayout = lazyWithRetry(() => import('./components/ClientPortal/ClientPortalLayout').then(m => ({ default: m.ClientPortalLayout })));
+const JourneyExperience = lazyWithRetry(() => import('./components/Journey/JourneyExperience').then(m => ({ default: m.JourneyExperience })));
 
 /** Resolve where a logged-in user should land. */
 function AuthRedirect({ isManager, isClient }: { isManager: boolean; isClient: boolean }) {
@@ -108,6 +109,10 @@ export function AppRoutes() {
         <Route path="/t/:slug" element={<InviteLandingPage />} />
         <Route path="/trabalho" element={<InviteLandingPage />} />
         <Route path="/proposal" element={<ProposalView />} />
+        {/* /jornada = immersive 3D water-purification storytelling experience (public) */}
+        <Route path="/jornada" element={<JourneyExperience />} />
+        <Route path="/journey" element={<Navigate to="/jornada" replace />} />
+        <Route path="/experience" element={<Navigate to="/jornada" replace />} />
 
         {/* ── Client Portal ── */}
         <Route
