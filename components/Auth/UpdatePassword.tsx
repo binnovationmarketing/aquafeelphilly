@@ -5,6 +5,7 @@ import { Lock, Eye, EyeOff, Loader2, CheckCircle, AlertTriangle } from 'lucide-r
 import AquaFeelLogo from '../AquaFeelLogo';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
+import { AquaBackground, Kicker } from '../ui/ds';
 
 /**
  * Creates a lock-free Supabase client that uses the recovery token from the
@@ -48,9 +49,9 @@ export const UpdatePassword: React.FC = () => {
   // Supabase recovery link format: /recovery#access_token=XXX&refresh_token=YYY&type=recovery
   useEffect(() => {
     const hash = new URLSearchParams(window.location.hash.replace('#', ''));
-    const token   = hash.get('access_token');
+    const token = hash.get('access_token');
     const refresh = hash.get('refresh_token');
-    const type    = hash.get('type');
+    const type = hash.get('type');
 
     if (token && type === 'recovery') {
       setAccessToken(token);
@@ -62,9 +63,18 @@ export const UpdatePassword: React.FC = () => {
 
   const handleUpdatePassword = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!accessToken) { setError('Link de recuperação inválido ou expirado.'); return; }
-    if (password.length < 6) { setError('A senha deve ter pelo menos 6 caracteres.'); return; }
-    if (password !== confirmPassword) { setError('As senhas não conferem.'); return; }
+    if (!accessToken) {
+      setError('Link de recuperação inválido ou expirado.');
+      return;
+    }
+    if (password.length < 6) {
+      setError('A senha deve ter pelo menos 6 caracteres.');
+      return;
+    }
+    if (password !== confirmPassword) {
+      setError('As senhas não conferem.');
+      return;
+    }
 
     setLoading(true);
     setError(null);
@@ -74,7 +84,10 @@ export const UpdatePassword: React.FC = () => {
       // Establish a real session on the client so updateUser has auth context.
       // setSession requires both tokens; use empty string fallback if only access_token available.
       if (refreshToken) {
-        await recoveryClient.auth.setSession({ access_token: accessToken, refresh_token: refreshToken });
+        await recoveryClient.auth.setSession({
+          access_token: accessToken,
+          refresh_token: refreshToken,
+        });
       }
 
       const { error: updateError } = await recoveryClient.auth.updateUser({ password });
@@ -93,29 +106,23 @@ export const UpdatePassword: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-[#020d1a] px-4 relative overflow-hidden text-white">
-      {/* Background */}
-      <div className="absolute inset-0 z-0 pointer-events-none">
-        <div className="absolute top-[-20%] left-[-10%] w-[50%] h-[50%] bg-blue-600/20 rounded-full blur-[120px] animate-pulse" />
-        <div className="absolute bottom-[-20%] right-[-10%] w-[50%] h-[50%] bg-cyan-500/20 rounded-full blur-[120px] animate-pulse" style={{ animationDelay: '2s' }} />
-      </div>
+    <div className="min-h-screen flex items-center justify-center bg-[#020617] px-4 relative overflow-hidden text-white font-sans">
+      <AquaBackground />
 
       <motion.div
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
-        className="max-w-md w-full bg-white/5 backdrop-blur-xl p-8 md:p-10 rounded-3xl shadow-2xl border border-white/10 relative z-10"
+        className="max-w-md w-full bg-white/[0.04] backdrop-blur-xl p-8 md:p-10 rounded-3xl border border-white/10 relative z-10"
+        style={{ boxShadow: '0 40px 80px -30px rgba(2,6,23,0.9)' }}
       >
         {/* Logo */}
         <div className="flex flex-col items-center text-center mb-8">
-          <div className="mb-5">
-            <AquaFeelLogo width="160px" variant="white" />
+          <div className="mb-4">
+            <AquaFeelLogo width="150px" variant="white" />
           </div>
-          <h2 className="text-2xl font-black text-white mb-1 uppercase tracking-tight">
-            Nova Senha
-          </h2>
-          <p className="text-slate-400 text-sm font-medium">
-            Crie uma nova senha segura para sua conta
-          </p>
+          <Kicker>Redefinição de Senha</Kicker>
+          <h2 className="font-serif text-3xl font-black text-white mt-4 mb-1">Nova Senha</h2>
+          <p className="text-slate-400 text-sm">Crie uma nova senha segura para sua conta</p>
         </div>
 
         {/* Token error state */}
@@ -129,8 +136,8 @@ export const UpdatePassword: React.FC = () => {
               Este link de recuperação já foi usado ou expirou. Solicite um novo link.
             </p>
             <button
-              onClick={() => navigate('/client-login')}
-              className="mt-4 w-full py-3 rounded-2xl bg-gradient-to-r from-cyan-500 to-blue-600 text-white font-black text-sm uppercase tracking-widest hover:opacity-90 transition"
+              onClick={() => navigate('/login')}
+              className="mt-4 w-full py-3 rounded-full bg-gradient-to-r from-cyan-400 to-cyan-300 text-slate-900 font-black text-sm uppercase tracking-widest shadow-[0_10px_40px_-8px_rgba(34,211,238,0.7)] transition active:scale-[0.98]"
             >
               Voltar ao Login
             </button>
@@ -144,9 +151,7 @@ export const UpdatePassword: React.FC = () => {
               <CheckCircle size={48} />
             </div>
             <h3 className="text-xl font-bold text-white">Senha Atualizada!</h3>
-            <p className="text-slate-400 text-sm">
-              Redirecionando para o login em instantes...
-            </p>
+            <p className="text-slate-400 text-sm">Redirecionando para o login em instantes...</p>
           </div>
         )}
 
@@ -163,13 +168,13 @@ export const UpdatePassword: React.FC = () => {
                 required
                 minLength={6}
                 value={password}
-                onChange={e => setPassword(e.target.value)}
+                onChange={(e) => setPassword(e.target.value)}
                 placeholder="Nova senha (mín. 6 caracteres)"
                 className="w-full rounded-2xl px-4 py-4 pl-12 pr-12 bg-white/5 border border-white/10 placeholder-slate-500 text-white focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent focus:bg-white/10 transition-all font-medium text-sm"
               />
               <button
                 type="button"
-                onClick={() => setShowPassword(v => !v)}
+                onClick={() => setShowPassword((v) => !v)}
                 className="absolute inset-y-0 right-0 pr-4 flex items-center text-slate-400 hover:text-white transition-colors"
               >
                 {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
@@ -185,7 +190,7 @@ export const UpdatePassword: React.FC = () => {
                 type={showConfirm ? 'text' : 'password'}
                 required
                 value={confirmPassword}
-                onChange={e => setConfirmPassword(e.target.value)}
+                onChange={(e) => setConfirmPassword(e.target.value)}
                 placeholder="Confirmar nova senha"
                 className={`w-full rounded-2xl px-4 py-4 pl-12 pr-12 bg-white/5 border placeholder-slate-500 text-white focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent focus:bg-white/10 transition-all font-medium text-sm ${
                   confirmPassword && confirmPassword !== password
@@ -195,7 +200,7 @@ export const UpdatePassword: React.FC = () => {
               />
               <button
                 type="button"
-                onClick={() => setShowConfirm(v => !v)}
+                onClick={() => setShowConfirm((v) => !v)}
                 className="absolute inset-y-0 right-0 pr-4 flex items-center text-slate-400 hover:text-white transition-colors"
               >
                 {showConfirm ? <EyeOff size={16} /> : <Eye size={16} />}
