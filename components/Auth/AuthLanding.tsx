@@ -9,6 +9,7 @@ import {
 import AquaFeelLogo from '../AquaFeelLogo';
 import { toast } from 'sonner';
 import { motion, AnimatePresence } from 'framer-motion';
+import { AquaBackground, Kicker } from '../ui/ds';
 
 const M = motion.div as any;
 
@@ -249,18 +250,14 @@ export const AuthLanding: React.FC = () => {
   if (loading) return null;
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-[#020d1a] px-4 relative overflow-hidden text-white py-10">
-      {/* Background orbs */}
-      <div className="absolute inset-0 z-0 pointer-events-none">
-        <div className="absolute top-[-20%] left-[-10%] w-[50%] h-[50%] bg-blue-600/20 rounded-full blur-[120px] animate-pulse" />
-        <div className="absolute bottom-[-20%] right-[-10%] w-[50%] h-[50%] bg-cyan-500/15 rounded-full blur-[120px] animate-pulse" style={{ animationDelay: '2s' }} />
-        <div className="absolute top-[40%] left-[40%] w-[30%] h-[30%] bg-indigo-600/10 rounded-full blur-[100px] animate-pulse" style={{ animationDelay: '1s' }} />
-      </div>
+    <div className="min-h-screen flex items-center justify-center bg-[#020617] px-4 relative overflow-hidden text-white py-10 font-sans">
+      <AquaBackground />
 
       <div className="max-w-md w-full relative z-10 space-y-4">
         {/* Logo */}
-        <div className="flex justify-center mb-2">
-          <AquaFeelLogo width="160px" variant="white" />
+        <div className="flex flex-col items-center gap-3 mb-2">
+          <AquaFeelLogo width="150px" variant="white" />
+          <Kicker>Área Segura · Aquafeel</Kicker>
         </div>
 
         {/* Tab switcher */}
@@ -299,7 +296,7 @@ export const AuthLanding: React.FC = () => {
               className="bg-white/5 backdrop-blur-xl p-8 rounded-3xl shadow-2xl border border-white/10"
             >
               <div className="text-center mb-7">
-                <h2 className="text-xl font-black text-white mb-1 uppercase tracking-tight">
+                <h2 className="font-serif text-2xl font-black text-white mb-1">
                   {analystMode === 'login' ? 'Acessar Dashboard' : 'Recuperar Senha'}
                 </h2>
                 <p className="text-slate-500 text-xs">
@@ -416,7 +413,7 @@ export const AuthLanding: React.FC = () => {
                     <div className="inline-flex items-center gap-2 bg-cyan-500/10 border border-cyan-500/20 text-cyan-400 text-xs font-black uppercase tracking-widest px-4 py-1.5 rounded-full mb-4">
                       <Droplets size={12} /> Portal VIP do Cliente
                     </div>
-                    <h2 className="text-xl font-black text-white mb-1">Bem-vindo!</h2>
+                    <h2 className="font-serif text-2xl font-black text-white mb-1">Bem-vindo!</h2>
                     <p className="text-slate-400 text-sm">
                       Digite seu email para entrar ou criar sua conta.
                     </p>
@@ -448,7 +445,7 @@ export const AuthLanding: React.FC = () => {
               {clientStep === 'login' && (
                 <>
                   <div className="text-center mb-7">
-                    <h2 className="text-xl font-black text-white mb-1">Bem-vindo de volta!</h2>
+                    <h2 className="font-serif text-2xl font-black text-white mb-1">Bem-vindo de volta!</h2>
                     <p className="text-slate-400 text-sm">
                       Entrando como{' '}
                       <span className="text-cyan-400 font-bold">{clientEmail}</span>
@@ -508,7 +505,7 @@ export const AuthLanding: React.FC = () => {
                     <div className="inline-flex items-center gap-2 bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-black uppercase tracking-widest px-4 py-1.5 rounded-full mb-3">
                       Criar Conta
                     </div>
-                    <h2 className="text-xl font-black text-white mb-1">Cadastre-se</h2>
+                    <h2 className="font-serif text-2xl font-black text-white mb-1">Cadastre-se</h2>
                     <p className="text-slate-400 text-sm">
                       Para: <span className="text-cyan-400 font-bold">{clientEmail}</span>
                     </p>
@@ -609,7 +606,7 @@ export const AuthLanding: React.FC = () => {
               {clientStep === 'reset' && (
                 <>
                   <div className="text-center mb-7">
-                    <h2 className="text-xl font-black text-white mb-1">Recuperar Senha</h2>
+                    <h2 className="font-serif text-2xl font-black text-white mb-1">Recuperar Senha</h2>
                     <p className="text-slate-400 text-sm">
                       Link para:{' '}
                       <span className="text-yellow-400 font-bold">{clientEmail}</span>
