@@ -8,6 +8,7 @@ import {
 } from 'lucide-react';
 import { supabaseAnon } from '../lib/supabase';
 import { toast } from 'sonner';
+import { AquaBackground } from './ui/ds';
 
 // Suppress framer type issues
 const M = {
@@ -164,7 +165,7 @@ export function InviteLandingPage() {
       <table width="580" cellpadding="0" cellspacing="0" style="background:#ffffff;border-radius:16px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,0.08);">
         <!-- Header -->
         <tr>
-          <td style="background:linear-gradient(135deg,#005088,#11caa0);padding:32px 40px;text-align:center;">
+          <td style="background:linear-gradient(135deg,#005088,#22D3EE);padding:32px 40px;text-align:center;">
             <p style="margin:0 0 8px;color:rgba(255,255,255,0.7);font-size:13px;letter-spacing:2px;text-transform:uppercase;">Aquafeel Solutions Philly</p>
             <h1 style="margin:0;color:#ffffff;font-size:26px;font-weight:900;">📅 Análise Agendada!</h1>
           </td>
@@ -330,7 +331,7 @@ export function InviteLandingPage() {
 
   if (resolving) {
     return (
-      <div className="min-h-screen bg-[#020d1a] flex items-center justify-center">
+      <div className="min-h-screen bg-[#020617] flex items-center justify-center">
         <div className="text-center">
           <div className="w-12 h-12 border-3 border-cyan-500/30 border-t-cyan-500 rounded-full animate-spin mx-auto mb-3" />
           <p className="text-slate-400 text-sm">Carregando convite...</p>
@@ -341,26 +342,23 @@ export function InviteLandingPage() {
 
   return (
     <div
-      className="min-h-screen bg-[#020d1a] text-slate-50 overflow-x-hidden selection:bg-[#11caa0] selection:text-white"
+      className="min-h-screen bg-[#020617] text-slate-50 overflow-x-hidden selection:bg-[#22D3EE] selection:text-white"
       style={{ fontFamily: "'Outfit', sans-serif" }}
     >
-      {/* Dynamic Background */}
-      <div className="fixed inset-0 z-0 opacity-40 pointer-events-none">
-        <div className="absolute top-[-10%] left-[-10%] w-[60vw] h-[60vw] bg-[#005088]/20 rounded-full blur-[120px] animate-pulse" />
-        <div className="absolute bottom-[-10%] right-[-10%] w-[50vw] h-[50vw] bg-[#11caa0]/10 rounded-full blur-[120px] animate-pulse" style={{ animationDelay: '3s' }} />
-      </div>
+      {/* Immersive water backdrop */}
+      <AquaBackground />
 
       {/* Header */}
       <nav className="relative z-10 p-6 flex justify-between items-center max-w-6xl mx-auto">
         <M.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} className="flex items-center gap-3">
-          <div className="w-10 h-10 bg-gradient-to-br from-[#005088] to-[#11caa0] rounded-xl flex items-center justify-center text-white font-bold shadow-lg">AQ</div>
+          <div className="w-10 h-10 bg-gradient-to-br from-[#005088] to-[#22D3EE] rounded-xl flex items-center justify-center text-white font-bold shadow-lg">AQ</div>
           <span className="text-xl font-bold tracking-tight" style={{ fontFamily: "'Urbanist', sans-serif" }}>
-            Aquafeel <span className="text-[#11caa0]">Philly</span>
+            Aquafeel <span className="text-[#22D3EE]">Philly</span>
           </span>
         </M.div>
         <div className="flex items-center gap-3">
           {referrerName && (
-            <M.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="hidden sm:flex items-center gap-2 bg-[#11caa0]/10 border border-[#11caa0]/20 text-[#11caa0] text-xs font-bold px-4 py-2 rounded-full">
+            <M.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="hidden sm:flex items-center gap-2 bg-[#22D3EE]/10 border border-[#22D3EE]/20 text-[#22D3EE] text-xs font-bold px-4 py-2 rounded-full">
               👋 Convite de <strong className="ml-1">{referrerName.split(' ')[0]}</strong>
             </M.div>
           )}
@@ -379,24 +377,24 @@ export function InviteLandingPage() {
         <M.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }} className="space-y-8 md:sticky md:top-24">
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-blue-900/30 border border-blue-500/30 text-blue-300 text-sm font-bold uppercase tracking-widest">
             <span className="relative flex h-2 w-2">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#11caa0] opacity-75" />
-              <span className="relative inline-flex rounded-full h-2 w-2 bg-[#11caa0]" />
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#22D3EE] opacity-75" />
+              <span className="relative inline-flex rounded-full h-2 w-2 bg-[#22D3EE]" />
             </span>
             Convite VIP Exclusivo
           </div>
 
           <h1 className="text-5xl md:text-6xl font-black leading-tight" style={{ fontFamily: "'Urbanist', sans-serif" }}>
             {pageType === 'trabalho' ? (
-              <>Construa uma Carreira{' '}<span className="text-transparent bg-clip-text bg-gradient-to-r from-[#11caa0] to-emerald-400">que Transforma Vidas.</span></>
+              <>Construa uma Carreira{' '}<span className="text-transparent bg-clip-text bg-gradient-to-r from-[#22D3EE] to-emerald-400">que Transforma Vidas.</span></>
             ) : (
-              <>Água Pura e Alcalina por menos de{' '}<span className="text-transparent bg-clip-text bg-gradient-to-r from-[#11caa0] to-emerald-400">$5 ao dia.</span></>
+              <>Água Pura e Alcalina por menos de{' '}<span className="text-transparent bg-clip-text bg-gradient-to-r from-[#22D3EE] to-emerald-400">$5 ao dia.</span></>
             )}
           </h1>
 
           {pageType === 'agua' && referrerName && (
             <p className="text-lg text-slate-300 leading-relaxed">
               <strong className="text-white">{referrerName.split(' ')[0]}</strong> transformou a saúde da família e enviou este convite para você receber uma{' '}
-              <strong className="text-[#11caa0]">Análise de Água Gratuita</strong> na sua casa.
+              <strong className="text-[#22D3EE]">Análise de Água Gratuita</strong> na sua casa.
             </p>
           )}
           {pageType === 'agua' && !referrerName && (
@@ -409,7 +407,7 @@ export function InviteLandingPage() {
               {referrerName
                 ? <><strong className="text-white">{referrerName.split(' ')[0]}</strong> faz parte da nossa equipe e quer te apresentar uma</>
                 : 'Junte-se à'}{' '}
-              <strong className="text-[#11caa0]">oportunidade de crescimento real</strong> como Analista Aquafeel Philly.
+              <strong className="text-[#22D3EE]">oportunidade de crescimento real</strong> como Analista Aquafeel Philly.
             </p>
           )}
 
@@ -431,7 +429,7 @@ export function InviteLandingPage() {
                 className="flex items-start gap-4 p-4 rounded-2xl bg-white/5 border border-white/5 hover:bg-white/10 transition-colors"
               >
                 <div className="w-11 h-11 rounded-full bg-[#005088]/30 flex items-center justify-center flex-shrink-0">
-                  <f.icon className="text-[#11caa0]" size={22} />
+                  <f.icon className="text-[#22D3EE]" size={22} />
                 </div>
                 <div>
                   <h3 className="font-bold text-white">{f.title}</h3>
@@ -444,7 +442,7 @@ export function InviteLandingPage() {
 
         {/* Right — Form Card */}
         <M.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.5, delay: 0.2 }} className="relative">
-          <div className="absolute -inset-1 bg-gradient-to-br from-[#005088] to-[#11caa0] rounded-[2rem] blur opacity-25 animate-pulse" />
+          <div className="absolute -inset-1 bg-gradient-to-br from-[#005088] to-[#22D3EE] rounded-[2rem] blur opacity-25 animate-pulse" />
           <div className="relative bg-[#06162a] border border-white/10 rounded-[2rem] p-8 shadow-2xl overflow-hidden">
 
             {/* Step indicator */}
@@ -452,9 +450,9 @@ export function InviteLandingPage() {
               {[1, 2, 3].map((s) => (
                 <React.Fragment key={s}>
                   <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-black transition-all ${
-                    step >= s ? 'bg-[#11caa0] text-[#020d1a]' : 'bg-white/10 text-slate-500'
+                    step >= s ? 'bg-[#22D3EE] text-[#020617]' : 'bg-white/10 text-slate-500'
                   }`}>{s}</div>
-                  {s < 3 && <div className={`h-0.5 w-8 transition-all ${step > s ? 'bg-[#11caa0]' : 'bg-white/10'}`} />}
+                  {s < 3 && <div className={`h-0.5 w-8 transition-all ${step > s ? 'bg-[#22D3EE]' : 'bg-white/10'}`} />}
                 </React.Fragment>
               ))}
             </div>
@@ -490,7 +488,7 @@ export function InviteLandingPage() {
                         <select
                           value={leadData.state}
                           onChange={(e) => setLeadData({ ...leadData, state: e.target.value })}
-                          className="w-full bg-[#0a213f] border border-white/10 rounded-xl py-3 px-4 text-white focus:outline-none focus:border-[#11caa0] focus:ring-1 focus:ring-[#11caa0] transition-all text-sm"
+                          className="w-full bg-[#0a213f] border border-white/10 rounded-xl py-3 px-4 text-white focus:outline-none focus:border-[#22D3EE] focus:ring-1 focus:ring-[#22D3EE] transition-all text-sm"
                         >
                           {US_STATES.map((s) => <option key={s} value={s}>{s}</option>)}
                         </select>
@@ -500,7 +498,7 @@ export function InviteLandingPage() {
                     <button
                       type="submit"
                       disabled={isSubmitting}
-                      className="w-full bg-gradient-to-r from-[#005088] to-[#11caa0] text-white font-bold py-4 rounded-xl mt-2 shadow-lg shadow-[#11caa0]/20 hover:shadow-[#11caa0]/40 transition-all flex items-center justify-center gap-2 group disabled:opacity-60"
+                      className="w-full bg-gradient-to-r from-[#005088] to-[#22D3EE] text-white font-bold py-4 rounded-xl mt-2 shadow-lg shadow-[#22D3EE]/20 hover:shadow-[#22D3EE]/40 transition-all flex items-center justify-center gap-2 group disabled:opacity-60"
                     >
                       {isSubmitting ? <Loader2 size={18} className="animate-spin" /> : (
                         <><span>Continuar para Agendamento</span><ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" /></>
@@ -514,7 +512,7 @@ export function InviteLandingPage() {
               {step === 2 && (
                 <M.div key="step2" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="space-y-5">
                   <div className="text-center mb-4">
-                    <div className="w-14 h-14 bg-[#11caa0]/20 text-[#11caa0] rounded-full flex items-center justify-center mx-auto mb-3">
+                    <div className="w-14 h-14 bg-[#22D3EE]/20 text-[#22D3EE] rounded-full flex items-center justify-center mx-auto mb-3">
                       <CalendarIcon size={28} />
                     </div>
                     <h2 className="text-2xl font-bold mb-1">Quase lá, {leadData.name.split(' ')[0]}!</h2>
@@ -537,8 +535,8 @@ export function InviteLandingPage() {
                             onClick={() => setScheduleData({ ...scheduleData, date: day.dateStr })}
                             className={`flex flex-col items-center py-3 px-1 rounded-xl border text-xs font-bold transition-all ${
                               scheduleData.date === day.dateStr
-                                ? 'bg-[#11caa0] border-[#11caa0] text-[#020d1a]'
-                                : 'bg-[#0a213f] border-white/10 text-slate-400 hover:border-[#11caa0]/50 hover:text-white'
+                                ? 'bg-[#22D3EE] border-[#22D3EE] text-[#020617]'
+                                : 'bg-[#0a213f] border-white/10 text-slate-400 hover:border-[#22D3EE]/50 hover:text-white'
                             }`}
                           >
                             <span className="text-[10px] uppercase">{day.weekday}</span>
@@ -559,8 +557,8 @@ export function InviteLandingPage() {
                             onClick={() => setScheduleData({ ...scheduleData, time: t })}
                             className={`flex items-center justify-center gap-1.5 py-2.5 rounded-xl border text-xs font-bold transition-all ${
                               scheduleData.time === t
-                                ? 'bg-[#11caa0] border-[#11caa0] text-[#020d1a]'
-                                : 'bg-[#0a213f] border-white/10 text-slate-400 hover:border-[#11caa0]/50 hover:text-white'
+                                ? 'bg-[#22D3EE] border-[#22D3EE] text-[#020617]'
+                                : 'bg-[#0a213f] border-white/10 text-slate-400 hover:border-[#22D3EE]/50 hover:text-white'
                             }`}
                           >
                             <Clock size={12} /> {t}
@@ -578,13 +576,13 @@ export function InviteLandingPage() {
                         <>
                           <p className="text-white font-semibold">{OFFICE_ADDRESS}</p>
                           <p>{OFFICE_CITY}, {OFFICE_STATE} 19020</p>
-                          <p className="text-[#11caa0] text-xs font-bold mt-1">📍 Escritório Aquafeel Philly</p>
+                          <p className="text-[#22D3EE] text-xs font-bold mt-1">📍 Escritório Aquafeel Philly</p>
                         </>
                       ) : (
                         <>
                           <p className="text-white font-semibold">{leadData.address || 'Endereço a confirmar'}</p>
                           {(leadData.city || leadData.state) && <p>{leadData.city}, {leadData.state}</p>}
-                          <button type="button" onClick={() => setStep(1)} className="text-[#11caa0] text-xs font-bold hover:underline mt-1">
+                          <button type="button" onClick={() => setStep(1)} className="text-[#22D3EE] text-xs font-bold hover:underline mt-1">
                             Editar endereço
                           </button>
                         </>
@@ -594,7 +592,7 @@ export function InviteLandingPage() {
                     <button
                       type="submit"
                       disabled={isSubmitting || !scheduleData.date || !scheduleData.time}
-                      className="w-full bg-gradient-to-r from-[#005088] to-[#11caa0] text-white font-bold py-4 rounded-xl shadow-lg shadow-[#11caa0]/20 hover:shadow-[#11caa0]/40 transition-all flex items-center justify-center gap-2 disabled:opacity-50"
+                      className="w-full bg-gradient-to-r from-[#005088] to-[#22D3EE] text-white font-bold py-4 rounded-xl shadow-lg shadow-[#22D3EE]/20 hover:shadow-[#22D3EE]/40 transition-all flex items-center justify-center gap-2 disabled:opacity-50"
                     >
                       {isSubmitting ? <Loader2 size={18} className="animate-spin" /> : (
                         <><CheckCircle size={18} /> Confirmar Agendamento</>
@@ -628,7 +626,7 @@ export function InviteLandingPage() {
                   </div>
 
                   <div className="bg-[#0a213f] border border-white/10 rounded-2xl p-6 text-left space-y-3 text-sm">
-                    <h3 className="font-bold text-[#11caa0] text-base mb-4">
+                    <h3 className="font-bold text-[#22D3EE] text-base mb-4">
                       {pageType === 'trabalho' ? '📋 Detalhes da Entrevista:' : '📋 Detalhes do Agendamento:'}
                     </h3>
                     {[
@@ -648,7 +646,7 @@ export function InviteLandingPage() {
                     ))}
                     <p className="pt-2 flex justify-between">
                       <span className="text-slate-400">Status:</span>
-                      <span className="font-bold text-[#11caa0]">✅ Aguardando Confirmação</span>
+                      <span className="font-bold text-[#22D3EE]">✅ Aguardando Confirmação</span>
                     </p>
                   </div>
 
@@ -685,7 +683,7 @@ function Field({
           required={required}
           value={value}
           onChange={(e) => onChange(e.target.value)}
-          className="w-full bg-[#0a213f] border border-white/10 rounded-xl py-3 pl-11 pr-4 text-white text-sm focus:outline-none focus:border-[#11caa0] focus:ring-1 focus:ring-[#11caa0] transition-all placeholder-slate-600"
+          className="w-full bg-[#0a213f] border border-white/10 rounded-xl py-3 pl-11 pr-4 text-white text-sm focus:outline-none focus:border-[#22D3EE] focus:ring-1 focus:ring-[#22D3EE] transition-all placeholder-slate-600"
           placeholder={placeholder}
         />
       </div>
