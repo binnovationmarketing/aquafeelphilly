@@ -10,7 +10,9 @@ function getStoredToken(): string | null {
     if (!raw) return null;
     const parsed = JSON.parse(raw);
     return (parsed?.currentSession ?? parsed)?.access_token ?? null;
-  } catch (_) { return null; }
+  } catch (_) {
+    return null;
+  }
 }
 
 function createPortalClient(token: string) {
@@ -23,9 +25,21 @@ function createPortalClient(token: string) {
     }
   );
 }
-import { User, Phone, MapPin, Mail, Loader2, Gift, MessageCircle, Send, CheckCircle2, Copy } from 'lucide-react';
+import {
+  User,
+  Phone,
+  MapPin,
+  Mail,
+  Loader2,
+  Gift,
+  MessageCircle,
+  Send,
+  CheckCircle2,
+  Copy,
+} from 'lucide-react';
 import { toast } from 'sonner';
 import { motion, AnimatePresence } from 'framer-motion';
+import { GlassCard, PortalTitle, PortalKicker, CountUp } from './portalKit';
 
 const PROD_URL = 'https://aquafeelphilly.com';
 
@@ -36,7 +50,11 @@ interface Props {
   onSuccess: () => void;
 }
 
-function buildInviteEmailHtml(referrerName: string, friendName: string, inviteLink: string): string {
+function buildInviteEmailHtml(
+  referrerName: string,
+  friendName: string,
+  inviteLink: string
+): string {
   return `<!DOCTYPE html>
 <html lang="pt">
 <head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Convite Aquafeel</title></head>
@@ -65,7 +83,9 @@ function buildInviteEmailHtml(referrerName: string, friendName: string, inviteLi
                 '🧼 Sabonete orgânico por 25 anos incluso',
                 '🛡️ Garantia total na instalação',
                 '🎁 3 meses grátis ao fechar contrato',
-              ].map(b => `<p style="margin:0 0 8px;color:#cbd5e1;font-size:14px;">${b}</p>`).join('')}
+              ]
+                .map((b) => `<p style="margin:0 0 8px;color:#cbd5e1;font-size:14px;">${b}</p>`)
+                .join('')}
             </td></tr>
           </table>
           <!-- CTA -->
@@ -91,9 +111,19 @@ function buildInviteEmailHtml(referrerName: string, friendName: string, inviteLi
 export function ClientReferralTab({ portalData, onSuccess }: Props) {
   const { points } = portalData;
   const clientName: string = portalData.client?.name || 'Seu amigo';
-  const [form, setForm] = useState({ name: '', phone: '', email: '', address: '', referral_type: 'agua' });
+  const [form, setForm] = useState({
+    name: '',
+    phone: '',
+    email: '',
+    address: '',
+    referral_type: 'agua',
+  });
   const [submitting, setSubmitting] = useState(false);
-  const [lastReferral, setLastReferral] = useState<{ email: string; name: string; phone: string } | null>(null);
+  const [lastReferral, setLastReferral] = useState<{
+    email: string;
+    name: string;
+    phone: string;
+  } | null>(null);
   const [sendingEmail, setSendingEmail] = useState(false);
   const [emailSent, setEmailSent] = useState(false);
   const [showWorkModal, setShowWorkModal] = useState(false);
@@ -218,7 +248,8 @@ export function ClientReferralTab({ portalData, onSuccess }: Props) {
           return;
         }
         const authClient = createPortalClient(accessToken);
-        const { data: ensureData, error: ensureError } = await authClient.rpc('ensure_referral_token');
+        const { data: ensureData, error: ensureError } =
+          await authClient.rpc('ensure_referral_token');
         if (ensureError || ensureData?.error) {
           toast.error('Erro ao gerar token. Recarregue a página e tente novamente.');
           return;
@@ -260,21 +291,21 @@ export function ClientReferralTab({ portalData, onSuccess }: Props) {
   return (
     <div className="max-w-2xl mx-auto space-y-6">
       {/* Points preview banner */}
-      <MotionDiv
-        initial={{ opacity: 0, y: -10 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="flex items-center justify-between bg-gradient-to-r from-cyan-500/10 to-blue-600/10 border border-cyan-500/20 rounded-2xl p-5"
-      >
+      <GlassCard glow="#22D3EE" className="flex items-center justify-between p-6" delay={0}>
         <div>
-          <p className="text-[10px] font-black uppercase tracking-widest text-slate-500">Seus pontos atuais</p>
-          <p className="text-3xl font-black text-cyan-400">{points.points.toLocaleString()} pts</p>
+          <PortalKicker>Seus pontos atuais</PortalKicker>
+          <p className="mt-1 font-serif text-4xl font-black text-cyan-200">
+            <CountUp value={points.points} /> <span className="text-lg text-slate-500">pts</span>
+          </p>
         </div>
         <div className="text-right">
-          <p className="text-[10px] font-black uppercase tracking-widest text-slate-500">Você ganhará</p>
-          <p className="text-3xl font-black text-emerald-400">+300 pts</p>
-          <p className="text-[10px] text-slate-600 mt-0.5">ao cadastrar esta indicação</p>
+          <p className="text-[10px] font-black uppercase tracking-widest text-slate-500">
+            Você ganhará
+          </p>
+          <p className="font-serif text-4xl font-black text-emerald-300">+300</p>
+          <p className="mt-0.5 text-[10px] text-slate-500">ao cadastrar esta indicação</p>
         </div>
-      </MotionDiv>
+      </GlassCard>
 
       {/* WhatsApp share card */}
       {points.referral_token && (
@@ -285,7 +316,9 @@ export function ClientReferralTab({ portalData, onSuccess }: Props) {
           className="bg-[#25D366]/10 border border-[#25D366]/30 rounded-2xl p-5 flex items-center justify-between gap-4"
         >
           <div>
-            <p className="text-[10px] font-black uppercase tracking-widest text-[#25D366] mb-0.5">Compartilhe via WhatsApp</p>
+            <p className="text-[10px] font-black uppercase tracking-widest text-[#25D366] mb-0.5">
+              Compartilhe via WhatsApp
+            </p>
             <p className="text-slate-400 text-xs">Envie seu link de convite diretamente!</p>
           </div>
           <a
@@ -313,7 +346,9 @@ export function ClientReferralTab({ portalData, onSuccess }: Props) {
             {lastReferral.phone && (
               <div className="bg-[#25D366]/10 border border-[#25D366]/30 rounded-2xl p-5 flex items-center justify-between gap-4">
                 <div className="min-w-0">
-                  <p className="text-[10px] font-black uppercase tracking-widest text-[#25D366] mb-0.5">Enviar convite por WhatsApp</p>
+                  <p className="text-[10px] font-black uppercase tracking-widest text-[#25D366] mb-0.5">
+                    Enviar convite por WhatsApp
+                  </p>
                   <p className="text-slate-300 text-sm font-bold truncate">{lastReferral.name}</p>
                   <p className="text-slate-500 text-xs">{lastReferral.phone}</p>
                 </div>
@@ -334,7 +369,9 @@ export function ClientReferralTab({ portalData, onSuccess }: Props) {
             {lastReferral.email && (
               <div className="bg-blue-500/10 border border-blue-500/30 rounded-2xl p-5 flex items-center justify-between gap-4">
                 <div className="min-w-0">
-                  <p className="text-[10px] font-black uppercase tracking-widest text-blue-400 mb-0.5">Enviar convite por email</p>
+                  <p className="text-[10px] font-black uppercase tracking-widest text-blue-400 mb-0.5">
+                    Enviar convite por email
+                  </p>
                   <p className="text-slate-300 text-sm font-bold truncate">{lastReferral.name}</p>
                   <p className="text-slate-500 text-xs truncate">{lastReferral.email}</p>
                 </div>
@@ -348,7 +385,11 @@ export function ClientReferralTab({ portalData, onSuccess }: Props) {
                     disabled={sendingEmail}
                     className="flex items-center gap-2 bg-blue-600 hover:bg-blue-500 text-white px-4 py-2.5 rounded-xl font-black text-sm shrink-0 transition-colors disabled:opacity-50"
                   >
-                    {sendingEmail ? <Loader2 size={16} className="animate-spin" /> : <Send size={16} />}
+                    {sendingEmail ? (
+                      <Loader2 size={16} className="animate-spin" />
+                    ) : (
+                      <Send size={16} />
+                    )}
                     Enviar Email
                   </button>
                 )}
@@ -359,14 +400,12 @@ export function ClientReferralTab({ portalData, onSuccess }: Props) {
       </AnimatePresence>
 
       {/* Form */}
-      <MotionDiv
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.1 }}
-        className="bg-white/5 border border-white/10 rounded-2xl p-6 md:p-8"
-      >
-        <h2 className="text-xl font-black text-white mb-2">Cadastrar Nova Indicação</h2>
-        <p className="text-slate-500 text-sm mb-6">Preencha os dados da família ou amigo que você quer indicar. Nosso consultor entrará em contato com eles!</p>
+      <GlassCard hover={false} className="p-6 md:p-8" delay={0.1}>
+        <PortalTitle className="mb-2 text-2xl">Cadastrar Nova Indicação</PortalTitle>
+        <p className="text-slate-400 text-sm mb-6">
+          Preencha os dados da família ou amigo que você quer indicar. Nosso consultor entrará em
+          contato com eles!
+        </p>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           {/* Referral Type */}
@@ -458,7 +497,7 @@ export function ClientReferralTab({ portalData, onSuccess }: Props) {
           <button
             type="submit"
             disabled={submitting}
-            className="w-full py-4 rounded-2xl bg-gradient-to-r from-cyan-500 to-blue-600 text-white font-black text-sm uppercase tracking-widest shadow-[0_0_30px_rgba(0,200,200,0.2)] hover:shadow-[0_0_40px_rgba(0,200,200,0.4)] transition-all active:scale-[0.98] disabled:opacity-50 flex items-center justify-center gap-2"
+            className="flex w-full items-center justify-center gap-2 rounded-full bg-gradient-to-r from-cyan-400 to-cyan-300 py-4 text-sm font-black uppercase tracking-widest text-slate-900 shadow-[0_10px_40px_-8px_rgba(34,211,238,0.7)] transition-all active:scale-[0.98] disabled:opacity-50"
           >
             {submitting ? (
               <Loader2 size={20} className="animate-spin" />
@@ -470,7 +509,7 @@ export function ClientReferralTab({ portalData, onSuccess }: Props) {
             )}
           </button>
         </form>
-      </MotionDiv>
+      </GlassCard>
 
       {/* Info box */}
       <MotionDiv
@@ -479,10 +518,15 @@ export function ClientReferralTab({ portalData, onSuccess }: Props) {
         transition={{ delay: 0.2 }}
         className="bg-white/3 border border-white/5 rounded-2xl p-5 space-y-3"
       >
-        <p className="text-xs font-black uppercase tracking-widest text-slate-500">Como funciona:</p>
+        <p className="text-xs font-black uppercase tracking-widest text-slate-500">
+          Como funciona:
+        </p>
         {[
           { emoji: '1️⃣', text: 'Você indica uma família com nome e telefone.' },
-          { emoji: '2️⃣', text: 'Nosso consultor entra em contato e agenda uma análise de água gratuita.' },
+          {
+            emoji: '2️⃣',
+            text: 'Nosso consultor entra em contato e agenda uma análise de água gratuita.',
+          },
           { emoji: '3️⃣', text: 'Você ganha +300 pontos quando a análise for realizada.' },
           { emoji: '4️⃣', text: 'Se fechar contrato, você ganha +900 pontos adicionais! 🎉' },
         ].map((step, i) => (
@@ -509,18 +553,27 @@ export function ClientReferralTab({ portalData, onSuccess }: Props) {
               className="bg-[#0a1929] border border-cyan-500/20 rounded-2xl p-6 md:p-8 w-full max-w-md shadow-2xl"
             >
               <div className="flex items-center gap-3 mb-6">
-                <div className="w-12 h-12 bg-cyan-500/10 rounded-xl flex items-center justify-center text-2xl">💼</div>
+                <div className="w-12 h-12 bg-cyan-500/10 rounded-xl flex items-center justify-center text-2xl">
+                  💼
+                </div>
                 <div>
                   <h3 className="text-lg font-black text-white">Indicação Enviada!</h3>
-                  <p className="text-slate-400 text-xs">Compartilhe a oportunidade com {lastReferral.name}</p>
+                  <p className="text-slate-400 text-xs">
+                    Compartilhe a oportunidade com {lastReferral.name}
+                  </p>
                 </div>
               </div>
 
               {/* Recruit link display */}
               <div className="bg-white/5 border border-white/10 rounded-xl p-3 flex items-center gap-2 mb-4">
-                <span className="text-cyan-400 text-xs font-mono flex-1 truncate">{workRecruitLink}</span>
+                <span className="text-cyan-400 text-xs font-mono flex-1 truncate">
+                  {workRecruitLink}
+                </span>
                 <button
-                  onClick={() => { navigator.clipboard.writeText(workRecruitLink); toast.success('Link copiado!'); }}
+                  onClick={() => {
+                    navigator.clipboard.writeText(workRecruitLink);
+                    toast.success('Link copiado!');
+                  }}
                   className="shrink-0 bg-cyan-500/20 hover:bg-cyan-500/40 text-cyan-400 rounded-lg px-3 py-1.5 text-xs font-black transition-colors flex items-center gap-1"
                 >
                   <Copy size={12} /> Copiar
@@ -549,17 +602,26 @@ export function ClientReferralTab({ portalData, onSuccess }: Props) {
                   className="w-full flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-500 disabled:opacity-50 text-white rounded-xl py-3 font-black text-sm mb-3 transition-colors"
                 >
                   {workEmailSent ? (
-                    <><CheckCircle2 size={16} /> Email enviado!</>
+                    <>
+                      <CheckCircle2 size={16} /> Email enviado!
+                    </>
                   ) : sendingWorkEmail ? (
-                    <><Loader2 size={16} className="animate-spin" /> Enviando...</>
+                    <>
+                      <Loader2 size={16} className="animate-spin" /> Enviando...
+                    </>
                   ) : (
-                    <><Send size={16} /> Enviar Email para {lastReferral.name}</>
+                    <>
+                      <Send size={16} /> Enviar Email para {lastReferral.name}
+                    </>
                   )}
                 </button>
               )}
 
               <button
-                onClick={() => { setShowWorkModal(false); setLastReferral(null); }}
+                onClick={() => {
+                  setShowWorkModal(false);
+                  setLastReferral(null);
+                }}
                 className="w-full py-2.5 text-sm text-slate-500 hover:text-slate-300 font-bold transition-colors"
               >
                 Fechar

@@ -2,13 +2,28 @@ import React, { useState, useEffect, useRef } from 'react';
 import { createClient } from '@supabase/supabase-js';
 import { supabase, supabaseUrl, supabaseAnonKey } from '../../lib/supabase';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Home, Users, Gift, Network, LogOut, Menu, X, Droplets, Star, RefreshCw, Trash2 } from 'lucide-react';
+import {
+  Home,
+  Users,
+  Gift,
+  Network,
+  LogOut,
+  Menu,
+  X,
+  Droplets,
+  Star,
+  RefreshCw,
+  Trash2,
+  Plus,
+  Sparkles,
+} from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import AquaFeelLogo from '../AquaFeelLogo';
 import { ClientDashboardTab } from './ClientDashboardTab';
 import { ClientReferralTab } from './ClientReferralTab';
 import { ClientNetworkTab } from './ClientNetworkTab';
 import { ClientRewardsTab } from './ClientRewardsTab';
+import { PortalBackground, PortalKicker, CountUp, MagneticButton } from './portalKit';
 import { toast } from 'sonner';
 
 /** Read session directly from sessionStorage (no Web Lock, cleared on tab close). */
@@ -45,11 +60,17 @@ function clearSupabaseCache() {
     const keysToRemove: string[] = [];
     for (let i = 0; i < localStorage.length; i++) {
       const k = localStorage.key(i);
-      if (k && (k.startsWith('sb-') || k === 'aq_session' || k.startsWith('aq_session') || k.includes('supabase'))) {
+      if (
+        k &&
+        (k.startsWith('sb-') ||
+          k === 'aq_session' ||
+          k.startsWith('aq_session') ||
+          k.includes('supabase'))
+      ) {
         keysToRemove.push(k);
       }
     }
-    keysToRemove.forEach(k => localStorage.removeItem(k));
+    keysToRemove.forEach((k) => localStorage.removeItem(k));
   } catch (_) {}
 }
 
@@ -74,7 +95,10 @@ export function ClientPortalLayout() {
 
   // After 8 s still loading → show "clear cache" option
   useEffect(() => {
-    if (!loading) { setLoadingTooLong(false); return; }
+    if (!loading) {
+      setLoadingTooLong(false);
+      return;
+    }
     const t = setTimeout(() => setLoadingTooLong(true), 8000);
     return () => clearTimeout(t);
   }, [loading]);
@@ -99,7 +123,7 @@ export function ClientPortalLayout() {
       clearInterval(poll);
       document.removeEventListener('visibilitychange', onVisibility);
     };
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const initializePortal = async () => {
@@ -169,11 +193,20 @@ export function ClientPortalLayout() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#0a0f1e] flex items-center justify-center p-6">
-        <div className="text-center max-w-sm w-full">
-          <div className="w-16 h-16 border-4 border-cyan-500/30 border-t-cyan-500 rounded-full animate-spin mx-auto mb-4" />
-          <p className="text-slate-400 text-sm font-bold uppercase tracking-widest mb-6">
-            Carregando seu Portal VIP...
+      <div className="relative min-h-screen bg-[#020617] flex items-center justify-center p-6 overflow-hidden">
+        <PortalBackground />
+        <div className="relative z-10 text-center max-w-sm w-full">
+          {/* Liquid-fill drop loader */}
+          <div className="relative mx-auto mb-6 h-20 w-14 overflow-hidden rounded-b-full rounded-t-lg border-2 border-cyan-300/40">
+            <motion.div
+              className="absolute bottom-0 left-0 w-full bg-gradient-to-t from-cyan-500 to-cyan-300"
+              initial={{ height: '10%' }}
+              animate={{ height: ['20%', '90%', '20%'] }}
+              transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
+            />
+          </div>
+          <p className="text-cyan-200/70 text-xs font-bold uppercase tracking-[0.3em] mb-6">
+            Carregando seu Portal VIP
           </p>
 
           <AnimatePresence>
@@ -183,7 +216,9 @@ export function ClientPortalLayout() {
                 animate={{ opacity: 1, y: 0 }}
                 className="space-y-3"
               >
-                <p className="text-slate-500 text-xs">Está demorando demais? Tente limpar o cache.</p>
+                <p className="text-slate-500 text-xs">
+                  Está demorando demais? Tente limpar o cache.
+                </p>
                 <button
                   onClick={handleClearCacheAndReload}
                   className="w-full flex items-center justify-center gap-2 bg-cyan-600 hover:bg-cyan-500 text-white px-5 py-3 rounded-xl font-black text-sm transition-colors"
@@ -191,7 +226,10 @@ export function ClientPortalLayout() {
                   <Trash2 size={15} /> Limpar Cache e Recarregar
                 </button>
                 <button
-                  onClick={() => { loadingRef.current = false; initializePortal(); }}
+                  onClick={() => {
+                    loadingRef.current = false;
+                    initializePortal();
+                  }}
                   className="w-full flex items-center justify-center gap-2 bg-white/5 hover:bg-white/10 text-slate-300 px-5 py-3 rounded-xl font-black text-sm transition-colors"
                 >
                   <RefreshCw size={15} /> Tentar Novamente
@@ -211,62 +249,74 @@ export function ClientPortalLayout() {
   const levelColor = points.level >= 2 ? 'text-yellow-400' : 'text-cyan-400';
   const nextLevelReferrals = points.level >= 2 ? null : Math.max(0, 6 - points.total_referrals);
 
+  const isElite = points.level >= 2;
+
   return (
-    <div className="min-h-screen bg-[#0a0f1e] text-white font-sans">
-      {/* Background orbs */}
-      <div className="fixed inset-0 pointer-events-none z-0">
-        <div className="absolute top-[-10%] right-[-5%] w-[40%] h-[40%] bg-cyan-600/10 rounded-full blur-[120px]" />
-        <div className="absolute bottom-[-10%] left-[-5%] w-[40%] h-[40%] bg-blue-700/15 rounded-full blur-[120px]" />
-      </div>
+    <div className="relative min-h-screen bg-[#020617] text-slate-100 font-sans lg:cursor-none">
+      <PortalBackground />
 
       {/* === TOP NAV === */}
-      <nav className="sticky top-0 z-50 bg-[#0a0f1e]/80 backdrop-blur-xl border-b border-white/5 px-4 md:px-8 py-4">
+      <nav className="sticky top-0 z-50 bg-[#020617]/70 backdrop-blur-xl border-b border-white/10 px-4 md:px-8 py-3.5">
         <div className="max-w-7xl mx-auto flex items-center justify-between">
-          {/* Logo */}
-          <AquaFeelLogo width="130px" variant="white" />
+          <AquaFeelLogo width="120px" variant="white" />
 
           {/* Points + Level badge — desktop */}
-          <div className="hidden md:flex items-center gap-6">
-            <div className="flex items-center gap-3 bg-white/5 border border-white/10 rounded-2xl px-5 py-2.5">
-              <Droplets size={16} className="text-cyan-400" />
+          <div className="hidden md:flex items-center gap-4">
+            <div className="flex items-center gap-3 rounded-2xl border border-white/10 bg-white/[0.04] px-5 py-2 backdrop-blur">
+              <Droplets size={16} className="text-cyan-300" />
               <div>
-                <p className="text-[10px] font-black uppercase tracking-widest text-slate-500">Pontos</p>
-                <p className="text-xl font-black text-cyan-400">{points.points.toLocaleString()}</p>
+                <p className="text-[9px] font-black uppercase tracking-[0.2em] text-slate-500">
+                  Pontos
+                </p>
+                <p className="font-serif text-xl font-black text-cyan-200">
+                  <CountUp value={points.points} />
+                </p>
               </div>
             </div>
 
-            <div className={`flex items-center gap-2 px-4 py-2 rounded-full border text-xs font-black uppercase tracking-widest ${
-              points.level >= 2
-                ? 'bg-yellow-500/10 border-yellow-500/30 text-yellow-400'
-                : 'bg-cyan-500/10 border-cyan-500/30 text-cyan-400'
-            }`}>
+            <div
+              className={`flex items-center gap-2 rounded-full border px-4 py-2 text-xs font-black uppercase tracking-[0.15em] ${
+                isElite
+                  ? 'border-amber-400/30 bg-amber-500/10 text-amber-300'
+                  : 'border-cyan-300/30 bg-cyan-400/10 text-cyan-200'
+              }`}
+            >
               <Star size={12} />
               Nível {points.level} · {levelLabel}
             </div>
 
-            {/* Avatar + name */}
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-gradient-to-br from-cyan-500 to-blue-600 rounded-full flex items-center justify-center text-white font-black text-sm shadow-lg">
+              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br from-cyan-400 to-blue-600 text-sm font-black text-white shadow-[0_0_20px_rgba(34,211,238,0.4)]">
                 {client.name?.[0]?.toUpperCase() || 'C'}
               </div>
               <div>
-                <p className="text-xs text-slate-500 uppercase tracking-wider">Olá,</p>
+                <p className="text-[10px] uppercase tracking-wider text-slate-500">Olá,</p>
                 <p className="text-sm font-bold text-white">{client.name?.split(' ')[0]}</p>
               </div>
             </div>
 
-            <button onClick={handleSignOut} className="p-2 text-slate-600 hover:text-red-400 transition-colors">
+            <button
+              onClick={handleSignOut}
+              aria-label="Sair"
+              className="rounded-full p-2 text-slate-500 transition-colors hover:bg-white/5 hover:text-red-400"
+            >
               <LogOut size={18} />
             </button>
           </div>
 
           {/* Mobile: points + hamburger */}
           <div className="flex md:hidden items-center gap-3">
-            <div className="flex items-center gap-1.5 bg-cyan-500/10 border border-cyan-500/20 rounded-full px-3 py-1.5">
-              <Droplets size={13} className="text-cyan-400" />
-              <span className="text-xs font-black text-cyan-400">{points.points.toLocaleString()}</span>
+            <div className="flex items-center gap-1.5 rounded-full border border-cyan-300/20 bg-cyan-400/10 px-3 py-1.5">
+              <Droplets size={13} className="text-cyan-300" />
+              <span className="text-xs font-black text-cyan-200">
+                <CountUp value={points.points} />
+              </span>
             </div>
-            <button onClick={() => setMobileMenuOpen(!mobileMenuOpen)} className="p-2 text-slate-400 hover:text-white">
+            <button
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              aria-label="Menu"
+              className="p-2 text-slate-300 hover:text-white"
+            >
               {mobileMenuOpen ? <X size={22} /> : <Menu size={22} />}
             </button>
           </div>
@@ -279,18 +329,23 @@ export function ClientPortalLayout() {
               initial={{ opacity: 0, height: 0 }}
               animate={{ opacity: 1, height: 'auto' }}
               exit={{ opacity: 0, height: 0 }}
-              className="md:hidden border-t border-white/5 mt-4 pt-4 overflow-hidden"
+              className="md:hidden border-t border-white/10 mt-3 pt-4 overflow-hidden"
             >
               <div className="flex items-center gap-3 mb-4">
-                <div className="w-10 h-10 bg-gradient-to-br from-cyan-500 to-blue-600 rounded-full flex items-center justify-center font-black text-sm">
+                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br from-cyan-400 to-blue-600 text-sm font-black text-white">
                   {client.name?.[0] || 'C'}
                 </div>
                 <div>
-                  <p className="font-bold text-sm">{client.name}</p>
-                  <p className={`text-xs font-black uppercase tracking-wider ${levelColor}`}>Nível {points.level} · {levelLabel}</p>
+                  <p className="text-sm font-bold text-white">{client.name}</p>
+                  <p className={`text-xs font-black uppercase tracking-wider ${levelColor}`}>
+                    Nível {points.level} · {levelLabel}
+                  </p>
                 </div>
               </div>
-              <button onClick={handleSignOut} className="w-full flex items-center gap-2 text-sm text-red-400 font-bold py-2">
+              <button
+                onClick={handleSignOut}
+                className="flex w-full items-center gap-2 py-2 text-sm font-bold text-red-400"
+              >
                 <LogOut size={15} /> Sair
               </button>
             </MotionDiv>
@@ -299,57 +354,65 @@ export function ClientPortalLayout() {
       </nav>
 
       {/* === HERO BANNER === */}
-      <div className="relative z-10 max-w-7xl mx-auto px-4 md:px-8 pt-8">
+      <div className="relative z-10 mx-auto max-w-7xl px-4 md:px-8 pt-8">
         <MotionDiv
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="relative overflow-hidden rounded-3xl p-8 md:p-10"
-          style={{ background: 'linear-gradient(135deg, #005088 0%, #11caa0 100%)' }}
+          transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
+          className="relative overflow-hidden rounded-3xl border border-white/10 p-8 md:p-11 backdrop-blur-xl"
+          style={{
+            background: 'linear-gradient(135deg, rgba(10,30,63,0.85) 0%, rgba(2,6,23,0.6) 100%)',
+            boxShadow: '0 40px 80px -30px rgba(2,6,23,0.9)',
+          }}
         >
-          {/* Decorative drops */}
-          <div className="absolute -top-8 -right-8 text-[10rem] opacity-10 rotate-12 pointer-events-none select-none">💧</div>
-          <div className="absolute -bottom-8 right-32 text-[6rem] opacity-10 -rotate-12 pointer-events-none select-none">💧</div>
+          {/* caustic glow */}
+          <div
+            className="pointer-events-none absolute -right-16 -top-24 h-72 w-72 rounded-full blur-3xl"
+            style={{
+              background: 'radial-gradient(circle, rgba(34,211,238,0.28), transparent 70%)',
+            }}
+          />
 
           <div className="relative z-10">
-            <p className="text-white/70 text-xs font-black uppercase tracking-widest mb-1">Portal VIP Aquafeel Philly</p>
-            <h1 className="text-3xl md:text-4xl font-black text-white mb-2 tracking-tight">
-              Olá, {client.name?.split(' ')[0]}! 👋
+            <PortalKicker>Portal VIP · Aquafeel Philly</PortalKicker>
+            <h1 className="mt-4 font-serif text-3xl md:text-5xl font-black text-white leading-[1.05]">
+              Olá, <span className="text-cyan-200">{client.name?.split(' ')[0]}</span>.
             </h1>
             {nextLevelReferrals !== null && nextLevelReferrals > 0 ? (
-              <p className="text-white/85 text-sm md:text-base max-w-lg leading-relaxed">
-                Você está no <strong>Nível Embaixador</strong>. Indique mais{' '}
-                <strong className="text-white underline decoration-2 underline-offset-2">
+              <p className="mt-3 max-w-lg text-sm md:text-base leading-relaxed text-slate-300/90">
+                Você está no <strong className="text-white">Nível Embaixador</strong>. Indique mais{' '}
+                <strong className="text-cyan-300">
                   {nextLevelReferrals} {nextLevelReferrals === 1 ? 'família' : 'famílias'}
                 </strong>{' '}
-                para desbloquear o <strong>Nível Elite</strong> e prêmios exclusivos!
+                para desbloquear o <strong className="text-white">Nível Elite</strong> e prêmios
+                exclusivos.
               </p>
             ) : (
-              <p className="text-white/85 text-sm md:text-base">
-                🏆 Você atingiu o <strong>Nível Elite</strong>! Continue indicando para acumular mais pontos e prêmios exclusivos!
+              <p className="mt-3 max-w-lg text-sm md:text-base text-slate-300/90">
+                🏆 Você atingiu o <strong className="text-amber-300">Nível Elite</strong>. Continue
+                indicando para acumular mais pontos e prêmios exclusivos.
               </p>
             )}
-            <div className="mt-6 flex flex-wrap gap-3">
-              <button
-                onClick={() => setActiveTab('referral')}
-                className="bg-white text-blue-900 px-6 py-3 rounded-full font-black text-sm shadow-lg hover:bg-slate-100 transition active:scale-95"
-              >
-                + Nova Indicação
-              </button>
-              <button
-                onClick={() => setActiveTab('rewards')}
-                className="bg-blue-900/60 backdrop-blur-sm text-white px-6 py-3 rounded-full font-black text-sm border border-white/20 hover:bg-blue-900/80 transition active:scale-95"
-              >
-                Ver Catálogo de Prêmios
-              </button>
+            <div className="mt-7 flex flex-wrap gap-3">
+              <MagneticButton onClick={() => setActiveTab('referral')}>
+                <span className="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-cyan-400 to-cyan-300 px-6 py-3.5 text-sm font-black text-slate-900 shadow-[0_10px_40px_-8px_rgba(34,211,238,0.7)]">
+                  <Plus size={16} /> Nova Indicação
+                </span>
+              </MagneticButton>
+              <MagneticButton onClick={() => setActiveTab('rewards')}>
+                <span className="inline-flex items-center gap-2 rounded-full border border-cyan-300/30 bg-white/5 px-6 py-3.5 text-sm font-bold text-cyan-100 backdrop-blur transition-colors hover:bg-white/10">
+                  <Gift size={16} /> Catálogo de Prêmios
+                </span>
+              </MagneticButton>
             </div>
           </div>
         </MotionDiv>
       </div>
 
       {/* === TABS === */}
-      <div className="sticky top-[69px] z-40 bg-[#0a0f1e]/90 backdrop-blur-xl border-b border-white/5 px-4 md:px-8 mt-6">
-        <div className="max-w-7xl mx-auto">
-          <div className="flex gap-1 overflow-x-auto scrollbar-none">
+      <div className="sticky top-[63px] z-40 mt-6 border-b border-white/10 bg-[#020617]/80 px-4 md:px-8 backdrop-blur-xl">
+        <div className="mx-auto max-w-7xl">
+          <div className="scrollbar-none flex gap-1 overflow-x-auto py-2">
             {TABS.map((tab) => {
               const Icon = tab.icon;
               const isActive = activeTab === tab.id;
@@ -357,12 +420,18 @@ export function ClientPortalLayout() {
                 <button
                   key={tab.id}
                   onClick={() => setActiveTab(tab.id)}
-                  className={`flex items-center gap-2 px-5 py-4 text-sm font-black uppercase tracking-wide whitespace-nowrap transition-all border-b-2 ${
-                    isActive
-                      ? 'border-cyan-400 text-cyan-400'
-                      : 'border-transparent text-slate-500 hover:text-slate-300'
+                  className={`relative flex items-center gap-2 whitespace-nowrap rounded-full px-5 py-2.5 text-sm font-bold uppercase tracking-wide transition-colors ${
+                    isActive ? 'text-slate-900' : 'text-slate-400 hover:text-white'
                   }`}
                 >
+                  {isActive && (
+                    <motion.span
+                      layoutId="portalTabPill"
+                      className="absolute inset-0 -z-10 rounded-full bg-gradient-to-r from-cyan-300 to-cyan-200"
+                      transition={{ type: 'spring', stiffness: 380, damping: 32 }}
+                      style={{ boxShadow: '0 6px 24px -6px rgba(34,211,238,0.7)' }}
+                    />
+                  )}
                   <Icon size={15} />
                   {tab.label}
                 </button>
@@ -373,25 +442,49 @@ export function ClientPortalLayout() {
       </div>
 
       {/* === TAB CONTENT === */}
-      <div className="relative z-10 max-w-7xl mx-auto px-4 md:px-8 py-8">
+      <div className="relative z-10 mx-auto max-w-7xl px-4 md:px-8 py-8">
         <AnimatePresence mode="wait">
           {activeTab === 'dashboard' && (
-            <MotionDiv key="dashboard" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} transition={{ duration: 0.3 }}>
+            <MotionDiv
+              key="dashboard"
+              initial={{ opacity: 0, y: 16 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.3 }}
+            >
               <ClientDashboardTab portalData={portalData} onNavigate={setActiveTab} />
             </MotionDiv>
           )}
           {activeTab === 'referral' && (
-            <MotionDiv key="referral" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} transition={{ duration: 0.3 }}>
+            <MotionDiv
+              key="referral"
+              initial={{ opacity: 0, y: 16 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.3 }}
+            >
               <ClientReferralTab portalData={portalData} onSuccess={initializePortal} />
             </MotionDiv>
           )}
           {activeTab === 'network' && (
-            <MotionDiv key="network" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} transition={{ duration: 0.3 }}>
+            <MotionDiv
+              key="network"
+              initial={{ opacity: 0, y: 16 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.3 }}
+            >
               <ClientNetworkTab portalData={portalData} />
             </MotionDiv>
           )}
           {activeTab === 'rewards' && (
-            <MotionDiv key="rewards" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} transition={{ duration: 0.3 }}>
+            <MotionDiv
+              key="rewards"
+              initial={{ opacity: 0, y: 16 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.3 }}
+            >
               <ClientRewardsTab portalData={portalData} onSuccess={initializePortal} />
             </MotionDiv>
           )}
@@ -399,8 +492,9 @@ export function ClientPortalLayout() {
       </div>
 
       {/* Footer */}
-      <div className="relative z-10 border-t border-white/5 py-6 text-center mt-4">
-        <p className="text-xs text-slate-700 font-bold uppercase tracking-widest">
+      <div className="relative z-10 mt-4 border-t border-white/10 py-6 text-center">
+        <Sparkles size={12} className="mx-auto mb-2 text-cyan-300/50" />
+        <p className="text-[0.65rem] font-bold uppercase tracking-[0.3em] text-slate-600">
           Aquos Tech © {new Date().getFullYear()} · Portal VIP do Cliente
         </p>
       </div>

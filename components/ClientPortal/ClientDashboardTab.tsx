@@ -1,6 +1,24 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Users, TrendingUp, Star, Droplets, ChevronRight, CheckCircle2, Clock, XCircle } from 'lucide-react';
+import {
+  Users,
+  TrendingUp,
+  Droplets,
+  ChevronRight,
+  CheckCircle2,
+  Clock,
+  XCircle,
+  Star,
+} from 'lucide-react';
+import {
+  GlassCard,
+  StatTile,
+  PortalTitle,
+  PortalKicker,
+  LevelMeter,
+  MagneticButton,
+  Reveal,
+} from './portalKit';
 
 // Workaround for framer-motion type mismatch
 const MotionDiv = motion.div as any;
@@ -11,158 +29,139 @@ interface Props {
 }
 
 const POINT_RULES = [
-  { label: 'Venda Convertida', points: '+900', icon: '🏆', color: 'text-emerald-400' },
-  { label: 'Indicação Registrada', points: '+300', icon: '👨‍👩‍👧', color: 'text-cyan-400' },
-  { label: 'Análise de Água Feita', points: '+100', icon: '💧', color: 'text-blue-400' },
+  { label: 'Venda Convertida', points: '+900', icon: '🏆', color: 'text-emerald-300' },
+  { label: 'Indicação Registrada', points: '+300', icon: '👨‍👩‍👧', color: 'text-cyan-300' },
+  { label: 'Análise de Água Feita', points: '+100', icon: '💧', color: 'text-sky-300' },
 ];
 
 const STATUS_MAP: Record<string, { label: string; color: string; icon: React.ReactNode }> = {
-  PENDING:   { label: 'Aguardando', color: 'text-slate-400 bg-slate-500/20', icon: <Clock size={13} /> },
-  SCHEDULED: { label: 'Agendado',   color: 'text-blue-400 bg-blue-500/20',   icon: <Clock size={13} /> },
-  CONVERTED: { label: 'Convertido', color: 'text-emerald-400 bg-emerald-500/20', icon: <CheckCircle2 size={13} /> },
-  LOST:      { label: 'Não Qualificado', color: 'text-red-400 bg-red-500/20', icon: <XCircle size={13} /> },
-  HOLD:      { label: 'Em Espera', color: 'text-yellow-400 bg-yellow-500/20', icon: <Clock size={13} /> },
+  PENDING: {
+    label: 'Aguardando',
+    color: 'text-slate-300 bg-slate-500/20',
+    icon: <Clock size={13} />,
+  },
+  SCHEDULED: { label: 'Agendado', color: 'text-sky-300 bg-sky-500/20', icon: <Clock size={13} /> },
+  CONVERTED: {
+    label: 'Convertido',
+    color: 'text-emerald-300 bg-emerald-500/20',
+    icon: <CheckCircle2 size={13} />,
+  },
+  LOST: {
+    label: 'Não Qualificado',
+    color: 'text-red-300 bg-red-500/20',
+    icon: <XCircle size={13} />,
+  },
+  HOLD: { label: 'Em Espera', color: 'text-amber-300 bg-amber-500/20', icon: <Clock size={13} /> },
 };
 
 export function ClientDashboardTab({ portalData, onNavigate }: Props) {
-  const { client, points, referrals } = portalData;
+  const { points, referrals } = portalData;
   const levelLabel = points.level >= 2 ? 'Elite VIP' : 'Embaixador';
+  const isElite = points.level >= 2;
   const nextLevelTotal = 6;
   const progress = Math.min(100, (points.total_referrals / nextLevelTotal) * 100);
+  const accent = isElite ? '#FBBF24' : '#22D3EE';
 
   const recentRefs = (referrals || []).slice(0, 4);
 
   return (
     <div className="space-y-8">
-      {/* === KPI CARDS === */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        {[
-          {
-            label: 'INDICAÇÕES FEITAS',
-            value: points.total_referrals,
-            suffix: 'famílias',
-            icon: <Users size={22} />,
-            color: 'from-blue-500/20 to-blue-600/10 border-blue-500/20',
-            iconColor: 'text-blue-400',
-          },
-          {
-            label: 'VENDAS CONVERTIDAS',
-            value: points.converted_referrals,
-            suffix: 'vendas',
-            icon: <TrendingUp size={22} />,
-            color: 'from-emerald-500/20 to-emerald-600/10 border-emerald-500/20',
-            iconColor: 'text-emerald-400',
-          },
-          {
-            label: 'PONTOS ACUMULADOS',
-            value: points.points.toLocaleString(),
-            suffix: 'pts',
-            icon: <Droplets size={22} />,
-            color: 'from-cyan-500/20 to-cyan-600/10 border-cyan-500/20',
-            iconColor: 'text-cyan-400',
-          },
-        ].map((kpi, i) => (
-          <MotionDiv
-            key={i}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: i * 0.1 }}
-            className={`bg-gradient-to-br ${kpi.color} border rounded-2xl p-6`}
-          >
-            <div className={`mb-3 ${kpi.iconColor}`}>{kpi.icon}</div>
-            <p className="text-slate-500 text-[10px] font-black uppercase tracking-widest mb-1">{kpi.label}</p>
-            <div className="flex items-baseline gap-2">
-              <h3 className="text-4xl font-black text-white">{kpi.value}</h3>
-              <span className="text-slate-500 text-xs font-bold">{kpi.suffix}</span>
-            </div>
-          </MotionDiv>
-        ))}
+      {/* === KPI TILES === */}
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+        <StatTile
+          label="Indicações Feitas"
+          value={points.total_referrals}
+          suffix="famílias"
+          icon={<Users size={20} />}
+          accent="#38BDF8"
+          delay={0}
+        />
+        <StatTile
+          label="Vendas Convertidas"
+          value={points.converted_referrals}
+          suffix="vendas"
+          icon={<TrendingUp size={20} />}
+          accent="#34D399"
+          delay={0.08}
+        />
+        <StatTile
+          label="Pontos Acumulados"
+          value={points.points}
+          suffix="pts"
+          icon={<Droplets size={20} />}
+          accent="#22D3EE"
+          delay={0.16}
+        />
       </div>
 
-      {/* === LEVEL PROGRESS + RULES GRID === */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {/* Level Progress */}
-        <MotionDiv
-          initial={{ opacity: 0, x: -20 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ delay: 0.2 }}
-          className="bg-white/5 border border-white/10 rounded-2xl p-6"
-        >
-          <div className="flex items-center justify-between mb-4">
+      {/* === LEVEL PROGRESS + RULES === */}
+      <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+        <GlassCard glow={accent} className="p-6" delay={0.1}>
+          <div className="mb-5 flex items-start justify-between">
             <div>
-              <p className="text-slate-500 text-[10px] font-black uppercase tracking-widest">Seu Nível Atual</p>
-              <div className="flex items-center gap-2 mt-1">
-                <Star size={18} className={points.level >= 2 ? 'text-yellow-400' : 'text-cyan-400'} />
-                <h3 className="text-xl font-black text-white">{levelLabel}</h3>
+              <PortalKicker>Seu Nível Atual</PortalKicker>
+              <div className="mt-2 flex items-center gap-2">
+                <Star size={18} className={isElite ? 'text-amber-300' : 'text-cyan-300'} />
+                <PortalTitle className="text-2xl">{levelLabel}</PortalTitle>
               </div>
             </div>
-            <div className={`text-4xl font-black ${points.level >= 2 ? 'text-yellow-400' : 'text-cyan-400'}`}>
+            <div
+              className={`font-serif text-5xl font-black ${isElite ? 'text-amber-300' : 'text-cyan-200'}`}
+            >
               {points.level}
             </div>
           </div>
 
-          {points.level < 2 && (
+          {!isElite ? (
             <>
-              <div className="flex justify-between text-xs font-bold text-slate-500 mb-2">
+              <div className="mb-2 flex justify-between text-xs font-bold text-slate-400">
                 <span>{points.total_referrals} indicações</span>
                 <span>{nextLevelTotal} para Elite</span>
               </div>
-              <div className="w-full h-3 bg-white/10 rounded-full overflow-hidden">
-                <MotionDiv
-                  initial={{ width: 0 }}
-                  animate={{ width: `${progress}%` }}
-                  transition={{ duration: 1, delay: 0.4, ease: 'easeOut' }}
-                  className="h-full rounded-full bg-gradient-to-r from-cyan-500 to-blue-600"
-                />
-              </div>
-              <p className="text-slate-600 text-xs mt-3">
-                Faltam <strong className="text-cyan-400">{Math.max(0, nextLevelTotal - points.total_referrals)} indicações</strong> para desbloquear o Nível Elite e prêmios exclusivos!
+              <LevelMeter progress={progress} />
+              <p className="mt-3 text-xs text-slate-400">
+                Faltam{' '}
+                <strong className="text-cyan-300">
+                  {Math.max(0, nextLevelTotal - points.total_referrals)} indicações
+                </strong>{' '}
+                para desbloquear o Nível Elite e prêmios exclusivos.
               </p>
             </>
-          )}
-
-          {points.level >= 2 && (
-            <p className="text-yellow-400/80 text-sm font-bold mt-2">
-              🏆 Parabéns! Você atingiu o nível máximo. Continue indicando para acumular ainda mais pontos!
+          ) : (
+            <p className="mt-2 text-sm font-bold text-amber-300/90">
+              🏆 Parabéns! Você atingiu o nível máximo. Continue indicando para acumular ainda mais
+              pontos.
             </p>
           )}
-        </MotionDiv>
+        </GlassCard>
 
-        {/* Point Rules */}
-        <MotionDiv
-          initial={{ opacity: 0, x: 20 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ delay: 0.3 }}
-          className="bg-white/5 border border-white/10 rounded-2xl p-6"
-        >
-          <p className="text-slate-500 text-[10px] font-black uppercase tracking-widest mb-4">Como Ganhar Pontos</p>
-          <div className="space-y-4">
+        <GlassCard className="p-6" delay={0.18}>
+          <PortalKicker>Como Ganhar Pontos</PortalKicker>
+          <div className="mt-4 space-y-1">
             {POINT_RULES.map((rule, i) => (
-              <div key={i} className="flex items-center justify-between py-3 border-b border-white/5 last:border-0">
+              <div
+                key={i}
+                className="flex items-center justify-between border-b border-white/5 py-3 last:border-0"
+              >
                 <div className="flex items-center gap-3">
                   <span className="text-xl">{rule.icon}</span>
-                  <span className="text-sm font-semibold text-slate-300">{rule.label}</span>
+                  <span className="text-sm font-semibold text-slate-200">{rule.label}</span>
                 </div>
-                <span className={`text-lg font-black ${rule.color}`}>{rule.points}</span>
+                <span className={`font-serif text-lg font-black ${rule.color}`}>{rule.points}</span>
               </div>
             ))}
           </div>
-        </MotionDiv>
+        </GlassCard>
       </div>
 
       {/* === RECENT REFERRALS === */}
       {recentRefs.length > 0 && (
-        <MotionDiv
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.4 }}
-          className="bg-white/5 border border-white/10 rounded-2xl overflow-hidden"
-        >
-          <div className="flex items-center justify-between p-6 border-b border-white/5">
-            <p className="font-black text-white text-base uppercase tracking-tight">Indicações Recentes</p>
+        <GlassCard hover={false} className="overflow-hidden" delay={0.2}>
+          <div className="flex items-center justify-between border-b border-white/5 p-6">
+            <PortalTitle className="text-lg">Indicações Recentes</PortalTitle>
             <button
               onClick={() => onNavigate('network')}
-              className="flex items-center gap-1 text-xs font-black text-cyan-400 hover:text-cyan-300 uppercase tracking-wider transition-colors"
+              className="flex items-center gap-1 text-xs font-black uppercase tracking-wider text-cyan-300 transition-colors hover:text-cyan-200"
             >
               Ver todas <ChevronRight size={14} />
             </button>
@@ -173,42 +172,44 @@ export function ClientDashboardTab({ portalData, onNavigate }: Props) {
               return (
                 <div key={ref.id} className="flex items-center justify-between px-6 py-4">
                   <div className="flex items-center gap-3">
-                    <div className="w-9 h-9 bg-gradient-to-br from-slate-600 to-slate-700 rounded-full flex items-center justify-center text-xs font-black text-slate-300">
+                    <div className="flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-br from-slate-600 to-slate-700 text-xs font-black text-slate-200">
                       {ref.name?.[0]?.toUpperCase()}
                     </div>
                     <div>
                       <p className="text-sm font-bold text-white">{ref.name}</p>
-                      <p className="text-xs text-slate-600">{new Date(ref.created_at).toLocaleDateString('pt-BR')}</p>
+                      <p className="text-xs text-slate-500">
+                        {new Date(ref.created_at).toLocaleDateString('pt-BR')}
+                      </p>
                     </div>
                   </div>
-                  <span className={`flex items-center gap-1.5 text-[10px] font-black uppercase tracking-wider px-3 py-1.5 rounded-full ${st.color}`}>
+                  <span
+                    className={`flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[10px] font-black uppercase tracking-wider ${st.color}`}
+                  >
                     {st.icon} {st.label}
                   </span>
                 </div>
               );
             })}
           </div>
-        </MotionDiv>
+        </GlassCard>
       )}
 
-      {/* === CTA EMPTY STATE === */}
+      {/* === EMPTY STATE === */}
       {recentRefs.length === 0 && (
-        <MotionDiv
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.4 }}
-          className="border-2 border-dashed border-white/10 rounded-2xl p-12 text-center"
-        >
-          <div className="text-5xl mb-4">👨‍👩‍👧‍👦</div>
-          <h3 className="text-xl font-black text-white mb-2">Faça sua primeira indicação!</h3>
-          <p className="text-slate-500 text-sm mb-6 max-w-sm mx-auto">Indique famílias e amigos que precisam de água pura. Cada indicação vale +300 pontos!</p>
-          <button
-            onClick={() => onNavigate('referral')}
-            className="bg-gradient-to-r from-cyan-500 to-blue-600 text-white px-8 py-3 rounded-full font-black text-sm shadow-lg hover:shadow-cyan-500/30 transition-all active:scale-95"
-          >
-            + Indicar agora
-          </button>
-        </MotionDiv>
+        <Reveal>
+          <div className="rounded-3xl border-2 border-dashed border-white/10 p-12 text-center">
+            <div className="mb-4 text-5xl">👨‍👩‍👧‍👦</div>
+            <PortalTitle className="mb-2 text-2xl">Faça sua primeira indicação</PortalTitle>
+            <p className="mx-auto mb-6 max-w-sm text-sm text-slate-400">
+              Indique famílias e amigos que precisam de água pura. Cada indicação vale +300 pontos.
+            </p>
+            <MagneticButton onClick={() => onNavigate('referral')}>
+              <span className="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-cyan-400 to-cyan-300 px-8 py-3 text-sm font-black text-slate-900 shadow-[0_10px_40px_-8px_rgba(34,211,238,0.7)]">
+                + Indicar agora
+              </span>
+            </MagneticButton>
+          </div>
+        </Reveal>
       )}
     </div>
   );
