@@ -77,7 +77,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ clientName, spouseName
   return (
     <div className="relative bg-aqua-950 text-white pt-16 md:pt-24 pb-24 md:pb-40 px-4 overflow-hidden">
       {/* Background de Luxo Profundo */}
-      <div className="absolute inset-0 bg-[#020d1a]"></div>
+      <div className="absolute inset-0 bg-[#020617]"></div>
       <div className="absolute inset-0 bg-gradient-to-b from-aqua-900/20 to-transparent opacity-50"></div>
       <div className="absolute top-[-10%] right-[-5%] w-[400px] md:w-[800px] h-[400px] md:h-[800px] bg-red-600/10 rounded-full blur-[100px] md:blur-[150px] animate-soft-pulse pointer-events-none"></div>
       <div className="absolute bottom-[-10%] left-[-5%] w-[400px] md:w-[800px] h-[400px] md:h-[800px] bg-aqua-500/10 rounded-full blur-[100px] md:blur-[150px] pointer-events-none"></div>
