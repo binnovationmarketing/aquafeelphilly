@@ -59,19 +59,16 @@ export const FAQ: React.FC<FAQProps> = ({ spouseName, lang }) => {
   ];
 
   return (
-    <section className="py-24 bg-slate-50 px-4 border-t border-slate-200">
-      <div className="max-w-7xl mx-auto">
-        <div className="text-center mb-16">
-            <div className="inline-flex items-center gap-2 text-slate-400 font-bold text-xs uppercase tracking-widest mb-4 border border-slate-200 px-4 py-1.5 rounded-full">
-                <HelpCircle size={14} />
-                <span>{t.transparency}</span>
-            </div>
-          <h2 className="text-3xl md:text-5xl font-serif font-black text-slate-900 mb-6">
-            {t.title}
-          </h2>
-          <p className="text-slate-500 max-w-2xl mx-auto text-lg leading-relaxed">
-            {t.subtitle}
-          </p>
+    <section className="relative overflow-hidden border-t border-white/10 bg-[#020617] px-4 py-24">
+      <div className="pointer-events-none absolute right-1/4 top-0 h-80 w-80 rounded-full bg-cyan-600/10 blur-[120px]" />
+      <div className="relative z-10 mx-auto max-w-7xl">
+        <div className="mb-14 text-center">
+          <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-cyan-300/25 bg-cyan-400/10 px-4 py-1.5 text-xs font-bold uppercase tracking-widest text-cyan-200">
+            <HelpCircle size={14} />
+            <span>{t.transparency}</span>
+          </div>
+          <h2 className="mb-6 font-serif text-4xl font-black text-white md:text-5xl">{t.title}</h2>
+          <p className="mx-auto max-w-2xl text-lg leading-relaxed text-slate-400">{t.subtitle}</p>
         </div>
 
         {/* INFOGRÁFICO INTERATIVO (GRID) */}
@@ -81,24 +78,24 @@ export const FAQ: React.FC<FAQProps> = ({ spouseName, lang }) => {
               key={item.id}
               layoutId={`card-${item.id}`}
               onClick={() => setActiveId(activeId === item.id ? null : item.id)}
-              className={`relative cursor-pointer rounded-2xl p-6 transition-all duration-300 border ${
-                activeId === item.id 
-                  ? 'bg-slate-900 border-slate-800 shadow-2xl z-10 scale-[1.02]' 
-                  : 'bg-white border-slate-100 shadow-sm hover:shadow-md hover:border-blue-200'
+              className={`relative cursor-pointer rounded-2xl border p-6 backdrop-blur-xl transition-all duration-300 ${
+                activeId === item.id
+                  ? 'z-10 scale-[1.02] border-cyan-300/40 bg-white/[0.07] shadow-[0_20px_50px_-20px_rgba(34,211,238,0.4)]'
+                  : 'border-white/10 bg-white/[0.04] hover:border-cyan-300/30 hover:bg-white/[0.06]'
               }`}
             >
-              <div className="flex items-start justify-between mb-4">
-                <div className={`p-3 rounded-xl ${activeId === item.id ? 'bg-blue-600 text-white' : 'bg-slate-100 text-slate-500'}`}>
+              <div className="mb-4 flex items-start justify-between">
+                <div className={`rounded-xl p-3 ${activeId === item.id ? 'bg-cyan-400 text-slate-900' : 'bg-white/5 text-cyan-300'}`}>
                   <item.icon size={20} />
                 </div>
                 {activeId === item.id ? (
-                  <X size={20} className="text-slate-500 hover:text-white" />
+                  <X size={20} className="text-slate-400 hover:text-white" />
                 ) : (
-                  <ChevronDown size={20} className="text-slate-300" />
+                  <ChevronDown size={20} className="text-slate-500" />
                 )}
               </div>
-              
-              <h3 className={`font-bold text-sm md:text-base leading-tight mb-2 ${activeId === item.id ? 'text-white' : 'text-slate-800'}`}>
+
+              <h3 className={`mb-2 text-sm font-bold leading-tight md:text-base ${activeId === item.id ? 'text-white' : 'text-slate-200'}`}>
                 {item.q}
               </h3>
 
@@ -127,8 +124,8 @@ export const FAQ: React.FC<FAQProps> = ({ spouseName, lang }) => {
         </div>
         
         <div className="mt-16 text-center">
-            <p className="text-slate-400 text-xs uppercase tracking-widest font-bold">Ainda com dúvidas?</p>
-            <p className="text-slate-900 font-serif font-bold text-xl mt-2">Nossos analistas estão prontos para explicar cada detalhe.</p>
+          <p className="text-xs font-bold uppercase tracking-widest text-slate-500">Ainda com dúvidas?</p>
+          <p className="mt-2 font-serif text-xl font-bold text-white">Nossos analistas estão prontos para explicar cada detalhe.</p>
         </div>
       </div>
     </section>
