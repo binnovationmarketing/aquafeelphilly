@@ -325,7 +325,7 @@ export function ProposalView() {
   // Share link expired — show gate for unauthenticated public viewers
   if (isShareLinkExpired) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-[#020d1a] text-white px-4">
+      <div className="min-h-screen flex items-center justify-center bg-[#020617] text-white px-4">
         <div className="max-w-md text-center space-y-5">
           <div className="text-6xl">🔒</div>
           <h1 className="text-2xl font-black uppercase tracking-tight">Link Expirado</h1>
@@ -351,7 +351,7 @@ export function ProposalView() {
   const mainMargin = isSidebarCollapsed ? 'lg:ml-20' : 'lg:ml-[260px]';
 
   return (
-    <div className="min-h-screen bg-slate-50 font-sans selection:bg-aqua-200 selection:text-aqua-900 pb-0 flex">
+    <div className="min-h-screen bg-[#020617] text-slate-100 font-sans selection:bg-cyan-300 selection:text-slate-900 pb-0 flex">
       <Sidebar
         lang={lang}
         clientName={name}
@@ -385,37 +385,37 @@ export function ProposalView() {
 
         <div id="proposal" className="max-w-5xl mx-auto px-4 py-12 md:py-16">
           <div className="animate-in fade-in slide-in-from-bottom-8 duration-700">
-            <div className="bg-gradient-to-br from-white to-slate-50 rounded-2xl p-6 md:p-12 shadow-xl border border-white text-center relative overflow-hidden mb-12">
-              <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-aqua-500 to-transparent opacity-50" />
-              <h3 className="text-2xl md:text-3xl font-serif font-bold text-slate-900 mb-3 md:mb-4">
+            <div className="bg-white/[0.04] rounded-3xl p-6 md:p-12 backdrop-blur-xl border border-white/10 text-center relative overflow-hidden mb-12">
+              <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-cyan-400 to-transparent opacity-60" />
+              <h3 className="text-2xl md:text-3xl font-serif font-black text-white mb-3 md:mb-4">
                 {t.package.title} {displayName}
               </h3>
-              <p className="text-sm md:text-base text-slate-500 mb-8 md:mb-10 max-w-2xl mx-auto leading-relaxed px-2">
+              <p className="text-sm md:text-base text-slate-400 mb-8 md:mb-10 max-w-2xl mx-auto leading-relaxed px-2">
                 {t.package.desc}
               </p>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
-                <div className="p-4 md:p-6 bg-white rounded-xl shadow-sm border border-slate-100">
-                  <div className="text-3xl md:text-4xl font-black text-transparent bg-clip-text bg-gradient-to-br from-aqua-600 to-blue-800 mb-1 md:mb-2">25</div>
+                <div className="p-4 md:p-6 bg-white/[0.04] rounded-2xl border border-white/10">
+                  <div className="font-serif text-3xl md:text-4xl font-black text-transparent bg-clip-text bg-gradient-to-br from-cyan-300 to-blue-400 mb-1 md:mb-2">25</div>
                   <div className="text-[9px] md:text-xs font-bold uppercase tracking-widest text-slate-400">{t.package.soapYears}</div>
                 </div>
-                <div className="p-4 md:p-6 bg-white rounded-xl shadow-sm border border-slate-100">
-                  <div className="text-3xl md:text-4xl font-black text-transparent bg-clip-text bg-gradient-to-br from-emerald-500 to-teal-700 mb-1 md:mb-2">100%</div>
+                <div className="p-4 md:p-6 bg-white/[0.04] rounded-2xl border border-white/10">
+                  <div className="font-serif text-3xl md:text-4xl font-black text-transparent bg-clip-text bg-gradient-to-br from-emerald-300 to-teal-400 mb-1 md:mb-2">100%</div>
                   <div className="text-[9px] md:text-xs font-bold uppercase tracking-widest text-slate-400">{t.package.guarantee}</div>
                 </div>
-                <div className="p-4 md:p-6 bg-white rounded-xl shadow-sm border border-slate-100">
-                  <div className="text-3xl md:text-4xl font-black text-transparent bg-clip-text bg-gradient-to-br from-slate-700 to-slate-900 mb-1 md:mb-2">$0</div>
+                <div className="p-4 md:p-6 bg-white/[0.04] rounded-2xl border border-white/10">
+                  <div className="font-serif text-3xl md:text-4xl font-black text-transparent bg-clip-text bg-gradient-to-br from-slate-200 to-slate-400 mb-1 md:mb-2">$0</div>
                   <div className="text-[9px] md:text-xs font-bold uppercase tracking-widest text-slate-400">{t.package.cost}</div>
                 </div>
-                <div className="p-4 md:p-6 bg-white rounded-xl shadow-sm border border-slate-100">
-                  <div className="text-3xl md:text-4xl font-black text-transparent bg-clip-text bg-gradient-to-br from-amber-500 to-orange-600 mb-1 md:mb-2">2026</div>
+                <div className="p-4 md:p-6 bg-white/[0.04] rounded-2xl border border-white/10">
+                  <div className="font-serif text-3xl md:text-4xl font-black text-transparent bg-clip-text bg-gradient-to-br from-amber-300 to-orange-400 mb-1 md:mb-2">2026</div>
                   <div className="text-[9px] md:text-xs font-bold uppercase tracking-widest text-slate-400">{t.package.payment}</div>
                 </div>
               </div>
             </div>
 
-            <div className="relative z-20 py-10 md:py-12 bg-slate-50 border-t border-slate-200">
+            <div className="relative z-20 py-10 md:py-12 border-t border-white/10">
               <div className="text-center mb-8 md:mb-10 px-4">
-                <h2 className="text-2xl md:text-4xl font-serif font-bold text-slate-900 leading-tight">
+                <h2 className="text-2xl md:text-4xl font-serif font-bold text-white leading-tight">
                   {lang === 'pt' ? 'Sua Proposta Exclusiva' : lang === 'en' ? 'Your Exclusive Proposal' : 'Su Propuesta Exclusiva'}
                 </h2>
                 <p className="text-base md:text-lg font-black text-emerald-600 mt-2 tracking-tight">
@@ -446,7 +446,7 @@ export function ProposalView() {
         <div id="testimonials"><Testimonials lang={lang} /></div>
         <div id="faq"><FAQ spouseName={spouseName || name} lang={lang} /></div>
 
-        <div className="bg-slate-50 py-8 px-4 text-center">
+        <div className="bg-[#020617] py-8 px-4 text-center border-t border-white/5">
           <p className="text-[9px] md:text-[10px] text-slate-500 font-medium max-w-4xl mx-auto leading-relaxed">
             {t.footer.soapDisclaimer}
           </p>
@@ -533,16 +533,16 @@ export function ProposalView() {
       {/* Save Proposal Modal */}
       {isSaveModalOpen && (
         <div className="fixed inset-0 bg-black/50 z-[200] flex items-center justify-center p-4 backdrop-blur-sm animate-in fade-in duration-200">
-          <div className="bg-white rounded-2xl max-w-sm w-full shadow-2xl overflow-hidden animate-in slide-in-from-bottom-8">
+          <div className="bg-[#0A1E3F] border border-white/10 rounded-3xl max-w-sm w-full shadow-2xl overflow-hidden animate-in slide-in-from-bottom-8">
             {/* Success State */}
             {saveResult ? (
               <div className="p-6 space-y-4">
                 <div className="text-center">
-                  <div className="w-14 h-14 bg-emerald-100 rounded-full flex items-center justify-center mx-auto mb-3">
-                    <Send size={24} className="text-emerald-600" />
+                  <div className="w-14 h-14 bg-emerald-500/20 rounded-full flex items-center justify-center mx-auto mb-3">
+                    <Send size={24} className="text-emerald-300" />
                   </div>
-                  <h3 className="font-black text-slate-800 text-lg">Proposta Salva! ✅</h3>
-                  <p className="text-slate-500 text-xs mt-1">Envie agora via WhatsApp</p>
+                  <h3 className="font-serif font-black text-white text-lg">Proposta Salva! ✅</h3>
+                  <p className="text-slate-400 text-xs mt-1">Envie agora via WhatsApp</p>
                 </div>
 
                 {/* Client WhatsApp */}
@@ -550,7 +550,7 @@ export function ProposalView() {
                   className="flex items-center justify-between gap-3 p-3 rounded-xl bg-[#25D366]/10 border border-[#25D366]/30 hover:bg-[#25D366]/20 transition-colors">
                   <div>
                     <p className="text-[10px] font-black uppercase tracking-widest text-[#25D366]">Enviar ao Cliente</p>
-                    <p className="text-slate-600 text-xs font-bold">{clientData.name}</p>
+                    <p className="text-slate-300 text-xs font-bold">{clientData.name}</p>
                   </div>
                   <Send size={18} className="text-[#25D366] shrink-0" />
                 </a>
@@ -564,8 +564,8 @@ export function ProposalView() {
                       <a key={num}
                         href={`https://wa.me/${num.replace(/\D/g, '')}?text=${encodeURIComponent(internalMsg)}`}
                         target="_blank" rel="noopener noreferrer"
-                        className="flex items-center justify-between gap-2 p-2.5 rounded-xl bg-slate-50 border border-slate-200 hover:bg-slate-100 transition-colors text-xs">
-                        <span className="font-bold text-slate-600">{num}</span>
+                        className="flex items-center justify-between gap-2 p-2.5 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 transition-colors text-xs">
+                        <span className="font-bold text-slate-300">{num}</span>
                         <Send size={14} className="text-slate-400 shrink-0" />
                       </a>
                     );
@@ -580,17 +580,17 @@ export function ProposalView() {
                     toast.success('Proposta salva! Lembre o cliente de indicar 3 familias para ganhar 1 ano de produtos organicos Pure Selects!', { duration: 6000 });
                     navigate('/dashboard/analyst');
                   }}
-                  className="w-full py-3 rounded-xl bg-aqua-600 text-white font-black text-sm hover:bg-aqua-500 transition-colors shadow-md">
+                  className="w-full py-3 rounded-full bg-gradient-to-r from-cyan-400 to-cyan-300 text-slate-900 font-black text-sm shadow-[0_10px_30px_-8px_rgba(34,211,238,0.6)] transition-all active:scale-[0.98]">
                   Ir para o Painel do Analista
                 </button>
               </div>
             ) : (
               <>
-                <div className="px-6 py-4 flex items-center justify-between border-b border-slate-100">
-                  <h3 className="font-black text-slate-800 flex items-center justify-center gap-2">
-                    <FileText size={18} className="text-aqua-600" /> Confirmar Proposta
+                <div className="px-6 py-4 flex items-center justify-between border-b border-white/10">
+                  <h3 className="font-serif font-black text-white flex items-center justify-center gap-2">
+                    <FileText size={18} className="text-cyan-300" /> Confirmar Proposta
                   </h3>
-                  <button disabled={isSavingProposal} onClick={() => { setIsSaveModalOpen(false); setSaveError(null); }} className="text-slate-400 hover:text-slate-600 p-1">
+                  <button disabled={isSavingProposal} onClick={() => { setIsSaveModalOpen(false); setSaveError(null); }} className="text-slate-400 hover:text-white p-1">
                     <X size={20} />
                   </button>
                 </div>
@@ -601,7 +601,7 @@ export function ProposalView() {
                     <select
                       value={saveFormData.status}
                       onChange={(e) => setSaveFormData({ ...saveFormData, status: e.target.value })}
-                      className="w-full text-sm font-bold border border-slate-200 rounded-xl px-3 py-3 outline-none focus:border-aqua-500 bg-slate-50 text-slate-700 hover:bg-white transition-colors"
+                      className="w-full text-sm font-bold border border-white/10 rounded-xl px-3 py-3 outline-none focus:border-cyan-400/60 bg-white/5 text-slate-100 transition-colors [&>option]:bg-[#0A1E3F]"
                     >
                       <option value="PENDING">PENDING (Aguardando Decisão)</option>
                       <option value="SALE">SALE (Fechado/Vendido)</option>
@@ -616,14 +616,14 @@ export function ProposalView() {
                     )}
                   </div>
 
-                  <div className="space-y-3 pt-2 border-t border-slate-100">
+                  <div className="space-y-3 pt-2 border-t border-white/10">
                     <div>
                       <label className="block text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1">Telefone (WhatsApp)</label>
                       <input
                         type="tel"
                         value={saveFormData.phone}
                         onChange={(e) => setSaveFormData({ ...saveFormData, phone: e.target.value })}
-                        className="w-full text-sm font-medium border border-slate-200 rounded-xl px-3 py-2 outline-none focus:border-aqua-500 bg-white text-slate-900 placeholder:text-slate-300"
+                        className="w-full text-sm font-medium border border-white/10 rounded-xl px-3 py-2 outline-none focus:border-cyan-400/60 bg-white/5 text-white placeholder:text-slate-500"
                         placeholder="(99) 99999-9999"
                       />
                     </div>
@@ -633,23 +633,23 @@ export function ProposalView() {
                         type="email"
                         value={saveFormData.email}
                         onChange={(e) => setSaveFormData({ ...saveFormData, email: e.target.value })}
-                        className="w-full text-sm font-medium border border-slate-200 rounded-xl px-3 py-2 outline-none focus:border-aqua-500 bg-white text-slate-900 placeholder:text-slate-300"
+                        className="w-full text-sm font-medium border border-white/10 rounded-xl px-3 py-2 outline-none focus:border-cyan-400/60 bg-white/5 text-white placeholder:text-slate-500"
                       />
                     </div>
                   </div>
                 </div>
 
                 {saveError && (
-                  <div className="mx-6 mb-2 p-3 bg-red-50 border border-red-200 rounded-xl text-red-600 text-xs font-bold">
+                  <div className="mx-6 mb-2 p-3 bg-red-500/10 border border-red-500/25 rounded-xl text-red-300 text-xs font-bold">
                     {saveError}
                   </div>
                 )}
 
-                <div className="p-4 bg-slate-50 border-t border-slate-100 gap-2 flex">
+                <div className="p-4 bg-white/[0.02] border-t border-white/10 gap-2 flex">
                   <button
                     disabled={isSavingProposal}
                     onClick={() => { setIsSaveModalOpen(false); setSaveError(null); }}
-                    className="flex-1 py-3 text-sm font-bold text-slate-500 border-2 border-slate-200 rounded-xl hover:bg-slate-100 disabled:opacity-50 transition-colors"
+                    className="flex-1 py-3 text-sm font-bold text-slate-300 border-2 border-white/10 rounded-xl hover:bg-white/5 disabled:opacity-50 transition-colors"
                   >
                     Cancelar
                   </button>
