@@ -1,14 +1,5 @@
-
 import React, { useState } from 'react';
-import { 
-  Home, 
-  User, 
-  Baby, 
-  Dog, 
-  AlertTriangle, 
-  HeartCrack,
-  RotateCcw
-} from 'lucide-react';
+import { Home, User, Baby, Dog, AlertTriangle, HeartCrack, RotateCcw } from 'lucide-react';
 import { Language, translations } from '../utils/i18n';
 import { motion } from 'framer-motion';
 
@@ -19,83 +10,94 @@ interface WaterMaleficesProps {
   lang: Language;
 }
 
-const CategoryCard: React.FC<{ cat: any; lang: Language }> = ({ cat, lang }) => {
+interface Cat {
+  icon: React.ReactNode;
+  accent: string;
+  title: string;
+  items: string[];
+  imageUrl: string;
+  backTitle: string;
+  fearTrigger: string;
+  impactLabel: string;
+}
+
+const CategoryCard: React.FC<{ cat: Cat; lang: Language }> = ({ cat, lang }) => {
   const [isFlipped, setIsFlipped] = useState(false);
   const tAction = translations[lang].malefices.flipAction;
 
   return (
-    <div 
-      className="perspective-1000 h-[480px] w-full cursor-pointer group"
+    <div
+      className="perspective-1000 h-[440px] w-full cursor-pointer group"
       onClick={() => setIsFlipped(!isFlipped)}
     >
       <MotionDiv
-        className="relative w-full h-full transition-all duration-700 preserve-3d shadow-xl rounded-[1.5rem]"
+        className="relative w-full h-full preserve-3d rounded-[1.5rem]"
         animate={{ rotateY: isFlipped ? 180 : 0 }}
-        transition={{ type: "spring", stiffness: 260, damping: 20 }}
+        transition={{ type: 'spring', stiffness: 260, damping: 22 }}
       >
-        {/* Front Side */}
-        <div className={`absolute inset-0 backface-hidden ${cat.bgColor} ${cat.borderColor} border-2 rounded-[1.5rem] p-6 flex flex-col z-20 hover:shadow-2xl transition-shadow`}>
-          <div className="flex items-center gap-4 mb-6">
-            <div className="bg-white p-3 rounded-xl shadow-md shrink-0">
+        {/* Front — dark glass with glowing accent */}
+        <div className="absolute inset-0 backface-hidden z-20 flex flex-col overflow-hidden rounded-[1.5rem] border border-white/10 bg-white/[0.04] p-6 backdrop-blur-xl">
+          <div
+            className="pointer-events-none absolute -right-10 -top-10 h-36 w-36 rounded-full opacity-40 blur-3xl"
+            style={{ background: cat.accent }}
+          />
+          <div className="relative mb-6 flex items-center gap-4">
+            <div
+              className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl"
+              style={{ background: `${cat.accent}22`, color: cat.accent, boxShadow: `0 0 24px ${cat.accent}44` }}
+            >
               {cat.icon}
             </div>
-            <h3 className="text-2xl font-black text-slate-900 leading-tight uppercase tracking-tighter">{cat.title}</h3>
+            <h3 className="font-serif text-2xl font-black leading-tight text-white">{cat.title}</h3>
           </div>
-          
-          <ul className="space-y-5 flex-1 overflow-y-auto custom-scrollbar pr-2">
-            {cat.items.map((item: string, i: number) => (
-              <li key={i} className="flex gap-4 text-slate-800 items-start">
-                <div className="mt-1 shrink-0">
-                  <HeartCrack size={18} className="text-red-500" />
-                </div>
-                <span className="text-sm font-extrabold leading-snug">{item}</span>
+
+          <ul className="relative flex-1 space-y-4">
+            {cat.items.map((item, i) => (
+              <li key={i} className="flex items-start gap-3 text-slate-200">
+                <HeartCrack size={16} className="mt-0.5 shrink-0" style={{ color: cat.accent }} />
+                <span className="text-sm font-semibold leading-snug">{item}</span>
               </li>
             ))}
           </ul>
 
-          <div className="mt-6 flex items-center justify-center gap-2 text-xs font-black text-slate-500 uppercase tracking-widest animate-pulse border-t border-slate-300 pt-5">
-            <RotateCcw size={14} />
+          <div className="relative mt-4 flex items-center justify-center gap-2 border-t border-white/10 pt-4 text-[0.65rem] font-black uppercase tracking-[0.2em] text-slate-500">
+            <RotateCcw size={13} className="animate-pulse" />
             {tAction}
           </div>
         </div>
 
-        {/* Back Side (Realidade Oculta) */}
-        <div 
-          className="absolute inset-0 backface-hidden rounded-[1.5rem] overflow-hidden bg-[#040b16] flex flex-col z-10"
+        {/* Back — image + fear trigger */}
+        <div
+          className="absolute inset-0 backface-hidden z-10 flex flex-col overflow-hidden rounded-[1.5rem] bg-[#040b16]"
           style={{ transform: 'rotateY(180deg)' }}
         >
-          {/* HD Image Section */}
-          <div className="h-[55%] relative overflow-hidden">
-            <img 
-              src={cat.imageUrl} 
-              alt={cat.title} 
-              className="w-full h-full object-cover filter contrast-125 saturate-50"
+          <div className="relative h-[52%] overflow-hidden">
+            <img
+              src={cat.imageUrl}
+              alt={cat.title}
+              className="h-full w-full object-cover contrast-125 saturate-50"
               onError={(e) => {
-                const target = e.target as HTMLImageElement;
-                target.src = 'https://images.unsplash.com/photo-1518152006812-edab29b069ac?auto=format&fit=crop&q=80&w=1200';
+                (e.target as HTMLImageElement).src =
+                  'https://images.unsplash.com/photo-1518152006812-edab29b069ac?auto=format&fit=crop&q=80&w=1200';
               }}
             />
-            <div className="absolute inset-0 bg-gradient-to-t from-[#040b16] via-[#040b16]/40 to-transparent"></div>
-            <div className="absolute bottom-4 left-5 flex items-center gap-3">
-                <div className="bg-red-600 p-1.5 rounded-md shadow-lg shadow-red-600/50">
-                    <AlertTriangle size={14} className="text-white" />
-                </div>
-                <span className="text-white font-black uppercase text-xs tracking-[0.15em] drop-shadow-md">{cat.impactLabel}</span>
+            <div className="absolute inset-0 bg-gradient-to-t from-[#040b16] via-[#040b16]/40 to-transparent" />
+            <div className="absolute bottom-4 left-5 flex items-center gap-2">
+              <div className="rounded-md bg-red-600 p-1.5 shadow-lg shadow-red-600/50">
+                <AlertTriangle size={13} className="text-white" />
+              </div>
+              <span className="text-xs font-black uppercase tracking-[0.15em] text-white drop-shadow">
+                {cat.impactLabel}
+              </span>
             </div>
           </div>
-
-          {/* Fear Trigger Section */}
-          <div className="flex-1 p-6 flex flex-col justify-center bg-[#040b16]">
-             <h4 className="text-red-500 text-sm font-black uppercase tracking-[0.2em] mb-4 border-b border-red-500/20 pb-2">
-               {cat.backTitle}
-             </h4>
-             <p className="text-slate-100 text-base font-bold leading-relaxed border-l-4 border-red-600 pl-4 italic opacity-90">
-               "{cat.fearTrigger}"
-             </p>
-             
-             <button className="mt-auto bg-white/5 hover:bg-white/10 text-white px-6 py-3 rounded-xl font-black uppercase text-xs tracking-widest mx-auto transition-all border border-white/10 w-full flex items-center justify-center gap-2">
-               Voltar
-             </button>
+          <div className="flex flex-1 flex-col justify-center bg-[#040b16] p-6">
+            <h4 className="mb-3 border-b border-red-500/20 pb-2 text-xs font-black uppercase tracking-[0.2em] text-red-400">
+              {cat.backTitle}
+            </h4>
+            <p className="border-l-4 border-red-600 pl-4 text-base font-bold italic leading-relaxed text-slate-100/90">
+              “{cat.fearTrigger}”
+            </p>
           </div>
         </div>
       </MotionDiv>
@@ -106,68 +108,62 @@ const CategoryCard: React.FC<{ cat: any; lang: Language }> = ({ cat, lang }) => 
 export const WaterMalefices: React.FC<WaterMaleficesProps> = ({ lang }) => {
   const t = translations[lang].malefices;
 
-  const categories = [
+  const categories: Cat[] = [
     {
-      icon: <Home size={20} className="text-amber-500" />,
+      icon: <Home size={22} />,
+      accent: '#F59E0B',
       title: t.home.title,
       items: [t.home.m1, t.home.m2, t.home.m3],
-      bgColor: 'bg-amber-50',
-      borderColor: 'border-amber-200',
-      imageUrl: 'https://images.unsplash.com/photo-1513694203232-719a280e022f?auto=format&fit=crop&q=80&w=800', 
+      imageUrl: 'https://images.unsplash.com/photo-1513694203232-719a280e022f?auto=format&fit=crop&q=80&w=800',
       backTitle: t.home.backTitle,
       fearTrigger: t.home.fearTrigger,
-      impactLabel: t.home.impactLabel
+      impactLabel: t.home.impactLabel,
     },
     {
-      icon: <User size={20} className="text-blue-500" />,
+      icon: <User size={22} />,
+      accent: '#38BDF8',
       title: t.adults.title,
       items: [t.adults.m1, t.adults.m2, t.adults.m3],
-      bgColor: 'bg-blue-50',
-      borderColor: 'border-blue-200',
-      imageUrl: 'https://images.unsplash.com/photo-1530026405186-ed1f139313f8?auto=format&fit=crop&q=80&w=800', 
+      imageUrl: 'https://images.unsplash.com/photo-1530026405186-ed1f139313f8?auto=format&fit=crop&q=80&w=800',
       backTitle: t.adults.backTitle,
       fearTrigger: t.adults.fearTrigger,
-      impactLabel: t.adults.impactLabel
+      impactLabel: t.adults.impactLabel,
     },
     {
-      icon: <Baby size={20} className="text-pink-500" />,
+      icon: <Baby size={22} />,
+      accent: '#F472B6',
       title: t.children.title,
       items: [t.children.m1, t.children.m2, t.children.m3],
-      bgColor: 'bg-pink-50',
-      borderColor: 'border-pink-200',
       imageUrl: 'https://images.unsplash.com/photo-1579154204601-01588f351e67?auto=format&fit=crop&q=80&w=800',
       backTitle: t.children.backTitle,
       fearTrigger: t.children.fearTrigger,
-      impactLabel: t.children.impactLabel
+      impactLabel: t.children.impactLabel,
     },
     {
-      icon: <Dog size={20} className="text-emerald-500" />,
+      icon: <Dog size={22} />,
+      accent: '#34D399',
       title: t.pets.title,
       items: [t.pets.m1, t.pets.m2, t.pets.m3],
-      bgColor: 'bg-emerald-50',
-      borderColor: 'border-emerald-200',
-      imageUrl: 'https://images.unsplash.com/photo-1517423440428-a5a00ad493e8?auto=format&fit=crop&q=80&w=800', 
+      imageUrl: 'https://images.unsplash.com/photo-1517423440428-a5a00ad493e8?auto=format&fit=crop&q=80&w=800',
       backTitle: t.pets.backTitle,
       fearTrigger: t.pets.fearTrigger,
-      impactLabel: t.pets.impactLabel
-    }
+      impactLabel: t.pets.impactLabel,
+    },
   ];
 
   return (
-    <section id="malefices" className="py-20 bg-slate-50 px-4 overflow-hidden relative">
-      <div className="max-w-[1400px] mx-auto relative z-10">
-        <div className="text-center mb-12">
-          <div className="inline-flex items-center gap-2 bg-red-100 text-red-600 px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest mb-4 border border-red-200">
+    <section id="malefices" className="relative overflow-hidden bg-[#020617] px-4 py-24">
+      <div className="pointer-events-none absolute right-0 top-0 h-96 w-96 rounded-full bg-red-600/10 blur-[120px]" />
+      <div className="relative z-10 mx-auto max-w-[1400px]">
+        <div className="mb-12 text-center">
+          <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-red-400/25 bg-red-500/10 px-4 py-1.5 text-[10px] font-black uppercase tracking-widest text-red-300">
             <AlertTriangle size={12} />
             <span>Alerta de Saúde</span>
           </div>
-          <h2 className="text-3xl md:text-5xl font-serif font-black text-slate-900 mb-4 tracking-tight">
-            {t.title}
-          </h2>
+          <h2 className="font-serif text-4xl font-black text-white md:text-5xl">{t.title}</h2>
         </div>
 
-        {/* GRID 4 COLUNAS EM TELAS GRANDES */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
+        <div className="grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-4">
           {categories.map((cat, idx) => (
             <CategoryCard key={idx} cat={cat} lang={lang} />
           ))}
@@ -177,9 +173,6 @@ export const WaterMalefices: React.FC<WaterMaleficesProps> = ({ lang }) => {
         .perspective-1000 { perspective: 1000px; }
         .preserve-3d { transform-style: preserve-3d; }
         .backface-hidden { backface-visibility: hidden; }
-        .custom-scrollbar::-webkit-scrollbar { width: 4px; }
-        .custom-scrollbar::-webkit-scrollbar-track { bg: transparent; }
-        .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.1); border-radius: 4px; }
       `}</style>
     </section>
   );
