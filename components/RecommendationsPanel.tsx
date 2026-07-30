@@ -229,15 +229,15 @@ export const RecommendationsPanel: React.FC = () => {
       <div className="flex flex-col items-center">
         {/* The Node Card */}
         <div className="relative group">
-          <div className={`w-64 bg-white border-2 rounded-2xl p-4 shadow-sm transition-all duration-200 z-10 relative ${
+          <div className={`w-64 bg-white/[0.04] border-2 rounded-2xl p-4 shadow-sm transition-all duration-200 z-10 relative ${
             isClient 
               ? isElite ? 'border-yellow-400 hover:shadow-yellow-400/30' : 'border-[#11caa0] hover:shadow-[#11caa0]/30'
-              : 'border-slate-200 border-dashed hover:border-slate-400'
+              : 'border-white/10 border-dashed hover:border-slate-400'
           }`}>
             <div className="flex justify-between items-start mb-2">
               <div className="flex items-center gap-2">
                 <div className={`w-10 h-10 rounded-full flex items-center justify-center overflow-hidden border-2 flex-shrink-0 ${
-                  isClient ? (isElite ? 'border-yellow-400 bg-yellow-100 text-yellow-600' : 'border-[#11caa0] bg-[#11caa0]/10 text-[#11caa0]') : 'border-slate-200 bg-slate-100 text-slate-500'
+                  isClient ? (isElite ? 'border-yellow-400 bg-yellow-500/20 text-yellow-600' : 'border-[#11caa0] bg-[#11caa0]/10 text-[#11caa0]') : 'border-white/10 bg-white/10 text-slate-400'
                 }`}>
                   {node.avatar_url ? (
                     <img src={node.avatar_url} alt={node.name} className="w-full h-full object-cover" />
@@ -246,7 +246,7 @@ export const RecommendationsPanel: React.FC = () => {
                   )}
                 </div>
                 <div>
-                  <h4 className="font-bold text-sm text-slate-800 leading-tight truncate w-32" title={node.name}>{node.name}</h4>
+                  <h4 className="font-bold text-sm text-slate-100 leading-tight truncate w-32" title={node.name}>{node.name}</h4>
                   <p className="text-[10px] uppercase font-black tracking-wider text-slate-400">
                     {isClient ? (isElite ? 'Elite' : 'Embaixador') : node.status}
                   </p>
@@ -259,7 +259,7 @@ export const RecommendationsPanel: React.FC = () => {
               <div className="absolute left-1/2 -translate-x-1/2 bottom-full mb-4 w-72 bg-slate-900 text-white rounded-xl p-4 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 shadow-2xl z-50 pointer-events-none scale-95 group-hover:scale-100">
                 <div className="flex justify-between items-center mb-3 border-b border-slate-700 pb-2">
                   <span className="font-bold">{node.name}</span>
-                  <span className={`text-[10px] font-black px-2 py-1 rounded-full uppercase tracking-widest ${isElite ? 'bg-yellow-500 text-yellow-950' : 'bg-[#11caa0]/20 text-[#11caa0]'}`}>
+                  <span className={`text-[10px] font-black px-2 py-1 rounded-full uppercase tracking-widest ${isElite ? 'bg-yellow-500/100 text-yellow-950' : 'bg-[#11caa0]/20 text-[#11caa0]'}`}>
                     Nível {node.level}
                   </span>
                 </div>
@@ -284,16 +284,16 @@ export const RecommendationsPanel: React.FC = () => {
             )}
 
             {/* Actions */}
-            <div className="mt-3 pt-3 border-t border-slate-100 flex gap-2">
+            <div className="mt-3 pt-3 border-t border-white/10 flex gap-2">
               {isClient ? (
                 <>
-                  <button onClick={copyRecruitLink} className="flex-1 bg-slate-50 hover:bg-[#11caa0] hover:text-white text-slate-700 border border-slate-200 hover:border-[#11caa0] rounded-lg py-1.5 text-xs font-bold flex items-center justify-center gap-1 transition-colors" title="Copiar link de recrutamento de analistas">
+                  <button onClick={copyRecruitLink} className="flex-1 bg-white/5 hover:bg-[#11caa0] hover:text-white text-slate-200 border border-white/10 hover:border-[#11caa0] rounded-lg py-1.5 text-xs font-bold flex items-center justify-center gap-1 transition-colors" title="Copiar link de recrutamento de analistas">
                     <UserPlus size={14} className="text-[#11caa0] group-hover:text-white"/> Convidar Time
                   </button>
-                  <button onClick={() => copyVipLink(node.token)} className="w-8 flex-shrink-0 bg-slate-50 hover:bg-blue-500 hover:text-white text-slate-600 border border-slate-200 hover:border-blue-500 rounded-lg py-1.5 flex items-center justify-center transition-colors" title="Copiar Link do Portal VIP do Cliente">
+                  <button onClick={() => copyVipLink(node.token)} className="w-8 flex-shrink-0 bg-white/5 hover:bg-blue-500/100 hover:text-white text-slate-300 border border-white/10 hover:border-blue-500 rounded-lg py-1.5 flex items-center justify-center transition-colors" title="Copiar Link do Portal VIP do Cliente">
                     <Copy size={14} />
                   </button>
-                  <button onClick={() => setIsAddMode(node.id)} className="w-8 flex-shrink-0 bg-slate-50 hover:bg-[#11caa0] hover:text-white text-slate-600 border border-slate-200 hover:border-[#11caa0] rounded-lg py-1.5 flex items-center justify-center transition-colors" title="Cadastrar Indicação Manual">
+                  <button onClick={() => setIsAddMode(node.id)} className="w-8 flex-shrink-0 bg-white/5 hover:bg-[#11caa0] hover:text-white text-slate-300 border border-white/10 hover:border-[#11caa0] rounded-lg py-1.5 flex items-center justify-center transition-colors" title="Cadastrar Indicação Manual">
                     <GitMerge size={14} />
                   </button>
                 </>
@@ -301,7 +301,7 @@ export const RecommendationsPanel: React.FC = () => {
                 <select
                   value={node.status}
                   onChange={(e) => updateReferralStatus(node.id, e.target.value)}
-                  className="w-full text-xs font-bold border border-slate-200 rounded-lg px-2 py-1.5 outline-none focus:border-[#11caa0] bg-slate-50"
+                  className="w-full text-xs font-bold border border-white/10 rounded-lg px-2 py-1.5 outline-none focus:border-[#11caa0] bg-white/5"
                 >
                   <option value="PENDING">Pendente</option>
                   <option value="SCHEDULED">Agendado</option>
@@ -315,14 +315,14 @@ export const RecommendationsPanel: React.FC = () => {
 
           {/* Add Referral Modal Inline */}
           {isAddMode === node.id && (
-            <div className="absolute top-full left-1/2 -translate-x-1/2 mt-4 w-72 bg-white rounded-xl shadow-2xl border border-slate-200 p-4 z-50">
-              <h5 className="text-xs font-black uppercase text-slate-500 mb-3">Nova Indicação para {node.name.split(' ')[0]}</h5>
+            <div className="absolute top-full left-1/2 -translate-x-1/2 mt-4 w-72 bg-white/[0.04] rounded-xl shadow-2xl border border-white/10 p-4 z-50">
+              <h5 className="text-xs font-black uppercase text-slate-400 mb-3">Nova Indicação para {node.name.split(' ')[0]}</h5>
               <div className="space-y-2 mb-3">
                 <input type="text" placeholder="Nome" value={newRef.name} onChange={e=>setNewRef({...newRef, name:e.target.value})} className="w-full text-sm p-2 border rounded-lg outline-none focus:border-[#11caa0]"/>
                 <input type="tel" placeholder="Telefone" value={newRef.phone} onChange={e=>setNewRef({...newRef, phone:e.target.value})} className="w-full text-sm p-2 border rounded-lg outline-none focus:border-[#11caa0]"/>
               </div>
               <div className="flex gap-2">
-                <button onClick={()=>setIsAddMode(null)} className="flex-1 text-xs py-2 bg-slate-100 text-slate-600 rounded-lg font-bold">Cancelar</button>
+                <button onClick={()=>setIsAddMode(null)} className="flex-1 text-xs py-2 bg-white/10 text-slate-300 rounded-lg font-bold">Cancelar</button>
                 <button onClick={()=>handleCreateReferral(node.id)} className="flex-1 text-xs py-2 bg-[#11caa0] text-white rounded-lg font-bold">Salvar</button>
               </div>
             </div>
@@ -338,7 +338,7 @@ export const RecommendationsPanel: React.FC = () => {
             {/* Toggle Button */}
             <button 
               onClick={() => setExpanded(!expanded)} 
-              className="w-6 h-6 rounded-full bg-white border border-slate-300 text-slate-500 flex items-center justify-center hover:border-[#11caa0] hover:text-[#11caa0] z-20 shadow-sm transition-colors"
+              className="w-6 h-6 rounded-full bg-white/[0.04] border border-slate-300 text-slate-400 flex items-center justify-center hover:border-[#11caa0] hover:text-[#11caa0] z-20 shadow-sm transition-colors"
             >
               <ChevronDown size={14} className={`transform transition-transform ${expanded ? '' : '-rotate-90'}`} />
             </button>
@@ -370,36 +370,36 @@ export const RecommendationsPanel: React.FC = () => {
 
   return (
     <div className="space-y-6 animate-in fade-in duration-500 h-[calc(100vh-140px)] flex flex-col">
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex-shrink-0">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-white/[0.04] p-6 rounded-2xl border border-white/10 shadow-sm flex-shrink-0">
         <div>
-          <h2 className="text-2xl font-black text-slate-800 flex items-center gap-2">
+          <h2 className="text-2xl font-black text-slate-100 flex items-center gap-2">
             <GitMerge size={24} className="text-[#11caa0]" />
             Organograma do Time
           </h2>
-          <p className="text-slate-500 text-sm mt-1">
+          <p className="text-slate-400 text-sm mt-1">
             Acompanhe o crescimento da sua rede. Clientes que convertem indicações se tornam Embaixadores e evoluem para Elite.
           </p>
         </div>
         
         {/* Zoom Controls */}
-        <div className="flex bg-slate-100 rounded-lg p-1 border border-slate-200">
-          <button onClick={() => setZoom(z => Math.max(0.5, z - 0.1))} className="p-2 hover:bg-white rounded text-slate-600 transition-colors"><ZoomOut size={18}/></button>
-          <button onClick={() => setZoom(1)} className="p-2 hover:bg-white rounded text-slate-600 transition-colors font-bold text-xs flex items-center w-12 justify-center">{Math.round(zoom * 100)}%</button>
-          <button onClick={() => setZoom(z => Math.min(2, z + 0.1))} className="p-2 hover:bg-white rounded text-slate-600 transition-colors"><ZoomIn size={18}/></button>
+        <div className="flex bg-white/10 rounded-lg p-1 border border-white/10">
+          <button onClick={() => setZoom(z => Math.max(0.5, z - 0.1))} className="p-2 hover:bg-white/[0.04] rounded text-slate-300 transition-colors"><ZoomOut size={18}/></button>
+          <button onClick={() => setZoom(1)} className="p-2 hover:bg-white/[0.04] rounded text-slate-300 transition-colors font-bold text-xs flex items-center w-12 justify-center">{Math.round(zoom * 100)}%</button>
+          <button onClick={() => setZoom(z => Math.min(2, z + 0.1))} className="p-2 hover:bg-white/[0.04] rounded text-slate-300 transition-colors"><ZoomIn size={18}/></button>
         </div>
       </div>
 
-      <div className="flex-1 bg-slate-50 rounded-2xl border border-slate-200 overflow-hidden relative shadow-inner">
+      <div className="flex-1 bg-white/5 rounded-2xl border border-white/10 overflow-hidden relative shadow-inner">
         {isLoading ? (
           <div className="absolute inset-0 flex flex-col items-center justify-center bg-white/50 backdrop-blur-sm z-50">
             <div className="animate-spin w-8 h-8 border-4 border-[#11caa0] border-t-transparent rounded-full mb-4"></div>
-            <p className="text-slate-500 font-bold uppercase tracking-widest text-xs">Carregando Rede...</p>
+            <p className="text-slate-400 font-bold uppercase tracking-widest text-xs">Carregando Rede...</p>
           </div>
         ) : hasError ? (
           <div className="absolute inset-0 flex flex-col items-center justify-center">
             <XCircle size={48} className="text-red-400 mb-4" />
-            <h3 className="text-xl font-bold text-slate-700 mb-2">Erro ao carregar</h3>
-            <p className="text-slate-500 mb-6 text-center max-w-sm">Pode haver um conflito de sessão se você tiver muitas abas abertas. Feche outras abas e tente novamente.</p>
+            <h3 className="text-xl font-bold text-slate-200 mb-2">Erro ao carregar</h3>
+            <p className="text-slate-400 mb-6 text-center max-w-sm">Pode haver um conflito de sessão se você tiver muitas abas abertas. Feche outras abas e tente novamente.</p>
             <button onClick={fetchData} className="px-6 py-2 bg-[#11caa0] hover:bg-[#0fbaa0] text-white font-bold rounded-lg transition-colors">
               Tentar Novamente
             </button>
@@ -407,8 +407,8 @@ export const RecommendationsPanel: React.FC = () => {
         ) : treeData.length === 0 ? (
           <div className="absolute inset-0 flex flex-col items-center justify-center">
              <Users size={48} className="text-slate-300 mb-4" />
-             <h3 className="text-xl font-bold text-slate-700 mb-2">Sem Parceiros</h3>
-             <p className="text-slate-500 max-w-sm text-center">Nenhum cliente seu tem indicações ainda. Convide seus clientes fechados a participarem do Portal VIP.</p>
+             <h3 className="text-xl font-bold text-slate-200 mb-2">Sem Parceiros</h3>
+             <p className="text-slate-400 max-w-sm text-center">Nenhum cliente seu tem indicações ainda. Convide seus clientes fechados a participarem do Portal VIP.</p>
           </div>
         ) : (
           <div className="w-full h-full overflow-auto cursor-grab active:cursor-grabbing p-12 hide-scrollbar"

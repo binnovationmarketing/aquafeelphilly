@@ -194,7 +194,7 @@ export const ManagerDashboard: React.FC<{ onExit: () => void }> = ({ onExit }) =
 
   // Dados para Gráficos
   const funnelData = [
-    { name: 'Leads', value: totalLeads, fill: '#64748b' },
+    { name: 'Leads', value: totalLeads, fill: '#94a3b8' },
     { name: 'Apresentações', value: totalPresentations, fill: '#3b82f6' },
     { name: 'Vendas', value: totalSales, fill: '#10b981' },
   ];
@@ -220,13 +220,13 @@ export const ManagerDashboard: React.FC<{ onExit: () => void }> = ({ onExit }) =
 
   const getHeatmapColor = (status: string) => {
     switch (status) {
-      case 'LEAD': return 'bg-blue-100 text-blue-600 border-blue-200';
-      case 'PRESENTATION': return 'bg-indigo-100 text-indigo-600 border-indigo-200';
-      case 'SALE': return 'bg-emerald-100 text-emerald-600 border-emerald-200';
-      case 'INSTALLED': return 'bg-green-100 text-green-600 border-green-200';
-      case 'ACTIVE': return 'bg-teal-100 text-teal-600 border-teal-200';
-      case 'LOST': return 'bg-red-100 text-red-600 border-red-200';
-      default: return 'bg-slate-100 text-slate-600 border-slate-200';
+      case 'LEAD': return 'bg-blue-500/20 text-blue-300 border-blue-500/30';
+      case 'PRESENTATION': return 'bg-indigo-500/20 text-indigo-300 border-indigo-500/30';
+      case 'SALE': return 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30';
+      case 'INSTALLED': return 'bg-green-500/20 text-green-300 border-green-500/30';
+      case 'ACTIVE': return 'bg-teal-500/20 text-teal-300 border-teal-200';
+      case 'LOST': return 'bg-red-500/20 text-red-300 border-red-500/30';
+      default: return 'bg-white/10 text-slate-300 border-white/10';
     }
   };
 
@@ -243,9 +243,9 @@ export const ManagerDashboard: React.FC<{ onExit: () => void }> = ({ onExit }) =
   };
 
   const getProgressColor = (status: string) => {
-    if (status === 'LOST') return 'bg-red-500';
+    if (status === 'LOST') return 'bg-red-500/100';
     if (['SALE', 'INSTALLED', 'ACTIVE'].includes(status)) return 'bg-gradient-to-r from-blue-500 to-red-500'; // Heatmap style
-    return 'bg-blue-500';
+    return 'bg-blue-500/100';
   };
 
   if (currentView === 'CLIENTS') {
@@ -254,7 +254,7 @@ export const ManagerDashboard: React.FC<{ onExit: () => void }> = ({ onExit }) =
 
   if (currentView === 'HIERARCHY') {
     return (
-      <div className="min-h-screen bg-slate-50 flex relative">
+      <div className="min-h-screen bg-[#020617] flex relative">
         <aside className="hidden md:flex flex-col w-64 bg-[#020d1a] text-white border-r border-white/5">
           <div className="p-6 border-b border-white/5 flex justify-center">
             <AquaFeelLogo width="140px" variant="white" />
@@ -270,9 +270,9 @@ export const ManagerDashboard: React.FC<{ onExit: () => void }> = ({ onExit }) =
           </div>
         </aside>
         <main className="flex-1 overflow-auto h-screen">
-          <header className="bg-white border-b border-slate-200 px-6 py-5 flex items-center justify-between sticky top-0 z-20">
-            <h2 className="text-xl font-black text-slate-900">🌳 Hierarquia da Equipe</h2>
-            <button onClick={() => setCurrentView('DASHBOARD')} className="text-sm text-slate-500 hover:text-slate-900 font-bold">← Voltar</button>
+          <header className="bg-[#020617]/85 backdrop-blur-xl border-b border-white/10 px-6 py-5 flex items-center justify-between sticky top-0 z-20">
+            <h2 className="text-xl font-black text-white">🌳 Hierarquia da Equipe</h2>
+            <button onClick={() => setCurrentView('DASHBOARD')} className="text-sm text-slate-400 hover:text-white font-bold">← Voltar</button>
           </header>
           <div className="p-8">
             <HierarchyManager />
@@ -287,7 +287,7 @@ export const ManagerDashboard: React.FC<{ onExit: () => void }> = ({ onExit }) =
     const mySales = teamAnalysts.find(a => a.id === user?.id)?.totalSales ?? 0;
     const teamTotal = teamAnalysts.reduce((s, a) => s + a.totalSales, 0);
     return (
-      <div className="min-h-screen bg-slate-50 flex relative">
+      <div className="min-h-screen bg-[#020617] flex relative">
         {/* Sidebar intentionally simple in commission view */}
         <aside className="hidden md:flex flex-col w-64 bg-[#020d1a] text-white border-r border-white/5">
           <div className="p-6 border-b border-white/5 flex justify-center">
@@ -304,9 +304,9 @@ export const ManagerDashboard: React.FC<{ onExit: () => void }> = ({ onExit }) =
           </div>
         </aside>
         <main className="flex-1 overflow-auto h-screen">
-          <header className="bg-white border-b border-slate-200 px-6 py-5 flex items-center justify-between sticky top-0 z-20">
-            <h2 className="text-xl font-black text-slate-900">Comissões &amp; Hierarquia</h2>
-            <button onClick={() => setCurrentView('DASHBOARD')} className="text-sm text-slate-500 hover:text-slate-900 font-bold">← Voltar</button>
+          <header className="bg-[#020617]/85 backdrop-blur-xl border-b border-white/10 px-6 py-5 flex items-center justify-between sticky top-0 z-20">
+            <h2 className="text-xl font-black text-white">Comissões &amp; Hierarquia</h2>
+            <button onClick={() => setCurrentView('DASHBOARD')} className="text-sm text-slate-400 hover:text-white font-bold">← Voltar</button>
           </header>
           <div className="p-8">
             <CommissionPanel
@@ -322,7 +322,7 @@ export const ManagerDashboard: React.FC<{ onExit: () => void }> = ({ onExit }) =
   }
 
   return (
-    <div className="min-h-screen bg-slate-50 flex relative">
+    <div className="min-h-screen bg-[#020617] flex relative">
       {/* Mobile Menu Overlay */}
       {isMobileMenuOpen && (
         <div
@@ -381,7 +381,7 @@ export const ManagerDashboard: React.FC<{ onExit: () => void }> = ({ onExit }) =
               💰 Comissões & Hierarquia
             </button>
             <div className="pt-2 mt-1 border-t border-white/5">
-              <p className="text-[10px] text-slate-600 uppercase tracking-widest px-4 mb-2 font-black">Vendas & Recrutamento</p>
+              <p className="text-[10px] text-slate-300 uppercase tracking-widest px-4 mb-2 font-black">Vendas & Recrutamento</p>
               <button
                 onClick={() => { onExit(); setIsMobileMenuOpen(false); }}
                 className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-xs font-bold border border-transparent text-slate-400 hover:bg-white/5 hover:text-white transition-all"
@@ -396,7 +396,7 @@ export const ManagerDashboard: React.FC<{ onExit: () => void }> = ({ onExit }) =
               </button>
             </div>
             <div className="pt-2 mt-1 border-t border-white/5">
-              <p className="text-[10px] text-slate-600 uppercase tracking-widest px-4 mb-2 font-black">Links de Indicação</p>
+              <p className="text-[10px] text-slate-300 uppercase tracking-widest px-4 mb-2 font-black">Links de Indicação</p>
               <button
                 onClick={() => {
                   const ref = encodeURIComponent(profile?.first_name || user?.email?.split('@')[0] || 'Gestor');
@@ -436,31 +436,31 @@ export const ManagerDashboard: React.FC<{ onExit: () => void }> = ({ onExit }) =
 
       {/* Conteúdo Principal */}
       <main className="flex-1 overflow-auto h-screen w-full">
-        <header className="bg-white border-b border-slate-200 px-4 md:px-8 py-5 flex justify-between items-center sticky top-0 z-20">
+        <header className="bg-[#020617]/85 backdrop-blur-xl border-b border-white/10 px-4 md:px-8 py-5 flex justify-between items-center sticky top-0 z-20">
           <div className="flex items-center gap-4">
             <button
               onClick={() => setIsMobileMenuOpen(true)}
-              className="md:hidden p-2 text-slate-600 hover:bg-slate-100 rounded-lg"
+              className="md:hidden p-2 text-slate-300 hover:bg-white/10 rounded-lg"
             >
               <LayoutDashboard size={24} />
             </button>
             <div>
-              <h1 className="text-xl md:text-2xl font-black text-slate-900 uppercase tracking-tight">Painel do Gestor</h1>
-              <p className="text-[10px] md:text-xs text-slate-500 font-medium mt-1">Visão geral de leads e performance</p>
+              <h1 className="text-xl md:text-2xl font-black text-white uppercase tracking-tight">Painel do Gestor</h1>
+              <p className="text-[10px] md:text-xs text-slate-400 font-medium mt-1">Visão geral de leads e performance</p>
             </div>
           </div>
 
           <div className="flex items-center gap-4">
             <button
               onClick={handleExportCSV}
-              className="flex items-center gap-2 px-4 py-2 bg-slate-100 text-slate-600 hover:bg-slate-200 rounded-lg text-xs font-bold transition-colors"
+              className="flex items-center gap-2 px-4 py-2 bg-white/10 text-slate-300 hover:bg-white/10 rounded-lg text-xs font-bold transition-colors"
               title="Exportar CSV"
             >
               <Download size={16} /> <span className="hidden md:inline">Exportar CSV</span>
             </button>
             <button
               onClick={fetchLeads}
-              className="p-2 text-slate-400 hover:text-aqua-600 hover:bg-aqua-50 rounded-lg transition-all"
+              className="p-2 text-slate-400 hover:text-cyan-300 hover:bg-cyan-500/10 rounded-lg transition-all"
               title="Atualizar Dados"
             >
               <RefreshCw size={20} className={isLoading ? "animate-spin" : ""} />
@@ -473,46 +473,46 @@ export const ManagerDashboard: React.FC<{ onExit: () => void }> = ({ onExit }) =
           <>
               {/* KPIs Cards */}
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                <div className="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm">
+                <div className="bg-white/[0.04] p-6 rounded-2xl border border-white/10 shadow-sm">
                   <div className="flex justify-between items-start mb-4">
-                    <div className="bg-blue-100 p-3 rounded-xl text-blue-600"><Users size={20} /></div>
+                    <div className="bg-blue-500/20 p-3 rounded-xl text-blue-300"><Users size={20} /></div>
                     <span className="text-xs font-bold text-slate-400 uppercase">Total Leads</span>
                   </div>
-                  <div className="text-3xl font-black text-slate-900">{totalLeads}</div>
+                  <div className="text-3xl font-black text-white">{totalLeads}</div>
                 </div>
 
-                <div className="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm">
+                <div className="bg-white/[0.04] p-6 rounded-2xl border border-white/10 shadow-sm">
                   <div className="flex justify-between items-start mb-4">
-                    <div className="bg-purple-100 p-3 rounded-xl text-purple-600"><PieChartIcon size={20} /></div>
+                    <div className="bg-purple-500/20 p-3 rounded-xl text-purple-300"><PieChartIcon size={20} /></div>
                     <span className="text-xs font-bold text-slate-400 uppercase">Apresentações</span>
                   </div>
-                  <div className="text-3xl font-black text-slate-900">{totalPresentations}</div>
+                  <div className="text-3xl font-black text-white">{totalPresentations}</div>
                 </div>
 
-                <div className="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm">
+                <div className="bg-white/[0.04] p-6 rounded-2xl border border-white/10 shadow-sm">
                   <div className="flex justify-between items-start mb-4">
-                    <div className="bg-emerald-100 p-3 rounded-xl text-emerald-600"><DollarSign size={20} /></div>
+                    <div className="bg-emerald-500/20 p-3 rounded-xl text-emerald-300"><DollarSign size={20} /></div>
                     <span className="text-xs font-bold text-slate-400 uppercase">Vendas Fechadas</span>
                   </div>
-                  <div className="text-3xl font-black text-slate-900">{totalSales}</div>
-                  <div className="text-xs text-emerald-600 font-bold mt-2">{conversionRate}% Conversão</div>
+                  <div className="text-3xl font-black text-white">{totalSales}</div>
+                  <div className="text-xs text-emerald-300 font-bold mt-2">{conversionRate}% Conversão</div>
                 </div>
 
-                <div className="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm relative overflow-hidden">
-                  <div className="absolute top-0 right-0 w-16 h-16 bg-amber-500/10 rounded-bl-full"></div>
+                <div className="bg-white/[0.04] p-6 rounded-2xl border border-white/10 shadow-sm relative overflow-hidden">
+                  <div className="absolute top-0 right-0 w-16 h-16 bg-amber-500/100/10 rounded-bl-full"></div>
                   <div className="flex justify-between items-start mb-4">
-                    <div className="bg-amber-100 p-3 rounded-xl text-amber-600"><TrendingUp size={20} /></div>
+                    <div className="bg-amber-500/20 p-3 rounded-xl text-amber-300"><TrendingUp size={20} /></div>
                     <span className="text-xs font-bold text-slate-400 uppercase">Projeção (2x1)</span>
                   </div>
-                  <div className="text-3xl font-black text-slate-900">+{projectedSales}</div>
-                  <div className="text-xs text-amber-600 font-bold mt-2">Novas vendas estimadas</div>
+                  <div className="text-3xl font-black text-white">+{projectedSales}</div>
+                  <div className="text-xs text-amber-300 font-bold mt-2">Novas vendas estimadas</div>
                 </div>
               </div>
 
               {/* Charts Section */}
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                <div className="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm">
-                  <h3 className="text-lg font-bold text-slate-900 mb-6">Funil de Vendas</h3>
+                <div className="bg-white/[0.04] p-6 rounded-2xl border border-white/10 shadow-sm">
+                  <h3 className="text-lg font-bold text-white mb-6">Funil de Vendas</h3>
                   <div className="h-64 w-full">
                     <ResponsiveContainer width="100%" height="100%">
                       <BarChart data={funnelData} layout="vertical" margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
@@ -530,8 +530,8 @@ export const ManagerDashboard: React.FC<{ onExit: () => void }> = ({ onExit }) =
                   </div>
                 </div>
 
-                <div className="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm">
-                  <h3 className="text-lg font-bold text-slate-900 mb-6">Projeção de Fechamento</h3>
+                <div className="bg-white/[0.04] p-6 rounded-2xl border border-white/10 shadow-sm">
+                  <h3 className="text-lg font-bold text-white mb-6">Projeção de Fechamento</h3>
                   <div className="h-64 w-full">
                     <ResponsiveContainer width="100%" height="100%">
                       <PieChart>
@@ -555,15 +555,15 @@ export const ManagerDashboard: React.FC<{ onExit: () => void }> = ({ onExit }) =
                     </ResponsiveContainer>
                   </div>
                   <div className="text-center mt-4">
-                    <p className="text-sm text-slate-500">Baseado na regra: <span className="font-bold text-slate-900">2 Apresentações = 1 Venda</span></p>
+                    <p className="text-sm text-slate-400">Baseado na regra: <span className="font-bold text-white">2 Apresentações = 1 Venda</span></p>
                   </div>
                 </div>
               </div>
 
               {/* Tabela de Leads Recentes */}
-              <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
-                <div className="p-6 border-b border-slate-100 flex justify-between items-center">
-                  <h3 className="font-bold text-slate-900">Leads Recentes & Performance</h3>
+              <div className="bg-white/[0.04] rounded-2xl shadow-sm border border-white/10 overflow-hidden">
+                <div className="p-6 border-b border-white/10 flex justify-between items-center">
+                  <h3 className="font-bold text-white">Leads Recentes & Performance</h3>
                   <div className="relative w-64">
                     <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
                     <input
@@ -571,14 +571,14 @@ export const ManagerDashboard: React.FC<{ onExit: () => void }> = ({ onExit }) =
                       placeholder="Buscar..."
                       value={searchTerm}
                       onChange={(e) => setSearchTerm(e.target.value)}
-                      className="w-full pl-9 pr-4 py-2 rounded-lg border border-slate-200 text-xs focus:ring-2 focus:ring-aqua-500 outline-none"
+                      className="w-full pl-9 pr-4 py-2 rounded-lg border border-white/10 text-xs focus:ring-2 focus:ring-aqua-500 outline-none"
                     />
                   </div>
                 </div>
                 <div className="overflow-x-auto">
                   <table className="w-full text-left border-collapse">
                     <thead>
-                      <tr className="bg-slate-50 border-b border-slate-100">
+                      <tr className="bg-white/5 border-b border-white/10">
                         <th className="p-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Data</th>
                         <th className="p-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Cliente</th>
                         <th className="p-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Analista</th>
@@ -586,30 +586,30 @@ export const ManagerDashboard: React.FC<{ onExit: () => void }> = ({ onExit }) =
                         <th className="p-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Status / Heatmap</th>
                       </tr>
                     </thead>
-                    <tbody className="divide-y divide-slate-100">
+                    <tbody className="divide-y divide-white/10">
                       {filteredLeads.length > 0 ? (
                         filteredLeads.map((lead) => (
-                          <tr key={lead.id} className="hover:bg-slate-50/80 transition-colors">
-                            <td className="p-4 text-xs font-medium text-slate-600">
+                          <tr key={lead.id} className="hover:bg-white/5/80 transition-colors">
+                            <td className="p-4 text-xs font-medium text-slate-300">
                               <div className="flex items-center gap-2">
                                 <Calendar size={14} className="text-slate-400" />
                                 {new Date(lead.created_at).toLocaleDateString()}
                               </div>
                             </td>
                             <td className="p-4">
-                              <div className="font-bold text-slate-900 text-sm">{lead.name}</div>
-                              {lead.spouse_name && <div className="text-xs text-slate-500">+ {lead.spouse_name}</div>}
+                              <div className="font-bold text-white text-sm">{lead.name}</div>
+                              {lead.spouse_name && <div className="text-xs text-slate-400">+ {lead.spouse_name}</div>}
                               <div className="flex items-center gap-1 text-[10px] text-slate-400 mt-1">
                                 <MapPin size={10} /> {lead.zip_code}
                               </div>
                             </td>
                             <td className="p-4">
                               <div className="flex items-center gap-2">
-                                <div className="w-8 h-8 rounded-full bg-slate-200 flex items-center justify-center text-slate-500 font-bold text-xs">
+                                <div className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center text-slate-400 font-bold text-xs">
                                   {lead.analyst_details?.first_name?.[0] || lead.analyst?.[0] || 'A'}
                                 </div>
                                 <div>
-                                  <div className="text-xs font-bold text-slate-700">
+                                  <div className="text-xs font-bold text-slate-200">
                                     {lead.analyst_details ? `${lead.analyst_details.first_name} ${lead.analyst_details.last_name}` : lead.analyst || 'N/A'}
                                   </div>
                                   <div className="text-[10px] text-slate-400">{lead.analyst}</div>
@@ -617,7 +617,7 @@ export const ManagerDashboard: React.FC<{ onExit: () => void }> = ({ onExit }) =
                               </div>
                             </td>
                             <td className="p-4">
-                              <div className="text-xs font-medium text-slate-600">
+                              <div className="text-xs font-medium text-slate-300">
                                 {lead.analyst_details?.manager_name || '-'}
                               </div>
                             </td>
@@ -627,7 +627,7 @@ export const ManagerDashboard: React.FC<{ onExit: () => void }> = ({ onExit }) =
                                   {lead.status}
                                 </span>
                                 {/* Heatmap Progress Bar */}
-                                <div className="w-full h-1.5 bg-slate-100 rounded-full overflow-hidden">
+                                <div className="w-full h-1.5 bg-white/10 rounded-full overflow-hidden">
                                   <div
                                     className={`h-full rounded-full transition-all duration-500 ${getProgressColor(lead.status)}`}
                                     style={{ width: getProgressWidth(lead.status) }}
@@ -642,7 +642,7 @@ export const ManagerDashboard: React.FC<{ onExit: () => void }> = ({ onExit }) =
                           <td colSpan={5} className="p-8 text-center text-slate-400 text-sm">
                             {isLoading ? (
                               <div className="flex justify-center items-center gap-2">
-                                <RefreshCw className="animate-spin text-aqua-600" size={20} />
+                                <RefreshCw className="animate-spin text-cyan-300" size={20} />
                                 <span>Carregando dados...</span>
                               </div>
                             ) : "Nenhum lead encontrado."}

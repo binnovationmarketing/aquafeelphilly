@@ -63,15 +63,15 @@ const fmt = (n: number) =>
 const barColor = (sales: number): string => {
   if (sales < 2) return 'bg-red-400';
   if (sales < 4) return 'bg-yellow-400';
-  if (sales < 6) return 'bg-blue-500';
-  if (sales < 10) return 'bg-emerald-500';
+  if (sales < 6) return 'bg-blue-500/100';
+  if (sales < 10) return 'bg-emerald-500/100';
   return 'bg-gradient-to-r from-amber-400 to-yellow-300';
 };
 
 // ─── milestone config ─────────────────────────────────────────────────────────
 
 const MILESTONES = [
-  { at: 2,  label: 'Ativo',         icon: 'pin',    color: 'text-slate-500'  },
+  { at: 2,  label: 'Ativo',         icon: 'pin',    color: 'text-slate-400'  },
   { at: 4,  label: 'Meta Regional', icon: 'pin',    color: 'text-blue-500'   },
   { at: 6,  label: 'GOLD',          icon: 'star',   color: 'text-emerald-500' },
   { at: 10, label: 'Viagem',        icon: 'trophy', color: 'text-amber-500'  },
@@ -100,7 +100,7 @@ const TimelineCard: React.FC<{ analyst: Analyst; stats: AnalystStats }> = ({ ana
     analyst.role;
 
   return (
-    <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-5">
+    <div className="bg-white/[0.04] rounded-2xl border border-white/10 shadow-sm p-5">
       {/* header */}
       <div className="flex items-center gap-3 mb-4">
         <div className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold shrink-0 ${colors.badge}`}>
@@ -111,14 +111,14 @@ const TimelineCard: React.FC<{ analyst: Analyst; stats: AnalystStats }> = ({ ana
           )}
         </div>
         <div className="min-w-0 flex-1">
-          <p className="font-bold text-slate-800 truncate">{displayName(analyst)}</p>
+          <p className="font-bold text-slate-100 truncate">{displayName(analyst)}</p>
           <span className={`inline-block px-2 py-0.5 rounded-full text-xs font-semibold ${colors.badge}`}>
             {roleLabel}
           </span>
         </div>
         <div className="text-right shrink-0">
-          <p className="text-xs text-slate-500">Mês</p>
-          <p className="font-bold text-slate-800">{monthlySales} vendas</p>
+          <p className="text-xs text-slate-400">Mês</p>
+          <p className="font-bold text-slate-100">{monthlySales} vendas</p>
         </div>
       </div>
 
@@ -141,7 +141,7 @@ const TimelineCard: React.FC<{ analyst: Analyst; stats: AnalystStats }> = ({ ana
         </div>
 
         {/* track */}
-        <div className="relative h-3 bg-slate-100 rounded-full overflow-visible">
+        <div className="relative h-3 bg-white/10 rounded-full overflow-visible">
           {/* fill */}
           <div
             className={`h-full rounded-full transition-all duration-500 ${barColor(monthlySales)}`}
@@ -160,8 +160,8 @@ const TimelineCard: React.FC<{ analyst: Analyst; stats: AnalystStats }> = ({ ana
               >
                 <div className={`w-3 h-3 rounded-full border-2 flex items-center justify-center z-10
                   ${reached
-                    ? 'border-white bg-white shadow-md'
-                    : 'border-slate-300 bg-white'
+                    ? 'border-white bg-white/[0.04] shadow-md'
+                    : 'border-slate-300 bg-white/[0.04]'
                   }`}
                 >
                   <MilestoneIcon icon={m.icon} className={reached ? m.color : 'text-slate-300'} />
@@ -176,7 +176,7 @@ const TimelineCard: React.FC<{ analyst: Analyst; stats: AnalystStats }> = ({ ana
               className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 z-20"
               style={{ left: `${pct}%` }}
             >
-              <div className="w-4 h-4 rounded-full bg-white border-2 border-slate-700 shadow-lg flex items-center justify-center">
+              <div className="w-4 h-4 rounded-full bg-white/[0.04] border-2 border-slate-700 shadow-lg flex items-center justify-center">
                 <div className="w-2 h-2 rounded-full bg-slate-700" />
               </div>
             </div>
@@ -199,21 +199,21 @@ const TimelineCard: React.FC<{ analyst: Analyst; stats: AnalystStats }> = ({ ana
 
       {/* stats row */}
       <div className="grid grid-cols-2 gap-3">
-        <div className="bg-slate-50 rounded-xl p-3">
+        <div className="bg-white/5 rounded-xl p-3">
           <div className="flex items-center gap-1.5 mb-1">
             <Calendar size={12} className="text-slate-400" />
-            <span className="text-[11px] font-semibold text-slate-500 uppercase tracking-wide">Mês</span>
+            <span className="text-[11px] font-semibold text-slate-400 uppercase tracking-wide">Mês</span>
           </div>
-          <p className="text-sm font-bold text-slate-700">{monthlySales} vendas</p>
-          <p className="text-xs text-emerald-600 font-semibold">{fmt(monthlyEarnings)}</p>
+          <p className="text-sm font-bold text-slate-200">{monthlySales} vendas</p>
+          <p className="text-xs text-emerald-300 font-semibold">{fmt(monthlyEarnings)}</p>
         </div>
-        <div className="bg-slate-50 rounded-xl p-3">
+        <div className="bg-white/5 rounded-xl p-3">
           <div className="flex items-center gap-1.5 mb-1">
             <TrendingUp size={12} className="text-slate-400" />
-            <span className="text-[11px] font-semibold text-slate-500 uppercase tracking-wide">Ano</span>
+            <span className="text-[11px] font-semibold text-slate-400 uppercase tracking-wide">Ano</span>
           </div>
-          <p className="text-sm font-bold text-slate-700">{annualSales} vendas</p>
-          <p className="text-xs text-emerald-600 font-semibold">{fmt(annualEarnings)}</p>
+          <p className="text-sm font-bold text-slate-200">{annualSales} vendas</p>
+          <p className="text-xs text-emerald-300 font-semibold">{fmt(annualEarnings)}</p>
         </div>
       </div>
     </div>
@@ -234,10 +234,10 @@ const StatsHeader: React.FC<{
   )[0];
 
   const cards = [
-    { icon: <TrendingUp size={18} className="text-emerald-600" />, bg: 'bg-emerald-50', label: 'Vendas Equipe (Mês)', value: String(totalSales) },
-    { icon: <DollarSign size={18} className="text-blue-600" />, bg: 'bg-blue-50', label: 'Total Gerado (Mês)', value: fmt(totalEarnings) },
-    { icon: <Users size={18} className="text-indigo-600" />, bg: 'bg-indigo-50', label: 'Média por Analista', value: avg.toFixed(1) },
-    { icon: <Star size={18} className="text-amber-600" />, bg: 'bg-amber-50', label: 'Top Performer', value: top ? displayName(top) : '—' },
+    { icon: <TrendingUp size={18} className="text-emerald-300" />, bg: 'bg-emerald-500/10', label: 'Vendas Equipe (Mês)', value: String(totalSales) },
+    { icon: <DollarSign size={18} className="text-blue-300" />, bg: 'bg-blue-500/10', label: 'Total Gerado (Mês)', value: fmt(totalEarnings) },
+    { icon: <Users size={18} className="text-indigo-300" />, bg: 'bg-indigo-500/10', label: 'Média por Analista', value: avg.toFixed(1) },
+    { icon: <Star size={18} className="text-amber-300" />, bg: 'bg-amber-500/10', label: 'Top Performer', value: top ? displayName(top) : '—' },
   ];
 
   return (
@@ -246,8 +246,8 @@ const StatsHeader: React.FC<{
         <div key={c.label} className={`${c.bg} rounded-2xl p-4 flex items-start gap-3`}>
           <div className="mt-0.5">{c.icon}</div>
           <div className="min-w-0">
-            <p className="text-xs text-slate-500 font-medium">{c.label}</p>
-            <p className="text-lg font-bold text-slate-800 truncate">{c.value}</p>
+            <p className="text-xs text-slate-400 font-medium">{c.label}</p>
+            <p className="text-lg font-bold text-slate-100 truncate">{c.value}</p>
           </div>
         </div>
       ))}
@@ -422,8 +422,8 @@ export const AdminPanel: React.FC = () => {
   if (loading) {
     return (
       <div className="p-10 text-center">
-        <div className="inline-block w-8 h-8 border-4 border-indigo-200 border-t-indigo-600 rounded-full animate-spin mb-3" />
-        <p className="text-slate-500 font-medium">Carregando equipe...</p>
+        <div className="inline-block w-8 h-8 border-4 border-indigo-500/30 border-t-indigo-600 rounded-full animate-spin mb-3" />
+        <p className="text-slate-400 font-medium">Carregando equipe...</p>
       </div>
     );
   }
@@ -431,8 +431,8 @@ export const AdminPanel: React.FC = () => {
   if (error) {
     return (
       <div className="p-10 text-center">
-        <p className="text-red-600 font-semibold mb-2">Erro ao carregar dados</p>
-        <p className="text-slate-500 text-sm mb-4">{error}</p>
+        <p className="text-red-300 font-semibold mb-2">Erro ao carregar dados</p>
+        <p className="text-slate-400 text-sm mb-4">{error}</p>
         <button
           onClick={loadAll}
           className="px-4 py-2 bg-indigo-600 text-white rounded-lg text-sm font-semibold hover:bg-indigo-700 transition-colors"
@@ -446,13 +446,13 @@ export const AdminPanel: React.FC = () => {
   return (
     <div className="space-y-6">
       {/* tab bar */}
-      <div className="flex gap-2 bg-slate-100 p-1 rounded-xl w-fit">
+      <div className="flex gap-2 bg-white/10 p-1 rounded-xl w-fit">
         <button
           onClick={() => setTab('equipe')}
           className={`flex items-center gap-2 px-5 py-2 rounded-lg text-sm font-semibold transition-all ${
             tab === 'equipe'
-              ? 'bg-white text-slate-800 shadow-sm'
-              : 'text-slate-500 hover:text-slate-700'
+              ? 'bg-white/[0.04] text-slate-100 shadow-sm'
+              : 'text-slate-400 hover:text-slate-200'
           }`}
         >
           <Users size={15} />
@@ -462,8 +462,8 @@ export const AdminPanel: React.FC = () => {
           onClick={() => setTab('cargos')}
           className={`flex items-center gap-2 px-5 py-2 rounded-lg text-sm font-semibold transition-all ${
             tab === 'cargos'
-              ? 'bg-white text-slate-800 shadow-sm'
-              : 'text-slate-500 hover:text-slate-700'
+              ? 'bg-white/[0.04] text-slate-100 shadow-sm'
+              : 'text-slate-400 hover:text-slate-200'
           }`}
         >
           <Shield size={15} />
@@ -489,33 +489,33 @@ export const AdminPanel: React.FC = () => {
 
       {/* ── CARGOS TAB ── */}
       {tab === 'cargos' && (
-        <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
-          <div className="p-6 border-b border-slate-100 flex items-center gap-3">
-            <div className="w-10 h-10 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center">
+        <div className="bg-white/[0.04] rounded-2xl border border-white/10 shadow-sm overflow-hidden">
+          <div className="p-6 border-b border-white/10 flex items-center gap-3">
+            <div className="w-10 h-10 rounded-full bg-indigo-500/20 text-indigo-300 flex items-center justify-center">
               <Shield size={20} />
             </div>
             <div>
-              <h2 className="text-lg font-bold text-slate-800">Gestão de Equipe (Admin)</h2>
-              <p className="text-sm text-slate-500">Altere cargos e permissões dos usuários do sistema.</p>
+              <h2 className="text-lg font-bold text-slate-100">Gestão de Equipe (Admin)</h2>
+              <p className="text-sm text-slate-400">Altere cargos e permissões dos usuários do sistema.</p>
             </div>
           </div>
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse">
               <thead>
-                <tr className="bg-slate-50 text-slate-500 text-xs uppercase tracking-wider font-bold">
-                  <th className="p-4 border-b border-slate-200">Usuário</th>
-                  <th className="p-4 border-b border-slate-200">Email</th>
-                  <th className="p-4 border-b border-slate-200">Cargo Atual</th>
-                  {isAdminUser && <th className="p-4 border-b border-slate-200 text-center">Senha</th>}
-                  <th className="p-4 border-b border-slate-200 text-right">Ações</th>
+                <tr className="bg-white/5 text-slate-400 text-xs uppercase tracking-wider font-bold">
+                  <th className="p-4 border-b border-white/10">Usuário</th>
+                  <th className="p-4 border-b border-white/10">Email</th>
+                  <th className="p-4 border-b border-white/10">Cargo Atual</th>
+                  {isAdminUser && <th className="p-4 border-b border-white/10 text-center">Senha</th>}
+                  <th className="p-4 border-b border-white/10 text-right">Ações</th>
                 </tr>
               </thead>
               <tbody>
                 {analysts.map((analyst) => (
-                  <tr key={analyst.id} className="hover:bg-slate-50 border-b border-slate-100">
+                  <tr key={analyst.id} className="hover:bg-white/5 border-b border-white/10">
                     <td className="p-4">
                       <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-full bg-slate-200 overflow-hidden flex items-center justify-center text-slate-500">
+                        <div className="w-8 h-8 rounded-full bg-white/10 overflow-hidden flex items-center justify-center text-slate-400">
                           {analyst.avatar_url ? (
                             <img src={analyst.avatar_url} alt="Avatar" className="w-full h-full object-cover" />
                           ) : (
@@ -523,14 +523,14 @@ export const AdminPanel: React.FC = () => {
                           )}
                         </div>
                         <div>
-                          <p className="font-bold text-slate-800">{displayName(analyst)}</p>
-                          <p className="text-xs text-slate-500">ID: {analyst.id.substring(0, 8)}...</p>
+                          <p className="font-bold text-slate-100">{displayName(analyst)}</p>
+                          <p className="text-xs text-slate-400">ID: {analyst.id.substring(0, 8)}...</p>
                         </div>
                       </div>
                     </td>
-                    <td className="p-4 text-slate-600">{analyst.email}</td>
+                    <td className="p-4 text-slate-300">{analyst.email}</td>
                     <td className="p-4">
-                      <span className="px-3 py-1 rounded-full text-xs font-bold bg-slate-100 text-slate-700">
+                      <span className="px-3 py-1 rounded-full text-xs font-bold bg-white/10 text-slate-200">
                         {ROLE_LABELS[analyst.role as keyof typeof ROLE_LABELS] || analyst.role}
                       </span>
                     </td>
@@ -538,7 +538,7 @@ export const AdminPanel: React.FC = () => {
                       <td className="p-4 text-center">
                         <button
                           onClick={() => { setResetTarget(analyst); setResetPwd(''); setShowResetPwd(false); }}
-                          className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-amber-50 border border-amber-200 text-amber-700 text-xs font-bold hover:bg-amber-100 transition-colors"
+                          className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-amber-500/10 border border-amber-500/30 text-amber-300 text-xs font-bold hover:bg-amber-500/20 transition-colors"
                           title="Redefinir senha"
                         >
                           <KeyRound size={13} />
@@ -550,7 +550,7 @@ export const AdminPanel: React.FC = () => {
                       <select
                         value={analyst.role}
                         onChange={(e) => updateRole(analyst.id, e.target.value)}
-                        className="bg-white border border-slate-300 text-slate-700 text-sm rounded-lg focus:ring-aqua-500 focus:border-aqua-500 block p-2 outline-none ml-auto"
+                        className="bg-white/[0.04] border border-slate-300 text-slate-200 text-sm rounded-lg focus:ring-aqua-500 focus:border-aqua-500 block p-2 outline-none ml-auto"
                       >
                         {Object.entries(ROLE_LABELS).map(([key, label]) => (
                           <option key={key} value={key}>{label}</option>
@@ -568,14 +568,14 @@ export const AdminPanel: React.FC = () => {
       {/* ── Admin Password Reset Modal ── */}
       {resetTarget && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[300] p-4">
-          <div className="bg-white rounded-2xl shadow-2xl max-w-sm w-full p-6">
+          <div className="bg-white/[0.04] rounded-2xl shadow-2xl max-w-sm w-full p-6">
             <div className="flex items-center gap-3 mb-5">
-              <div className="w-10 h-10 rounded-full bg-amber-100 text-amber-600 flex items-center justify-center">
+              <div className="w-10 h-10 rounded-full bg-amber-500/20 text-amber-300 flex items-center justify-center">
                 <KeyRound size={20} />
               </div>
               <div>
-                <h3 className="font-black text-slate-900">Redefinir Senha</h3>
-                <p className="text-xs text-slate-500">{displayName(resetTarget)} — {resetTarget.email}</p>
+                <h3 className="font-black text-white">Redefinir Senha</h3>
+                <p className="text-xs text-slate-400">{displayName(resetTarget)} — {resetTarget.email}</p>
               </div>
             </div>
 
@@ -585,13 +585,13 @@ export const AdminPanel: React.FC = () => {
                 value={resetPwd}
                 onChange={(e) => setResetPwd(e.target.value)}
                 placeholder="Nova senha (mín. 6 caracteres)"
-                className="w-full rounded-xl px-4 py-3 pr-11 border border-slate-200 focus:outline-none focus:ring-2 focus:ring-amber-400 text-sm font-medium"
+                className="w-full rounded-xl px-4 py-3 pr-11 border border-white/10 focus:outline-none focus:ring-2 focus:ring-amber-400 text-sm font-medium"
                 autoFocus
               />
               <button
                 type="button"
                 onClick={() => setShowResetPwd(v => !v)}
-                className="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-slate-700"
+                className="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-slate-200"
               >
                 {showResetPwd ? <EyeOff size={16} /> : <Eye size={16} />}
               </button>
@@ -600,14 +600,14 @@ export const AdminPanel: React.FC = () => {
             <div className="flex gap-2">
               <button
                 onClick={() => setResetTarget(null)}
-                className="flex-1 py-2.5 rounded-xl border border-slate-200 text-slate-600 font-bold text-sm hover:bg-slate-50 transition-colors"
+                className="flex-1 py-2.5 rounded-xl border border-white/10 text-slate-300 font-bold text-sm hover:bg-white/5 transition-colors"
               >
                 Cancelar
               </button>
               <button
                 onClick={handleResetPassword}
                 disabled={resetting || resetPwd.length < 6}
-                className="flex-1 py-2.5 rounded-xl bg-amber-500 text-white font-black text-sm hover:bg-amber-600 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 transition-colors"
+                className="flex-1 py-2.5 rounded-xl bg-amber-500/100 text-white font-black text-sm hover:bg-amber-600 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 transition-colors"
               >
                 {resetting ? <Loader2 size={16} className="animate-spin" /> : <KeyRound size={16} />}
                 {resetting ? 'Salvando...' : 'Salvar'}

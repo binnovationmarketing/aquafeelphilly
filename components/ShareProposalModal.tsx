@@ -110,12 +110,12 @@ export const ShareProposalModal: React.FC<ShareProposalModalProps> = ({
 
   return (
     <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-3xl shadow-2xl max-w-lg w-full overflow-hidden animate-in fade-in zoom-in duration-200">
+      <div className="bg-white/[0.04] rounded-3xl shadow-2xl max-w-lg w-full overflow-hidden animate-in fade-in zoom-in duration-200">
 
         {/* Header */}
         <div className="bg-gradient-to-r from-[#020d1a] to-[#0a1f35] px-6 py-5 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="p-2 bg-aqua-500/20 rounded-xl">
+            <div className="p-2 bg-cyan-500/100/20 rounded-xl">
               <QrCode size={20} className="text-aqua-400" />
             </div>
             <div>
@@ -136,9 +136,9 @@ export const ShareProposalModal: React.FC<ShareProposalModalProps> = ({
         <div className="p-6 space-y-5">
 
           {/* 24h expiry badge */}
-          <div className="flex items-center gap-2 px-4 py-3 bg-amber-50 border border-amber-200 rounded-xl">
-            <Clock size={15} className="text-amber-600 shrink-0" />
-            <p className="text-xs text-amber-700 font-medium">
+          <div className="flex items-center gap-2 px-4 py-3 bg-amber-500/10 border border-amber-500/30 rounded-xl">
+            <Clock size={15} className="text-amber-300 shrink-0" />
+            <p className="text-xs text-amber-300 font-medium">
               {settingExpiry
                 ? 'Definindo prazo de acesso...'
                 : `Link ativo por 24 horas — expira em ${expiryLabel}`}
@@ -146,27 +146,27 @@ export const ShareProposalModal: React.FC<ShareProposalModalProps> = ({
           </div>
 
           {/* Privacy badge */}
-          <div className="flex items-center gap-2 px-4 py-3 bg-emerald-50 border border-emerald-200 rounded-xl">
-            <Shield size={16} className="text-emerald-600 shrink-0" />
-            <p className="text-xs text-emerald-700 font-medium">
+          <div className="flex items-center gap-2 px-4 py-3 bg-emerald-500/10 border border-emerald-500/30 rounded-xl">
+            <Shield size={16} className="text-emerald-300 shrink-0" />
+            <p className="text-xs text-emerald-300 font-medium">
               Link seguro — nenhum dado pessoal exposto. Apenas um ID único e nome de referência.
             </p>
           </div>
 
           {/* Link preview */}
           <div>
-            <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5 flex items-center gap-1">
+            <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1.5 flex items-center gap-1">
               <Link2 size={11} /> Link Gerado
             </label>
             <div className="flex gap-2">
-              <div className="flex-1 px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-500 font-mono truncate select-all">
+              <div className="flex-1 px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-xs text-slate-400 font-mono truncate select-all">
                 {proposalLink}
               </div>
               <button
                 onClick={handleCopy}
                 className={`px-4 py-3 rounded-xl font-bold text-xs flex items-center gap-2 transition-all shrink-0 ${copied
-                  ? 'bg-emerald-500 text-white'
-                  : 'bg-aqua-600 hover:bg-aqua-500 text-white shadow-md shadow-aqua-500/30'
+                  ? 'bg-emerald-500/100 text-white'
+                  : 'bg-aqua-600 hover:bg-cyan-500/100 text-white shadow-md shadow-aqua-500/30'
                 }`}
               >
                 {copied ? <Check size={14} /> : <Copy size={14} />}
@@ -177,7 +177,7 @@ export const ShareProposalModal: React.FC<ShareProposalModalProps> = ({
 
           {/* QR Code */}
           <div className="flex flex-col items-center gap-4">
-            <div className="p-4 bg-white border-2 border-slate-100 rounded-2xl shadow-inner">
+            <div className="p-4 bg-white/[0.04] border-2 border-white/10 rounded-2xl shadow-inner">
               <QRCodeSVG
                 id="proposal-qr-svg"
                 value={proposalLink}

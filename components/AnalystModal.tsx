@@ -72,8 +72,8 @@ export const AnalystModal: React.FC<AnalystModalProps> = ({ isOpen, onClose, lan
       <div className="relative w-full max-w-lg bg-white/10 backdrop-blur-2xl border border-white/20 rounded-[2.5rem] p-8 md:p-10 shadow-[0_50px_100px_rgba(0,0,0,0.5)] animate-in zoom-in-95 fade-in duration-500 overflow-hidden">
         
         {/* Background Decorativo Interno */}
-        <div className="absolute -top-24 -right-24 w-48 h-48 bg-aqua-500/10 rounded-full blur-3xl"></div>
-        <div className="absolute -bottom-24 -left-24 w-48 h-48 bg-blue-500/10 rounded-full blur-3xl"></div>
+        <div className="absolute -top-24 -right-24 w-48 h-48 bg-cyan-500/100/10 rounded-full blur-3xl"></div>
+        <div className="absolute -bottom-24 -left-24 w-48 h-48 bg-blue-500/100/10 rounded-full blur-3xl"></div>
 
         {!isConfirming ? (
           <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
@@ -102,7 +102,7 @@ export const AnalystModal: React.FC<AnalystModalProps> = ({ isOpen, onClose, lan
                   </div>
                   <div className="flex-1">
                     <div className="font-bold text-white text-lg group-hover:text-aqua-400 transition-colors tracking-tight">{analyst.name}</div>
-                    <div className="text-xs text-slate-500 font-bold tracking-widest uppercase mt-1 mb-2">Water Analyst</div>
+                    <div className="text-xs text-slate-400 font-bold tracking-widest uppercase mt-1 mb-2">Water Analyst</div>
                     <div className="flex items-center gap-3">
                       <button 
                         onClick={(e) => handlePhoneClick(e, analyst.phone)}
@@ -112,7 +112,7 @@ export const AnalystModal: React.FC<AnalystModalProps> = ({ isOpen, onClose, lan
                       </button>
                       <button 
                         onClick={(e) => handleWhatsAppClick(e, analyst)}
-                        className="flex items-center gap-1.5 text-xs font-bold text-emerald-400 hover:text-emerald-300 bg-emerald-500/10 hover:bg-emerald-500/20 px-2 py-1 rounded-lg transition-colors"
+                        className="flex items-center gap-1.5 text-xs font-bold text-emerald-400 hover:text-emerald-300 bg-emerald-500/100/10 hover:bg-emerald-500/100/20 px-2 py-1 rounded-lg transition-colors"
                       >
                         <MessageSquare size={12} /> WhatsApp
                       </button>

@@ -127,10 +127,10 @@ export const ClientAccessModal: React.FC<ClientAccessModalProps> = ({ onClose })
 
   return (
     <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-[100] p-4">
-      <div className="bg-white rounded-3xl shadow-2xl max-w-md w-full overflow-hidden relative">
+      <div className="bg-white/[0.04] rounded-3xl shadow-2xl max-w-md w-full overflow-hidden relative">
         <button 
           onClick={onClose}
-          className="absolute top-4 right-4 p-2 hover:bg-slate-100 rounded-full transition-colors z-10"
+          className="absolute top-4 right-4 p-2 hover:bg-white/10 rounded-full transition-colors z-10"
         >
           <X size={20} className="text-slate-400" />
         </button>
@@ -138,16 +138,16 @@ export const ClientAccessModal: React.FC<ClientAccessModalProps> = ({ onClose })
         {step === 'LOGIN' ? (
           <div className="p-8">
             <div className="text-center mb-8">
-              <div className="w-16 h-16 bg-blue-50 rounded-full flex items-center justify-center mx-auto mb-4">
-                <User size={32} className="text-blue-600" />
+              <div className="w-16 h-16 bg-blue-500/10 rounded-full flex items-center justify-center mx-auto mb-4">
+                <User size={32} className="text-blue-300" />
               </div>
-              <h2 className="text-2xl font-black text-slate-900">Client Access</h2>
-              <p className="text-slate-500 text-sm mt-2">Enter your email to access your client dashboard</p>
+              <h2 className="text-2xl font-black text-white">Client Access</h2>
+              <p className="text-slate-400 text-sm mt-2">Enter your email to access your client dashboard</p>
             </div>
 
             <form onSubmit={handleLogin} className="space-y-4">
               <div>
-                <label className="block text-xs font-bold text-slate-500 uppercase mb-1">Email Address</label>
+                <label className="block text-xs font-bold text-slate-400 uppercase mb-1">Email Address</label>
                 <div className="relative">
                   <Mail className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
                   <input 
@@ -155,14 +155,14 @@ export const ClientAccessModal: React.FC<ClientAccessModalProps> = ({ onClose })
                     required
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    className="w-full pl-10 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none font-medium text-slate-900"
+                    className="w-full pl-10 pr-4 py-3 bg-white/5 border border-white/10 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none font-medium text-white"
                     placeholder="client@example.com"
                   />
                 </div>
               </div>
 
               {error && (
-                <div className="text-red-500 text-xs font-bold bg-red-50 p-3 rounded-lg flex items-center gap-2">
+                <div className="text-red-500 text-xs font-bold bg-red-500/10 p-3 rounded-lg flex items-center gap-2">
                   <X size={14} /> {error}
                 </div>
               )}
@@ -190,20 +190,20 @@ export const ClientAccessModal: React.FC<ClientAccessModalProps> = ({ onClose })
               {/* Talk to Consultant Button */}
               <button 
                 onClick={openWhatsApp}
-                className="w-full bg-emerald-500 text-white font-bold py-4 rounded-xl hover:bg-emerald-600 transition-all shadow-lg shadow-emerald-200 flex items-center justify-center gap-2"
+                className="w-full bg-emerald-500/100 text-white font-bold py-4 rounded-xl hover:bg-emerald-600 transition-all shadow-lg shadow-emerald-200 flex items-center justify-center gap-2"
               >
                 <MessageCircle size={20} />
                 Talk to Consultant
               </button>
 
-              <div className="border-t border-slate-100 pt-6">
-                <h3 className="font-bold text-slate-900 mb-4 flex items-center gap-2">
-                  <User size={20} className="text-blue-600" />
+              <div className="border-t border-white/10 pt-6">
+                <h3 className="font-bold text-white mb-4 flex items-center gap-2">
+                  <User size={20} className="text-blue-300" />
                   Add Referral
                 </h3>
                 
                 {referralSuccess ? (
-                  <div className="bg-emerald-50 text-emerald-700 p-4 rounded-xl flex items-center gap-3 mb-4 animate-in fade-in slide-in-from-top-2">
+                  <div className="bg-emerald-500/10 text-emerald-300 p-4 rounded-xl flex items-center gap-3 mb-4 animate-in fade-in slide-in-from-top-2">
                     <CheckCircle size={24} />
                     <div>
                       <p className="font-bold">Referral Added!</p>
@@ -220,7 +220,7 @@ export const ClientAccessModal: React.FC<ClientAccessModalProps> = ({ onClose })
                           required
                           value={referral.name}
                           onChange={(e) => setReferral({...referral, name: e.target.value})}
-                          className="w-full pl-9 pr-3 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none text-sm"
+                          className="w-full pl-9 pr-3 py-3 bg-white/5 border border-white/10 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none text-sm"
                         />
                       </div>
                       <div className="relative">
@@ -230,7 +230,7 @@ export const ClientAccessModal: React.FC<ClientAccessModalProps> = ({ onClose })
                           required
                           value={referral.phone}
                           onChange={(e) => setReferral({...referral, phone: e.target.value})}
-                          className="w-full pl-9 pr-3 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none text-sm"
+                          className="w-full pl-9 pr-3 py-3 bg-white/5 border border-white/10 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none text-sm"
                         />
                       </div>
                     </div>
@@ -240,7 +240,7 @@ export const ClientAccessModal: React.FC<ClientAccessModalProps> = ({ onClose })
                         placeholder="Address" 
                         value={referral.address}
                         onChange={(e) => setReferral({...referral, address: e.target.value})}
-                        className="w-full pl-9 pr-3 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none text-sm"
+                        className="w-full pl-9 pr-3 py-3 bg-white/5 border border-white/10 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none text-sm"
                       />
                     </div>
                     <div className="relative">
@@ -250,7 +250,7 @@ export const ClientAccessModal: React.FC<ClientAccessModalProps> = ({ onClose })
                         placeholder="Appointment Date" 
                         value={referral.date}
                         onChange={(e) => setReferral({...referral, date: e.target.value})}
-                        className="w-full pl-10 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none text-sm text-slate-600"
+                        className="w-full pl-10 pr-4 py-3 bg-white/5 border border-white/10 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none text-sm text-slate-300"
                       />
                     </div>
                     
@@ -267,18 +267,18 @@ export const ClientAccessModal: React.FC<ClientAccessModalProps> = ({ onClose })
 
               {/* Recent Referrals List */}
               {client?.referrals && client.referrals.length > 0 && (
-                <div className="border-t border-slate-100 pt-6">
-                  <h4 className="text-xs font-bold text-slate-500 uppercase mb-3">Your Referrals</h4>
+                <div className="border-t border-white/10 pt-6">
+                  <h4 className="text-xs font-bold text-slate-400 uppercase mb-3">Your Referrals</h4>
                   <div className="space-y-2">
                     {client.referrals.map((ref: any, idx: number) => (
-                      <div key={idx} className="flex justify-between items-center p-3 bg-slate-50 rounded-lg border border-slate-100">
+                      <div key={idx} className="flex justify-between items-center p-3 bg-white/5 rounded-lg border border-white/10">
                         <div>
-                          <p className="text-sm font-bold text-slate-900">{ref.name}</p>
-                          <p className="text-xs text-slate-500">{ref.status}</p>
+                          <p className="text-sm font-bold text-white">{ref.name}</p>
+                          <p className="text-xs text-slate-400">{ref.status}</p>
                         </div>
                         <div className={`w-2 h-2 rounded-full ${
-                          ref.status === 'SOLD' ? 'bg-emerald-500' : 
-                          ref.status === 'CONTACTED' ? 'bg-blue-500' : 'bg-slate-300'
+                          ref.status === 'SOLD' ? 'bg-emerald-500/100' : 
+                          ref.status === 'CONTACTED' ? 'bg-blue-500/100' : 'bg-slate-300'
                         }`} />
                       </div>
                     ))}

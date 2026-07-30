@@ -55,7 +55,7 @@ const TreeNode: React.FC<{
         <span className={`text-[10px] font-black px-2 py-0.5 rounded-full ${colors.badge}`}>
           {ROLE_LABELS_PT[analyst.role]}
         </span>
-        <span className="text-[10px] font-bold text-emerald-600 whitespace-nowrap">
+        <span className="text-[10px] font-bold text-emerald-300 whitespace-nowrap">
           {fmt(analyst.total_earnings ?? 0)}
         </span>
         {children.length > 0 && (
@@ -66,7 +66,7 @@ const TreeNode: React.FC<{
         )}
       </div>
       {open && children.length > 0 && (
-        <div className="border-l-2 border-slate-100 ml-4 pl-0">
+        <div className="border-l-2 border-white/10 ml-4 pl-0">
           {children.map(child => (
             <TreeNode
               key={child.id}
@@ -169,24 +169,24 @@ export const HierarchyManager: React.FC = () => {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 bg-indigo-100 rounded-xl flex items-center justify-center">
-            <GitBranch size={20} className="text-indigo-600" />
+          <div className="w-10 h-10 bg-indigo-500/20 rounded-xl flex items-center justify-center">
+            <GitBranch size={20} className="text-indigo-300" />
           </div>
           <div>
-            <h2 className="text-xl font-black text-slate-900">Hierarquia da Equipe</h2>
+            <h2 className="text-xl font-black text-white">Hierarquia da Equipe</h2>
             <p className="text-xs text-slate-400">{analysts.length} analista{analysts.length !== 1 ? 's' : ''} ativos — defina cargo e patrocinador</p>
           </div>
         </div>
         <div className="flex items-center gap-2">
           <button
             onClick={() => setView('table')}
-            className={`px-3 py-1.5 text-xs font-bold rounded-lg transition-all ${view === 'table' ? 'bg-white text-slate-900 shadow-sm border border-slate-200' : 'text-slate-400 hover:text-slate-600'}`}
+            className={`px-3 py-1.5 text-xs font-bold rounded-lg transition-all ${view === 'table' ? 'bg-cyan-400 text-white shadow-sm border border-white/10' : 'text-slate-400 hover:text-slate-300'}`}
           >
             Tabela
           </button>
           <button
             onClick={() => setView('tree')}
-            className={`px-3 py-1.5 text-xs font-bold rounded-lg transition-all ${view === 'tree' ? 'bg-white text-slate-900 shadow-sm border border-slate-200' : 'text-slate-400 hover:text-slate-600'}`}
+            className={`px-3 py-1.5 text-xs font-bold rounded-lg transition-all ${view === 'tree' ? 'bg-cyan-400 text-white shadow-sm border border-white/10' : 'text-slate-400 hover:text-slate-300'}`}
           >
             🌳 Árvore
           </button>
@@ -194,9 +194,9 @@ export const HierarchyManager: React.FC = () => {
       </div>
 
       {/* Info banner */}
-      <div className="flex items-start gap-3 p-4 bg-blue-50 border border-blue-100 rounded-xl">
+      <div className="flex items-start gap-3 p-4 bg-blue-500/10 border border-blue-100 rounded-xl">
         <AlertCircle size={16} className="text-blue-500 mt-0.5 shrink-0" />
-        <p className="text-xs text-blue-700 font-medium">
+        <p className="text-xs text-blue-300 font-medium">
           <strong>Como funciona:</strong> Defina o cargo de cada analista e selecione quem o recrutou (Patrocinador).
           Quando uma venda for fechada, o bônus diferencial sobe automaticamente por toda a cadeia de patrocínio.
         </p>
@@ -204,8 +204,8 @@ export const HierarchyManager: React.FC = () => {
 
       {/* Tree View */}
       {view === 'tree' && (
-        <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
-          <h3 className="font-black text-slate-900 mb-4 text-sm">Árvore de Hierarquia</h3>
+        <div className="bg-white/[0.04] rounded-2xl border border-white/10 shadow-sm p-6">
+          <h3 className="font-black text-white mb-4 text-sm">Árvore de Hierarquia</h3>
           {roots.length === 0 ? (
             <p className="text-slate-400 text-sm text-center py-8">
               Nenhuma hierarquia definida ainda. Configure os patrocinadores na tabela.
@@ -228,9 +228,9 @@ export const HierarchyManager: React.FC = () => {
 
       {/* Table View */}
       {view === 'table' && (
-        <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+        <div className="bg-white/[0.04] rounded-2xl border border-white/10 shadow-sm overflow-hidden">
           {/* Search */}
-          <div className="p-4 border-b border-slate-100">
+          <div className="p-4 border-b border-white/10">
             <div className="relative">
               <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
               <input
@@ -238,7 +238,7 @@ export const HierarchyManager: React.FC = () => {
                 placeholder="Buscar analista..."
                 value={search}
                 onChange={e => setSearch(e.target.value)}
-                className="w-full pl-9 pr-4 py-2 text-sm bg-slate-50 border border-slate-200 rounded-xl outline-none focus:border-indigo-400"
+                className="w-full pl-9 pr-4 py-2 text-sm bg-white/5 border border-white/10 rounded-xl outline-none focus:border-indigo-400"
               />
             </div>
           </div>
@@ -249,7 +249,7 @@ export const HierarchyManager: React.FC = () => {
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
-                  <tr className="bg-slate-50 text-[10px] uppercase font-black text-slate-400">
+                  <tr className="bg-white/5 text-[10px] uppercase font-black text-slate-400">
                     <th className="px-5 py-3 text-left">Analista</th>
                     <th className="px-5 py-3 text-left">Cargo</th>
                     <th className="px-5 py-3 text-left">Patrocinador</th>
@@ -258,14 +258,14 @@ export const HierarchyManager: React.FC = () => {
                     <th className="px-5 py-3 text-right">Ações</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-50">
+                <tbody className="divide-y divide-white/5">
                   {filtered.map(analyst => {
                     const isEditing = editingId === analyst.id;
                     const sponsor = analysts.find(a => a.id === analyst.sponsored_by);
                     const colors = ROLE_COLORS[analyst.role] || ROLE_COLORS['analyst_jr'];
 
                     return (
-                      <tr key={analyst.id} className={`hover:bg-slate-50/80 transition-colors ${isEditing ? 'bg-indigo-50/50' : ''}`}>
+                      <tr key={analyst.id} className={`hover:bg-white/5/80 transition-colors ${isEditing ? 'bg-indigo-500/10/50' : ''}`}>
                         {/* Name */}
                         <td className="px-5 py-4">
                           <div className="flex items-center gap-3">
@@ -273,7 +273,7 @@ export const HierarchyManager: React.FC = () => {
                               {analyst.display_name?.[0]?.toUpperCase() ?? 'A'}
                             </div>
                             <div>
-                              <div className="font-bold text-slate-900">{analyst.display_name}</div>
+                              <div className="font-bold text-white">{analyst.display_name}</div>
                               <div className="text-[10px] text-slate-400">{analyst.email}</div>
                             </div>
                           </div>
@@ -285,7 +285,7 @@ export const HierarchyManager: React.FC = () => {
                             <select
                               value={editRole}
                               onChange={e => setEditRole(e.target.value as HierarchyRole)}
-                              className="text-xs border border-indigo-300 rounded-lg px-2 py-1.5 bg-white outline-none focus:ring-2 focus:ring-indigo-300 font-bold"
+                              className="text-xs border border-indigo-300 rounded-lg px-2 py-1.5 bg-white/[0.04] outline-none focus:ring-2 focus:ring-indigo-300 font-bold"
                             >
                               {ROLE_OPTIONS.map(r => (
                                 <option key={r} value={r}>
@@ -306,7 +306,7 @@ export const HierarchyManager: React.FC = () => {
                             <select
                               value={editSponsor}
                               onChange={e => setEditSponsor(e.target.value)}
-                              className="text-xs border border-indigo-300 rounded-lg px-2 py-1.5 bg-white outline-none focus:ring-2 focus:ring-indigo-300 font-bold max-w-[180px]"
+                              className="text-xs border border-indigo-300 rounded-lg px-2 py-1.5 bg-white/[0.04] outline-none focus:ring-2 focus:ring-indigo-300 font-bold max-w-[180px]"
                             >
                               <option value="">— Sem patrocinador —</option>
                               {analysts
@@ -318,18 +318,18 @@ export const HierarchyManager: React.FC = () => {
                                 ))}
                             </select>
                           ) : (
-                            <span className="text-slate-600 text-xs font-medium">
+                            <span className="text-slate-300 text-xs font-medium">
                               {sponsor ? sponsor.display_name : <span className="text-slate-300">—</span>}
                             </span>
                           )}
                         </td>
 
                         {/* Sales */}
-                        <td className="px-5 py-4 text-right font-black text-slate-900">{analyst.total_sales}</td>
+                        <td className="px-5 py-4 text-right font-black text-white">{analyst.total_sales}</td>
 
                         {/* Earnings */}
                         <td className="px-5 py-4 text-right">
-                          <div className="font-bold text-emerald-600">{fmt(analyst.total_earnings)}</div>
+                          <div className="font-bold text-emerald-300">{fmt(analyst.total_earnings)}</div>
                           <div className="text-[10px] text-slate-400">
                             P:{fmt(analyst.personal_commission)} R:{fmt(analyst.recruitment_bonus)} D:{fmt(analyst.differential_bonus)}
                           </div>
@@ -341,14 +341,14 @@ export const HierarchyManager: React.FC = () => {
                             <div className="flex items-center gap-2 justify-end">
                               <button
                                 onClick={() => setEditingId(null)}
-                                className="text-xs text-slate-400 hover:text-slate-600 font-bold px-2 py-1"
+                                className="text-xs text-slate-400 hover:text-slate-300 font-bold px-2 py-1"
                               >
                                 Cancelar
                               </button>
                               <button
                                 onClick={() => saveEdit(analyst.id)}
                                 disabled={saving}
-                                className="text-xs bg-indigo-600 text-white font-bold px-3 py-1.5 rounded-lg hover:bg-indigo-500 flex items-center gap-1 disabled:opacity-50"
+                                className="text-xs bg-indigo-600 text-white font-bold px-3 py-1.5 rounded-lg hover:bg-indigo-500/100 flex items-center gap-1 disabled:opacity-50"
                               >
                                 <Save size={12} />
                                 {saving ? 'Salvando...' : 'Salvar'}
@@ -357,7 +357,7 @@ export const HierarchyManager: React.FC = () => {
                           ) : (
                             <button
                               onClick={() => startEdit(analyst)}
-                              className="text-xs text-indigo-600 hover:text-indigo-800 font-bold px-3 py-1.5 rounded-lg hover:bg-indigo-50 transition-colors border border-indigo-100"
+                              className="text-xs text-indigo-300 hover:text-indigo-800 font-bold px-3 py-1.5 rounded-lg hover:bg-indigo-500/10 transition-colors border border-indigo-100"
                             >
                               Editar
                             </button>
