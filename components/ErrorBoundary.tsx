@@ -31,25 +31,25 @@ export class ErrorBoundary extends Component<Props, State> {
       }
 
       return (
-        <div className="min-h-screen flex items-center justify-center bg-slate-50 p-4">
-          <div className="bg-white p-8 rounded-2xl shadow-xl max-w-md w-full text-center border border-red-100">
-            <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4 text-red-500 text-3xl font-bold">
+        <div className="min-h-screen flex items-center justify-center bg-[#020617] p-4 font-sans">
+          <div className="bg-white/[0.04] backdrop-blur-xl p-8 rounded-3xl max-w-md w-full text-center border border-white/10" style={{ boxShadow: '0 40px 80px -30px rgba(2,6,23,0.9)' }}>
+            <div className="w-16 h-16 bg-red-500/15 rounded-full flex items-center justify-center mx-auto mb-4 text-red-300 text-3xl font-bold">
               !
             </div>
-            <h1 className="text-xl font-bold text-slate-900 mb-2">Something went wrong</h1>
-            <p className="text-slate-500 mb-6 text-sm">
-              We encountered an unexpected error. Please try refreshing the page.
+            <h1 className="font-serif text-2xl font-black text-white mb-2">Algo deu errado</h1>
+            <p className="text-slate-400 mb-6 text-sm">
+              Encontramos um erro inesperado. Tente atualizar a página.
             </p>
-            <div className="bg-slate-100 p-4 rounded-lg text-left mb-6 overflow-auto max-h-32">
-              <code className="text-xs text-slate-600 font-mono">
+            <div className="bg-black/30 border border-white/10 p-4 rounded-xl text-left mb-6 overflow-auto max-h-32">
+              <code className="text-xs text-slate-400 font-mono">
                 {this.state.error?.message}
               </code>
             </div>
             <button
               onClick={() => window.location.reload()}
-              className="bg-blue-600 text-white px-6 py-3 rounded-xl font-bold hover:bg-blue-700 transition-colors w-full"
+              className="bg-gradient-to-r from-cyan-400 to-cyan-300 text-slate-900 px-6 py-3 rounded-full font-black uppercase tracking-widest text-sm shadow-[0_10px_40px_-8px_rgba(34,211,238,0.7)] transition-all active:scale-[0.98] w-full"
             >
-              Reload Page
+              Recarregar
             </button>
           </div>
         </div>

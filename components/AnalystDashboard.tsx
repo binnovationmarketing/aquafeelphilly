@@ -406,7 +406,7 @@ export const AnalystDashboard: React.FC<{ onNewProposal: () => void }> = ({ onNe
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-white/5">
+      <div className="min-h-screen bg-[#020617]">
         {/* Skeleton Header */}
         <div className="bg-white/[0.04] border-b border-white/10 h-16" />
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
