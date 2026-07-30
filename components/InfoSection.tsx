@@ -156,9 +156,9 @@ const DAILY_ACTIVITIES = [
 ];
 
 const COLOR_MAP: Record<string, string> = {
-  red: 'bg-red-50 border-red-200 hover:border-red-400',
-  orange: 'bg-orange-50 border-orange-200 hover:border-orange-400',
-  yellow: 'bg-amber-50 border-amber-200 hover:border-amber-400',
+  red: 'bg-red-500/10 border-red-500/30 hover:border-red-400/60',
+  orange: 'bg-orange-500/10 border-orange-500/30 hover:border-orange-400/60',
+  yellow: 'bg-amber-500/10 border-amber-500/30 hover:border-amber-400/60',
 };
 
 export const InfoSection: React.FC<InfoSectionProps> = ({ lang, zipCode }) => {
@@ -186,12 +186,15 @@ export const InfoSection: React.FC<InfoSectionProps> = ({ lang, zipCode }) => {
     new Intl.NumberFormat('en-US').format(n);
 
   return (
-    <section className="py-20 bg-white px-4">
-      <div className="max-w-4xl mx-auto">
-        <div className="text-center mb-12">
-          <span className="text-aqua-600 font-bold tracking-wider uppercase text-sm">{t.label}</span>
-          <h2 className="text-3xl md:text-4xl font-serif font-bold text-slate-900 mt-2">{t.title}</h2>
-          <p className="text-slate-500 mt-4 max-w-2xl mx-auto">{t.subtitle}</p>
+    <section className="relative overflow-hidden bg-[#020617] py-24 px-4">
+      <div className="pointer-events-none absolute -right-20 top-1/4 h-96 w-96 rounded-full bg-red-600/10 blur-[120px]" />
+      <div className="relative z-10 mx-auto max-w-4xl">
+        <div className="mb-12 text-center">
+          <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-cyan-300/25 bg-cyan-400/10 px-4 py-1.5 text-[10px] font-black uppercase tracking-widest text-cyan-200">
+            <Microscope size={12} /> {t.label}
+          </div>
+          <h2 className="font-serif text-4xl font-black text-white md:text-5xl">{t.title}</h2>
+          <p className="mx-auto mt-4 max-w-2xl text-slate-400">{t.subtitle}</p>
         </div>
 
         {/* ── YouTube Trigger Card (replaces broken iframe) ─────────────────── */}
@@ -230,57 +233,57 @@ export const InfoSection: React.FC<InfoSectionProps> = ({ lang, zipCode }) => {
         <div className="flex flex-col gap-8 mb-12">
 
           {/* Card 1 – Regional Alert */}
-          <div className="bg-slate-50 p-6 rounded-2xl border border-slate-100 transform transition-all duration-500 hover:scale-[1.02] hover:shadow-2xl hover:bg-white hover:border-red-100 cursor-default group flex flex-col md:flex-row items-center gap-6">
+          <div className="group flex flex-col items-center gap-6 rounded-3xl border border-white/10 bg-white/[0.04] p-6 backdrop-blur-xl transition-all duration-500 hover:border-red-400/30 md:flex-row">
             <div className="flex items-center gap-4 md:w-1/3">
-              <div className="bg-red-100 p-4 rounded-full text-red-600 group-hover:bg-red-600 group-hover:text-white transition-colors duration-300 shrink-0">
+              <div className="shrink-0 rounded-2xl bg-red-500/15 p-4 text-red-300 transition-colors duration-300 group-hover:bg-red-500/25">
                 <MapPin size={32} />
               </div>
-              <h3 className="font-bold text-2xl text-slate-800 leading-tight">
-                {t.alertTitle} {zipCode && <span className="text-red-500 block text-lg">({zipCode})</span>}
+              <h3 className="font-serif text-2xl font-black leading-tight text-white">
+                {t.alertTitle} {zipCode && <span className="block text-lg text-red-300">({zipCode})</span>}
               </h3>
             </div>
             <div className="md:w-1/3">
-              <p className="text-slate-600 text-sm leading-relaxed">{t.alertBody}</p>
+              <p className="text-sm leading-relaxed text-slate-300">{t.alertBody}</p>
             </div>
-            <div className="md:w-1/3 w-full mt-4 md:mt-0">
+            <div className="mt-4 w-full md:mt-0 md:w-1/3">
               <a
                 href={ewgLink}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center justify-between p-4 bg-white rounded-xl shadow-sm hover:shadow-md transition-all group/link border border-slate-200 cursor-pointer w-full"
+                className="group/link flex w-full cursor-pointer items-center justify-between rounded-xl border border-white/10 bg-white/5 p-4 transition-all hover:bg-white/10"
               >
-                <span className="text-sm font-bold text-slate-700">VER RELATÓRIO EWG DO MEU ZIP CODE</span>
-                <ExternalLink size={18} className="text-aqua-500 group-hover/link:translate-x-1 transition-transform" />
+                <span className="text-sm font-bold text-slate-200">VER RELATÓRIO EWG DO MEU ZIP CODE</span>
+                <ExternalLink size={18} className="text-cyan-300 transition-transform group-hover/link:translate-x-1" />
               </a>
             </div>
           </div>
 
           {/* Card 2 – The Invisible Cycle + State Selector */}
-          <div className="bg-slate-50 p-6 rounded-2xl border border-slate-100 shadow-lg relative overflow-hidden group">
-            <div className="absolute top-0 right-0 w-64 h-64 bg-red-500/5 rounded-full blur-3xl group-hover:bg-red-500/10 transition-colors duration-700"></div>
+          <div className="group relative overflow-hidden rounded-3xl border border-white/10 bg-white/[0.04] p-6 backdrop-blur-xl">
+            <div className="pointer-events-none absolute right-0 top-0 h-64 w-64 rounded-full bg-red-500/10 blur-3xl" />
 
             {/* Header */}
-            <div className="flex items-center gap-3 mb-4 relative z-10">
-              <div className="bg-red-100 p-3 rounded-full text-red-600 animate-pulse">
+            <div className="relative z-10 mb-4 flex items-center gap-3">
+              <div className="animate-pulse rounded-2xl bg-red-500/15 p-3 text-red-300">
                 <AlertOctagon size={24} />
               </div>
               <div>
-                <h3 className="font-black text-xl text-slate-900 tracking-tight">O Ciclo Invisível</h3>
-                <p className="text-xs font-bold text-red-500 uppercase tracking-widest mt-0.5">Dados reais por estado (2013-2024)</p>
+                <h3 className="font-serif text-xl font-black tracking-tight text-white">O Ciclo Invisível</h3>
+                <p className="mt-0.5 text-xs font-bold uppercase tracking-widest text-red-300">Dados reais por estado (2013-2024)</p>
               </div>
             </div>
 
             {/* State Selector */}
             <div className="relative z-10 mb-4">
-              <p className="text-[10px] font-black uppercase text-slate-400 tracking-widest mb-2">Selecione seu estado:</p>
+              <p className="mb-2 text-[10px] font-black uppercase tracking-widest text-slate-400">Selecione seu estado:</p>
               <div className="flex flex-wrap gap-2">
                 {(Object.keys(STATE_DATA) as StateKey[]).map(key => (
                   <button
                     key={key}
                     onClick={() => setSelectedState(key)}
                     className={`px-3 py-1.5 rounded-lg text-xs font-black transition-all duration-200 border ${selectedState === key
-                      ? 'bg-red-600 text-white border-red-700 shadow-md shadow-red-200'
-                      : 'bg-white text-slate-600 border-slate-200 hover:border-red-300'
+                      ? 'bg-red-500 text-white border-red-400 shadow-md shadow-red-900/40'
+                      : 'bg-white/5 text-slate-300 border-white/10 hover:border-red-400/50'
                     }`}
                   >
                     {STATE_DATA[key].name.split(' ').map(w => w[0]).join('')} – {STATE_DATA[key].name}
@@ -323,7 +326,7 @@ export const InfoSection: React.FC<InfoSectionProps> = ({ lang, zipCode }) => {
                     <span className={`text-2xl ${activeActivity === activity.key ? 'brightness-200' : ''}`}>
                       {activity.icon}
                     </span>
-                    <span className={`text-[10px] font-black leading-tight ${activeActivity === activity.key ? 'text-white' : 'text-slate-700'}`}>
+                    <span className={`text-[10px] font-black leading-tight ${activeActivity === activity.key ? 'text-white' : 'text-slate-300'}`}>
                       {activity.label}
                     </span>
                   </button>
@@ -333,41 +336,41 @@ export const InfoSection: React.FC<InfoSectionProps> = ({ lang, zipCode }) => {
 
             {/* Contaminant popup for selected activity */}
             {activeActivity && (
-              <div className="relative z-10 mt-4 bg-white rounded-xl border border-red-200 shadow-lg p-4 animate-in fade-in slide-in-from-bottom-2 duration-200">
-                <div className="flex items-start justify-between mb-3">
+              <div className="relative z-10 mt-4 rounded-xl border border-red-400/25 bg-[#040b16]/80 p-4 backdrop-blur animate-in fade-in slide-in-from-bottom-2 duration-200">
+                <div className="mb-3 flex items-start justify-between">
                   <div>
-                    <p className="text-xs font-black uppercase tracking-widest text-red-600 mb-0.5 flex items-center gap-1">
+                    <p className="mb-0.5 flex items-center gap-1 text-xs font-black uppercase tracking-widest text-red-300">
                       <Microscope size={11} /> Contaminantes em {stateData.name}
                     </p>
-                    <p className="text-[10px] text-slate-500 font-medium">
+                    <p className="text-[10px] font-medium text-slate-400">
                       {DAILY_ACTIVITIES.find(a => a.key === activeActivity)?.risk}
                     </p>
                   </div>
-                  <button onClick={() => setActiveActivity(null)} className="text-slate-400 hover:text-red-500 transition-colors">
+                  <button onClick={() => setActiveActivity(null)} className="text-slate-500 transition-colors hover:text-red-400">
                     <X size={16} />
                   </button>
                 </div>
 
                 {activityContaminants.length === 0 ? (
-                  <p className="text-xs text-slate-500 italic">Nenhum contaminante crítico mapeado para esta atividade neste estado.</p>
+                  <p className="text-xs italic text-slate-400">Nenhum contaminante crítico mapeado para esta atividade neste estado.</p>
                 ) : (
-                  <div className="space-y-1.5 max-h-56 overflow-y-auto pr-1">
+                  <div className="max-h-56 space-y-1.5 overflow-y-auto pr-1">
                     {activityContaminants.map((c, i) => (
-                      <div key={i} className={`flex items-center justify-between rounded-lg px-3 py-2 ${c.aboveGuidelines ? 'bg-red-50 border border-red-100' : 'bg-slate-50 border border-slate-100'}`}>
+                      <div key={i} className={`flex items-center justify-between rounded-lg px-3 py-2 ${c.aboveGuidelines ? 'border border-red-500/25 bg-red-500/10' : 'border border-white/10 bg-white/5'}`}>
                         <div className="flex items-center gap-2">
                           {c.aboveGuidelines ? (
-                            <AlertTriangle size={12} className="text-red-500 shrink-0" />
+                            <AlertTriangle size={12} className="shrink-0 text-red-400" />
                           ) : (
-                            <AlertOctagon size={12} className="text-orange-400 shrink-0" />
+                            <AlertOctagon size={12} className="shrink-0 text-orange-300" />
                           )}
-                          <span className="text-[11px] font-bold text-slate-800">{c.name}</span>
+                          <span className="text-[11px] font-bold text-slate-100">{c.name}</span>
                           {c.aboveGuidelines && (
-                            <span className="text-[9px] bg-red-500 text-white font-black px-1.5 py-0.5 rounded uppercase tracking-wider">
+                            <span className="rounded bg-red-500 px-1.5 py-0.5 text-[9px] font-black uppercase tracking-wider text-white">
                               Acima do limite
                             </span>
                           )}
                         </div>
-                        <span className="text-[10px] font-bold text-slate-500 shrink-0 ml-2">
+                        <span className="ml-2 shrink-0 text-[10px] font-bold text-slate-400">
                           {fmt(c.peopleServed)} pessoas
                         </span>
                       </div>
@@ -379,7 +382,7 @@ export const InfoSection: React.FC<InfoSectionProps> = ({ lang, zipCode }) => {
                   href={stateData.ewgUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex items-center gap-1 text-[10px] font-black text-red-600 hover:text-red-700 mt-3 transition-colors"
+                  className="mt-3 flex items-center gap-1 text-[10px] font-black text-red-300 transition-colors hover:text-red-200"
                 >
                   Ver relatório completo de {stateData.name} no EWG <ExternalLink size={11} />
                 </a>
@@ -388,8 +391,8 @@ export const InfoSection: React.FC<InfoSectionProps> = ({ lang, zipCode }) => {
 
             {/* Bottom note */}
             {!activeActivity && (
-              <p className="relative z-10 text-[11px] text-slate-500 mt-4 font-medium leading-relaxed border-t border-slate-100 pt-3">
-                Mesmo fervendo a água, você <strong>concentra</strong> os metais pesados. A pele absorve toxinas pelo banho quente.
+              <p className="relative z-10 mt-4 border-t border-white/10 pt-3 text-[11px] font-medium leading-relaxed text-slate-400">
+                Mesmo fervendo a água, você <strong className="text-slate-200">concentra</strong> os metais pesados. A pele absorve toxinas pelo banho quente.
               </p>
             )}
           </div>
