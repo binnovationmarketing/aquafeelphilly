@@ -193,17 +193,17 @@ export const ComparisonCalculator: React.FC<ComparisonCalculatorProps> = ({
 
   return (
     <div className="max-w-7xl mx-auto px-4 md:px-6 relative z-20">
-      <div className="flex flex-col lg:flex-row shadow-2xl rounded-[2.5rem] overflow-hidden border border-slate-100 bg-white">
+      <div className="flex flex-col lg:flex-row shadow-2xl rounded-[2.5rem] overflow-hidden border border-white/10 bg-[#020617]">
 
         {/* LADO ESQUERDO (LOJA/MERCADO) */}
-        <div className="w-full lg:w-1/2 p-6 md:p-10 border-b lg:border-b-0 lg:border-r border-gray-100 flex flex-col justify-between bg-slate-50/50">
+        <div className="w-full lg:w-1/2 p-6 md:p-10 border-b lg:border-b-0 lg:border-r border-white/10 flex flex-col justify-between bg-white/[0.02]">
           <div>
             <div className="mb-8 flex items-center gap-4">
-              <div className="w-14 h-14 bg-white rounded-2xl flex items-center justify-center shadow-sm border border-slate-200 shrink-0">
-                <ShoppingCart className="text-slate-600" size={28} />
+              <div className="w-14 h-14 bg-white/5 rounded-2xl flex items-center justify-center border border-white/10 shrink-0">
+                <ShoppingCart className="text-slate-400" size={28} />
               </div>
               <div>
-                <h2 className="text-xl md:text-2xl font-black text-slate-900 uppercase tracking-tighter leading-none">
+                <h2 className="text-xl md:text-2xl font-black text-white uppercase tracking-tighter leading-none">
                   {lang === 'pt' ? 'Loja (Mercado)' : lang === 'es' ? 'Tienda (Mercado)' : 'Market / Store'}
                 </h2>
                 <p className="text-[9px] md:text-[10px] font-black text-slate-500 tracking-[0.2em] uppercase mt-2">
@@ -213,39 +213,39 @@ export const ComparisonCalculator: React.FC<ComparisonCalculatorProps> = ({
             </div>
 
             <div className="space-y-4 mb-8">
-              <div className="bg-white p-4 md:p-5 rounded-2xl border border-slate-200 shadow-sm transition-all focus-within:ring-2 focus-within:ring-blue-500">
+              <div className="bg-white/[0.04] p-4 md:p-5 rounded-2xl border border-white/10 transition-all focus-within:ring-2 focus-within:ring-blue-500/50">
                 <label className="flex items-center gap-2 text-[10px] md:text-xs font-black text-slate-400 uppercase tracking-widest mb-3">
-                  <Droplets size={14} className="text-blue-500" />
+                  <Droplets size={14} className="text-sky-400" />
                   {lang === 'pt' ? 'Gastos em Água Mensal' : lang === 'es' ? 'Gastos en Agua Mensual' : 'Monthly Water Expenses'}
                 </label>
                 <div className="relative">
-                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 font-bold">$</span>
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 font-bold">$</span>
                   <input
                     type="number"
                     value={customWater}
                     onChange={(e) => setCustomWater(Number(e.target.value))}
-                    className="w-full pl-8 pr-4 py-2 bg-slate-50 rounded-xl text-slate-900 font-black text-xl md:text-2xl outline-none"
+                    className="w-full pl-8 pr-4 py-2 bg-white/5 rounded-xl text-white font-black text-xl md:text-2xl outline-none"
                   />
                 </div>
               </div>
 
-              <div className="bg-white p-4 md:p-5 rounded-2xl border border-slate-200 shadow-sm transition-all focus-within:ring-2 focus-within:ring-emerald-500">
+              <div className="bg-white/[0.04] p-4 md:p-5 rounded-2xl border border-white/10 transition-all focus-within:ring-2 focus-within:ring-emerald-500/50">
                 <label className="flex items-center gap-2 text-[10px] md:text-xs font-black text-slate-400 uppercase tracking-widest mb-3">
-                  <ShoppingCart size={14} className="text-emerald-500" />
+                  <ShoppingCart size={14} className="text-emerald-400" />
                   {lang === 'pt' ? 'Gastos em Sabão Mensal' : lang === 'es' ? 'Gastos en Jabón Mensual' : 'Monthly Soap Expenses'}
                 </label>
                 <div className="relative">
-                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 font-bold">$</span>
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 font-bold">$</span>
                   <input
                     type="number"
                     value={customCleaning}
                     onChange={(e) => setCustomCleaning(Number(e.target.value))}
-                    className="w-full pl-8 pr-4 py-2 bg-slate-50 rounded-xl text-slate-900 font-black text-xl md:text-2xl outline-none"
+                    className="w-full pl-8 pr-4 py-2 bg-white/5 rounded-xl text-white font-black text-xl md:text-2xl outline-none"
                   />
                 </div>
               </div>
 
-              <ul className="text-xs text-slate-500 space-y-3 font-bold mt-6 px-2">
+              <ul className="text-xs text-slate-400 space-y-3 font-bold mt-6 px-2">
                 <li className="flex gap-3 items-start"><span className="shrink-0 pt-0.5">⚠️</span> <span>Água contaminada por plásticos e produtos químicos</span></li>
                 <li className="flex gap-3 items-start"><span className="shrink-0 pt-0.5">💸</span> <span>Sem retorno financeiro a longo prazo</span></li>
                 <li className="flex gap-3 items-start"><span className="shrink-0 pt-0.5">♾️</span> <span>Gasto por toda a vida</span></li>
@@ -300,11 +300,11 @@ export const ComparisonCalculator: React.FC<ComparisonCalculatorProps> = ({
                 <span className="mt-1">Sistema de RO Alcalino (Melhor sistema do mercado - Watts) (Garantia de 25 anos)</span>
               </li>
               <li className="flex gap-4 items-start text-sm md:text-base font-bold text-slate-200">
-                <div className="w-8 h-8 rounded-full bg-[#11caa0]/20 flex items-center justify-center shrink-0 mt-1">
-                  <CheckCircle size={16} className="text-[#11caa0]" />
+                <div className="w-8 h-8 rounded-full bg-[#22D3EE]/20 flex items-center justify-center shrink-0 mt-1">
+                  <CheckCircle size={16} className="text-[#22D3EE]" />
                 </div>
                 <div>
-                  <span className="text-[#11caa0] font-black uppercase tracking-widest text-[10px] block mb-1">Recomende e ganhe:</span>
+                  <span className="text-[#22D3EE] font-black uppercase tracking-widest text-[10px] block mb-1">Recomende e ganhe:</span>
                   Recomende 3 famílias Agora e receba 1 ano de Sabões orgânicos para toda a casa grátis
                 </div>
               </li>
