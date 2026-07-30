@@ -406,57 +406,57 @@ export const AnalystDashboard: React.FC<{ onNewProposal: () => void }> = ({ onNe
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-slate-50">
+      <div className="min-h-screen bg-white/5">
         {/* Skeleton Header */}
-        <div className="bg-white border-b border-slate-200 h-16" />
+        <div className="bg-white/[0.04] border-b border-white/10 h-16" />
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           {/* Skeleton welcome */}
           <div className="flex justify-between items-center mb-8">
             <div className="space-y-2">
-              <div className="h-7 w-48 bg-slate-200 rounded-lg animate-pulse" />
-              <div className="h-4 w-64 bg-slate-100 rounded animate-pulse" />
+              <div className="h-7 w-48 bg-white/10 rounded-lg animate-pulse" />
+              <div className="h-4 w-64 bg-white/10 rounded animate-pulse" />
             </div>
-            <div className="h-11 w-40 bg-slate-200 rounded-xl animate-pulse" />
+            <div className="h-11 w-40 bg-white/10 rounded-xl animate-pulse" />
           </div>
           {/* Skeleton KPI cards */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
             {[...Array(4)].map((_, i) => (
-              <div key={i} className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
+              <div key={i} className="bg-white/[0.04] p-6 rounded-2xl shadow-sm border border-white/10">
                 <div className="flex justify-between items-start mb-4">
                   <div className="space-y-2">
-                    <div className="h-3 w-24 bg-slate-100 rounded animate-pulse" />
-                    <div className="h-8 w-16 bg-slate-200 rounded-lg animate-pulse" />
-                    <div className="h-3 w-20 bg-slate-100 rounded animate-pulse" />
+                    <div className="h-3 w-24 bg-white/10 rounded animate-pulse" />
+                    <div className="h-8 w-16 bg-white/10 rounded-lg animate-pulse" />
+                    <div className="h-3 w-20 bg-white/10 rounded animate-pulse" />
                   </div>
-                  <div className="w-12 h-12 rounded-xl bg-slate-100 animate-pulse" />
+                  <div className="w-12 h-12 rounded-xl bg-white/10 animate-pulse" />
                 </div>
               </div>
             ))}
           </div>
           {/* Skeleton charts */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
-            <div className="lg:col-span-2 bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
-              <div className="h-5 w-40 bg-slate-200 rounded animate-pulse mb-6" />
-              <div className="h-64 bg-slate-100 rounded-xl animate-pulse" />
+            <div className="lg:col-span-2 bg-white/[0.04] p-6 rounded-2xl shadow-sm border border-white/10">
+              <div className="h-5 w-40 bg-white/10 rounded animate-pulse mb-6" />
+              <div className="h-64 bg-white/10 rounded-xl animate-pulse" />
             </div>
-            <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
-              <div className="h-5 w-28 bg-slate-200 rounded animate-pulse mb-6" />
-              <div className="h-64 bg-slate-100 rounded-full mx-auto animate-pulse" />
+            <div className="bg-white/[0.04] p-6 rounded-2xl shadow-sm border border-white/10">
+              <div className="h-5 w-28 bg-white/10 rounded animate-pulse mb-6" />
+              <div className="h-64 bg-white/10 rounded-full mx-auto animate-pulse" />
             </div>
           </div>
           {/* Skeleton table */}
-          <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
-            <div className="p-6 border-b border-slate-100">
-              <div className="h-5 w-32 bg-slate-200 rounded animate-pulse" />
+          <div className="bg-white/[0.04] rounded-2xl shadow-sm border border-white/10 overflow-hidden">
+            <div className="p-6 border-b border-white/10">
+              <div className="h-5 w-32 bg-white/10 rounded animate-pulse" />
             </div>
-            <div className="divide-y divide-slate-100">
+            <div className="divide-y divide-white/10">
               {[...Array(5)].map((_, i) => (
                 <div key={i} className="px-6 py-4 flex gap-4 items-center">
-                  <div className="h-4 flex-1 bg-slate-100 rounded animate-pulse" />
-                  <div className="h-6 w-20 bg-slate-100 rounded-full animate-pulse" />
-                  <div className="h-4 w-24 bg-slate-100 rounded animate-pulse" />
-                  <div className="h-4 w-32 bg-slate-100 rounded animate-pulse" />
-                  <div className="h-4 w-12 bg-slate-100 rounded animate-pulse" />
+                  <div className="h-4 flex-1 bg-white/10 rounded animate-pulse" />
+                  <div className="h-6 w-20 bg-white/10 rounded-full animate-pulse" />
+                  <div className="h-4 w-24 bg-white/10 rounded animate-pulse" />
+                  <div className="h-4 w-32 bg-white/10 rounded animate-pulse" />
+                  <div className="h-4 w-12 bg-white/10 rounded animate-pulse" />
                 </div>
               ))}
             </div>
@@ -467,29 +467,29 @@ export const AnalystDashboard: React.FC<{ onNewProposal: () => void }> = ({ onNe
   }
 
   return (
-    <div className="min-h-screen bg-slate-50 font-sans text-slate-900">
+    <div className="min-h-screen bg-[#020617] font-sans text-slate-100">
       {/* Header */}
-      <header className="bg-white border-b border-slate-200 sticky top-0 z-30">
+      <header className="bg-[#020617]/85 backdrop-blur-xl border-b border-white/10 sticky top-0 z-30">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
           <div className="flex items-center gap-4">
             <AquaFeelLogo width="120px" />
-            <span className="hidden md:inline-block h-6 w-px bg-slate-200"></span>
-            <div className="flex bg-slate-100 p-1 rounded-xl overflow-x-auto whitespace-nowrap hide-scrollbar">
+            <span className="hidden md:inline-block h-6 w-px bg-white/10"></span>
+            <div className="flex bg-white/10 p-1 rounded-xl overflow-x-auto whitespace-nowrap hide-scrollbar">
               <button
                 onClick={() => setActiveTab('COMMISSIONS')}
-                className={`px-3 py-2 text-xs font-bold rounded-lg transition-all flex items-center gap-1.5 ${activeTab === 'COMMISSIONS' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+                className={`px-3 py-2 text-xs font-bold rounded-lg transition-all flex items-center gap-1.5 ${activeTab === 'COMMISSIONS' ? 'bg-cyan-400 text-white shadow-sm' : 'text-slate-400 hover:text-slate-200'}`}
               >
                 <DollarSign size={14} /> Comissões
               </button>
               <button
                 onClick={() => setActiveTab('OVERVIEW')}
-                className={`px-3 py-2 text-xs font-bold rounded-lg transition-all flex items-center gap-1.5 ${activeTab === 'OVERVIEW' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+                className={`px-3 py-2 text-xs font-bold rounded-lg transition-all flex items-center gap-1.5 ${activeTab === 'OVERVIEW' ? 'bg-cyan-400 text-white shadow-sm' : 'text-slate-400 hover:text-slate-200'}`}
               >
                 <ClipboardList size={14} /> Leads
               </button>
               <button
                 onClick={() => setActiveTab('RECOMMENDATIONS')}
-                className={`px-3 py-2 text-xs font-bold rounded-lg transition-all flex items-center gap-1.5 ${activeTab === 'RECOMMENDATIONS' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+                className={`px-3 py-2 text-xs font-bold rounded-lg transition-all flex items-center gap-1.5 ${activeTab === 'RECOMMENDATIONS' ? 'bg-cyan-400 text-white shadow-sm' : 'text-slate-400 hover:text-slate-200'}`}
               >
                 <Users2 size={14} /> Recomendações
               </button>
@@ -498,32 +498,32 @@ export const AnalystDashboard: React.FC<{ onNewProposal: () => void }> = ({ onNe
                   onClick={() => setActiveTab('TEAM_MANAGEMENT')}
                   className={`px-3 py-2 text-xs font-bold rounded-lg transition-all flex items-center gap-1.5 ${activeTab === 'TEAM_MANAGEMENT'
                       ? 'bg-indigo-600 text-white shadow-sm'
-                      : 'text-slate-500 hover:text-slate-700'
+                      : 'text-slate-400 hover:text-slate-200'
                     }`}
                 >
                   <Shield size={14} /> Equipe
                 </button>
               )}
             </div>
-            <h1 className="md:hidden text-lg font-bold text-slate-700">Analyst Dashboard</h1>
+            <h1 className="md:hidden text-lg font-bold text-slate-200">Analyst Dashboard</h1>
           </div>
 
           <div className="flex items-center gap-4">
             <div className="text-right hidden sm:block">
-              <p className="text-sm font-bold text-slate-900">{profileData.full_name || user?.email}</p>
-              <p className="text-xs text-slate-500 uppercase tracking-wider">
+              <p className="text-sm font-bold text-white">{profileData.full_name || user?.email}</p>
+              <p className="text-xs text-slate-400 uppercase tracking-wider">
                 {profile?.role ? (ROLE_LABELS_PT[profile.role as HierarchyRole] ?? profile.role) : 'Analista'}
               </p>
             </div>
             <div
               onClick={() => setShowProfileModal(true)}
-              className="w-10 h-10 rounded-full bg-slate-200 border-2 border-aqua-500 flex items-center justify-center overflow-hidden cursor-pointer hover:shadow-lg transition-all"
+              className="w-10 h-10 rounded-full bg-white/10 border-2 border-aqua-500 flex items-center justify-center overflow-hidden cursor-pointer hover:shadow-lg transition-all"
               title="Editar Perfil"
             >
               {profileData.avatar_url ? (
                 <img src={profileData.avatar_url} alt="Profile" className="w-full h-full object-cover" />
               ) : (
-                <UserCog size={18} className="text-slate-500" />
+                <UserCog size={18} className="text-slate-400" />
               )}
             </div>
             <button
@@ -542,25 +542,25 @@ export const AnalystDashboard: React.FC<{ onNewProposal: () => void }> = ({ onNe
         {/* Welcome & Action */}
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-8">
           <div>
-            <h2 className="text-2xl font-black text-slate-900">Welcome back!</h2>
-            <p className="text-slate-500">Here's what's happening with your leads today.</p>
+            <h2 className="text-2xl font-black text-white">Welcome back!</h2>
+            <p className="text-slate-400">Here's what's happening with your leads today.</p>
           </div>
           <div className="flex items-center gap-2 sm:gap-3 w-full md:w-auto">
             <button
               onClick={() => setShowSignupLinkModal(true)}
-              className="flex-1 sm:flex-none flex items-center justify-center gap-2 border border-emerald-200 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 px-4 py-3 rounded-xl font-bold text-xs transition-all"
+              className="flex-1 sm:flex-none flex items-center justify-center gap-2 border border-emerald-500/30 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-300 px-4 py-3 rounded-xl font-bold text-xs transition-all"
             >
               <UserPlus size={15} /> Cadastro Cliente
             </button>
             <button
               onClick={() => setShowAnalystSignupModal(true)}
-              className="flex-1 sm:flex-none flex items-center justify-center gap-2 border border-blue-200 bg-blue-50 hover:bg-blue-100 text-blue-700 px-4 py-3 rounded-xl font-bold text-xs transition-all"
+              className="flex-1 sm:flex-none flex items-center justify-center gap-2 border border-blue-500/30 bg-blue-500/10 hover:bg-blue-500/20 text-blue-300 px-4 py-3 rounded-xl font-bold text-xs transition-all"
             >
               <UserPlus size={15} /> Cadastro Analista
             </button>
             <button
               onClick={onNewProposal}
-              className="flex-1 sm:flex-none flex items-center justify-center gap-2 bg-aqua-600 hover:bg-aqua-500 text-white px-4 sm:px-6 py-3 rounded-xl font-bold shadow-lg shadow-aqua-500/30 transition-all transform hover:-translate-y-1 active:scale-95 text-xs sm:text-sm"
+              className="flex-1 sm:flex-none flex items-center justify-center gap-2 bg-aqua-600 hover:bg-cyan-500/100 text-white px-4 sm:px-6 py-3 rounded-xl font-bold shadow-lg shadow-aqua-500/30 transition-all transform hover:-translate-y-1 active:scale-95 text-xs sm:text-sm"
             >
               <Plus size={18} /> Nova Proposta
             </button>
@@ -618,20 +618,20 @@ export const AnalystDashboard: React.FC<{ onNewProposal: () => void }> = ({ onNe
 
             {/* ── Upcoming Appointments ──────────────────────────────── */}
             {pendingTasks.filter(t => t.type === 'VISIT' && t.scheduled_for).length > 0 && (
-              <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden mb-8">
-                <div className="p-5 border-b border-slate-100 flex items-center gap-3">
-                  <div className="w-9 h-9 rounded-xl bg-aqua-50 flex items-center justify-center">
-                    <CalendarIcon size={18} className="text-aqua-600" />
+              <div className="bg-white/[0.04] rounded-2xl shadow-sm border border-white/10 overflow-hidden mb-8">
+                <div className="p-5 border-b border-white/10 flex items-center gap-3">
+                  <div className="w-9 h-9 rounded-xl bg-cyan-500/10 flex items-center justify-center">
+                    <CalendarIcon size={18} className="text-cyan-300" />
                   </div>
                   <div>
-                    <h3 className="font-bold text-slate-800">Agendamentos Próximos</h3>
-                    <p className="text-xs text-slate-500">Visitas e entrevistas confirmadas pelo portal</p>
+                    <h3 className="font-bold text-slate-100">Agendamentos Próximos</h3>
+                    <p className="text-xs text-slate-400">Visitas e entrevistas confirmadas pelo portal</p>
                   </div>
-                  <span className="ml-auto bg-aqua-100 text-aqua-700 text-xs font-black px-2.5 py-1 rounded-full">
+                  <span className="ml-auto bg-cyan-500/20 text-cyan-300 text-xs font-black px-2.5 py-1 rounded-full">
                     {pendingTasks.filter(t => t.type === 'VISIT' && t.scheduled_for).length}
                   </span>
                 </div>
-                <div className="divide-y divide-slate-50">
+                <div className="divide-y divide-white/5">
                   {pendingTasks
                     .filter(t => t.type === 'VISIT' && t.scheduled_for)
                     .slice(0, 10)
@@ -643,9 +643,9 @@ export const AnalystDashboard: React.FC<{ onNewProposal: () => void }> = ({ onNe
                       // Parse notes for details
                       const notesLines = (task.notes || '').split('\n').filter(Boolean);
                       return (
-                        <div key={task.id} className="flex items-start gap-4 px-5 py-4 hover:bg-slate-50 transition-colors">
+                        <div key={task.id} className="flex items-start gap-4 px-5 py-4 hover:bg-white/5 transition-colors">
                           {/* Date badge */}
-                          <div className={`shrink-0 w-14 text-center py-2 rounded-xl ${isInterview ? 'bg-purple-50 text-purple-700' : 'bg-aqua-50 text-aqua-700'}`}>
+                          <div className={`shrink-0 w-14 text-center py-2 rounded-xl ${isInterview ? 'bg-purple-500/10 text-purple-300' : 'bg-cyan-500/10 text-cyan-300'}`}>
                             <p className="text-[10px] font-black uppercase tracking-wider">{dateLabel.split(',')[0]}</p>
                             <p className="text-xl font-black leading-none mt-0.5">{dt.getDate()}</p>
                             <p className="text-[10px] font-bold">{timeLabel}</p>
@@ -653,13 +653,13 @@ export const AnalystDashboard: React.FC<{ onNewProposal: () => void }> = ({ onNe
                           {/* Details */}
                           <div className="flex-1 min-w-0">
                             <div className="flex items-center gap-2 mb-1">
-                              <p className="font-bold text-slate-800 text-sm truncate">{task.title?.replace(/^📅\s*/, '')}</p>
-                              <span className={`shrink-0 text-[10px] font-black uppercase px-2 py-0.5 rounded-full ${isInterview ? 'bg-purple-100 text-purple-600' : 'bg-aqua-100 text-aqua-600'}`}>
+                              <p className="font-bold text-slate-100 text-sm truncate">{task.title?.replace(/^📅\s*/, '')}</p>
+                              <span className={`shrink-0 text-[10px] font-black uppercase px-2 py-0.5 rounded-full ${isInterview ? 'bg-purple-500/20 text-purple-300' : 'bg-cyan-500/20 text-cyan-300'}`}>
                                 {isInterview ? 'Entrevista' : 'Visita'}
                               </span>
                             </div>
                             {notesLines.map((line, i) => (
-                              <p key={i} className="text-xs text-slate-500 truncate">{line}</p>
+                              <p key={i} className="text-xs text-slate-400 truncate">{line}</p>
                             ))}
                           </div>
                           {/* Mark done */}
@@ -668,7 +668,7 @@ export const AnalystDashboard: React.FC<{ onNewProposal: () => void }> = ({ onNe
                               await supabase.from('tasks').update({ status: 'COMPLETED' }).eq('id', task.id);
                               setPendingTasks(prev => prev.filter(t => t.id !== task.id));
                             }}
-                            className="shrink-0 text-xs text-slate-400 hover:text-emerald-600 font-bold transition-colors"
+                            className="shrink-0 text-xs text-slate-400 hover:text-emerald-300 font-bold transition-colors"
                             title="Marcar como concluído"
                           >
                             ✓
@@ -682,16 +682,16 @@ export const AnalystDashboard: React.FC<{ onNewProposal: () => void }> = ({ onNe
 
             {/* Charts Section */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
-              <div className="lg:col-span-2 bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
-                <h3 className="text-lg font-bold text-slate-800 mb-6">Sales Performance</h3>
+              <div className="lg:col-span-2 bg-white/[0.04] p-6 rounded-2xl shadow-sm border border-white/10">
+                <h3 className="text-lg font-bold text-slate-100 mb-6">Sales Performance</h3>
                 <div className="h-64">
                   <ResponsiveContainer width="100%" height="100%">
                     <BarChart data={filteredSalesTrend}>
-                      <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-                      <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: '#64748b', fontSize: 12 }} />
-                      <YAxis axisLine={false} tickLine={false} tick={{ fill: '#64748b', fontSize: 12 }} />
+                      <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="rgba(255,255,255,0.08)" />
+                      <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: '#94a3b8', fontSize: 12 }} />
+                      <YAxis axisLine={false} tickLine={false} tick={{ fill: '#94a3b8', fontSize: 12 }} />
                       <Tooltip
-                        cursor={{ fill: '#f8fafc' }}
+                        cursor={{ fill: 'rgba(255,255,255,0.04)' }}
                         contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)' }}
                       />
                       <Bar dataKey="sales" fill="#00AEEF" radius={[4, 4, 0, 0]} barSize={40} />
@@ -700,8 +700,8 @@ export const AnalystDashboard: React.FC<{ onNewProposal: () => void }> = ({ onNe
                 </div>
               </div>
 
-              <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
-                <h3 className="text-lg font-bold text-slate-800 mb-6">Lead Status</h3>
+              <div className="bg-white/[0.04] p-6 rounded-2xl shadow-sm border border-white/10">
+                <h3 className="text-lg font-bold text-slate-100 mb-6">Lead Status</h3>
                 <div className="h-64">
                   <ResponsiveContainer width="100%" height="100%">
                     <PieChart>
@@ -724,7 +724,7 @@ export const AnalystDashboard: React.FC<{ onNewProposal: () => void }> = ({ onNe
                 </div>
                 <div className="flex flex-wrap gap-2 justify-center mt-4">
                   {filteredLeadsByStatus.map((entry, index) => (
-                    <div key={index} className="flex items-center gap-1 text-xs text-slate-500">
+                    <div key={index} className="flex items-center gap-1 text-xs text-slate-400">
                       <span className="w-2 h-2 rounded-full" style={{ backgroundColor: COLORS[index % COLORS.length] }}></span>
                       {entry.name}
                     </div>
@@ -734,11 +734,11 @@ export const AnalystDashboard: React.FC<{ onNewProposal: () => void }> = ({ onNe
             </div>
 
             {/* Leads Table with Dynamic Filters */}
-            <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
+            <div className="bg-white/[0.04] rounded-2xl shadow-sm border border-white/10 overflow-hidden">
               {/* Header row */}
-              <div className="p-5 border-b border-slate-100">
+              <div className="p-5 border-b border-white/10">
                 <div className="flex flex-wrap items-center gap-3">
-                  <h3 className="text-lg font-bold text-slate-800 mr-auto">
+                  <h3 className="text-lg font-bold text-slate-100 mr-auto">
                     Leads
                     <span className="ml-2 text-sm font-normal text-slate-400">({filteredLeads.length}{allLeads.length !== filteredLeads.length ? ` de ${allLeads.length}` : ''})</span>
                   </h3>
@@ -750,18 +750,18 @@ export const AnalystDashboard: React.FC<{ onNewProposal: () => void }> = ({ onNe
                       placeholder="Buscar leads..."
                       value={searchTerm}
                       onChange={e => setSearchTerm(e.target.value)}
-                      className="w-44 pl-9 pr-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-aqua-500 outline-none"
+                      className="w-44 pl-9 pr-3 py-2 bg-white/5 border border-white/10 rounded-xl text-sm focus:ring-2 focus:ring-aqua-500 outline-none"
                     />
                   </div>
                   {/* Filtros button */}
                   <button
                     onClick={() => setShowFilters(prev => !prev)}
-                    className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-sm font-bold border transition-colors ${showFilters || activeFilterCount > 0 ? 'bg-aqua-600 text-white border-aqua-600' : 'bg-slate-50 text-slate-600 border-slate-200 hover:border-aqua-400'}`}
+                    className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-sm font-bold border transition-colors ${showFilters || activeFilterCount > 0 ? 'bg-aqua-600 text-white border-aqua-600' : 'bg-white/5 text-slate-300 border-white/10 hover:border-aqua-400'}`}
                   >
                     <Filter size={14} />
                     Filtros
                     {activeFilterCount > 0 && (
-                      <span className="ml-0.5 bg-white text-aqua-700 text-[10px] font-black px-1.5 rounded-full">{activeFilterCount}</span>
+                      <span className="ml-0.5 bg-cyan-400 text-white text-[10px] font-black px-1.5 rounded-full">{activeFilterCount}</span>
                     )}
                   </button>
                   {activeFilterCount > 0 && (
@@ -771,7 +771,7 @@ export const AnalystDashboard: React.FC<{ onNewProposal: () => void }> = ({ onNe
                   )}
                   <button
                     onClick={() => setShowAllLeads(prev => !prev)}
-                    className="text-sm text-aqua-600 font-bold hover:text-aqua-500 whitespace-nowrap"
+                    className="text-sm text-cyan-300 font-bold hover:text-aqua-500 whitespace-nowrap"
                   >
                     {showAllLeads ? 'Recolher' : 'Ver todos'}
                   </button>
@@ -779,14 +779,14 @@ export const AnalystDashboard: React.FC<{ onNewProposal: () => void }> = ({ onNe
 
                 {/* Expanded filter panel */}
                 {showFilters && (
-                  <div className="mt-4 pt-4 border-t border-slate-100 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
+                  <div className="mt-4 pt-4 border-t border-white/10 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
                     {/* Status */}
                     <div>
                       <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Status</label>
                       <select
                         value={statusFilter}
                         onChange={e => setStatusFilter(e.target.value)}
-                        className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-aqua-500 appearance-none cursor-pointer"
+                        className="w-full px-3 py-2 bg-white/5 border border-white/10 rounded-xl text-sm outline-none focus:ring-2 focus:ring-aqua-500 appearance-none cursor-pointer"
                       >
                         <option value="ALL">Todos</option>
                         <option value="LEAD">Lead</option>
@@ -809,7 +809,7 @@ export const AnalystDashboard: React.FC<{ onNewProposal: () => void }> = ({ onNe
                         placeholder="Nome do analista"
                         value={filterAnalyst}
                         onChange={e => setFilterAnalyst(e.target.value)}
-                        className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-aqua-500"
+                        className="w-full px-3 py-2 bg-white/5 border border-white/10 rounded-xl text-sm outline-none focus:ring-2 focus:ring-aqua-500"
                       />
                     </div>
                     {/* Telefone */}
@@ -820,7 +820,7 @@ export const AnalystDashboard: React.FC<{ onNewProposal: () => void }> = ({ onNe
                         placeholder="215..."
                         value={filterPhone}
                         onChange={e => setFilterPhone(e.target.value)}
-                        className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-aqua-500"
+                        className="w-full px-3 py-2 bg-white/5 border border-white/10 rounded-xl text-sm outline-none focus:ring-2 focus:ring-aqua-500"
                       />
                     </div>
                     {/* Endereço / ZIP */}
@@ -831,7 +831,7 @@ export const AnalystDashboard: React.FC<{ onNewProposal: () => void }> = ({ onNe
                         placeholder="191..."
                         value={filterAddress}
                         onChange={e => setFilterAddress(e.target.value)}
-                        className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-aqua-500"
+                        className="w-full px-3 py-2 bg-white/5 border border-white/10 rounded-xl text-sm outline-none focus:ring-2 focus:ring-aqua-500"
                       />
                     </div>
                     {/* Email */}
@@ -842,7 +842,7 @@ export const AnalystDashboard: React.FC<{ onNewProposal: () => void }> = ({ onNe
                         placeholder="@"
                         value={filterEmail}
                         onChange={e => setFilterEmail(e.target.value)}
-                        className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-aqua-500"
+                        className="w-full px-3 py-2 bg-white/5 border border-white/10 rounded-xl text-sm outline-none focus:ring-2 focus:ring-aqua-500"
                       />
                     </div>
                     {/* Proposta */}
@@ -851,7 +851,7 @@ export const AnalystDashboard: React.FC<{ onNewProposal: () => void }> = ({ onNe
                       <select
                         value={filterHasProposal}
                         onChange={e => setFilterHasProposal(e.target.value as 'ALL' | 'YES' | 'NO')}
-                        className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-aqua-500 appearance-none cursor-pointer"
+                        className="w-full px-3 py-2 bg-white/5 border border-white/10 rounded-xl text-sm outline-none focus:ring-2 focus:ring-aqua-500 appearance-none cursor-pointer"
                       >
                         <option value="ALL">Todos</option>
                         <option value="YES">Com proposta</option>
@@ -863,9 +863,9 @@ export const AnalystDashboard: React.FC<{ onNewProposal: () => void }> = ({ onNe
                       <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Água ($/mês)</label>
                       <div className="flex gap-1">
                         <input type="number" placeholder="Min" value={filterWaterMin} onChange={e => setFilterWaterMin(e.target.value)}
-                          className="w-full px-2 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-aqua-500" />
+                          className="w-full px-2 py-2 bg-white/5 border border-white/10 rounded-xl text-sm outline-none focus:ring-2 focus:ring-aqua-500" />
                         <input type="number" placeholder="Max" value={filterWaterMax} onChange={e => setFilterWaterMax(e.target.value)}
-                          className="w-full px-2 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-aqua-500" />
+                          className="w-full px-2 py-2 bg-white/5 border border-white/10 rounded-xl text-sm outline-none focus:ring-2 focus:ring-aqua-500" />
                       </div>
                     </div>
                     {/* Gastos Sabão */}
@@ -873,9 +873,9 @@ export const AnalystDashboard: React.FC<{ onNewProposal: () => void }> = ({ onNe
                       <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Sabão ($/mês)</label>
                       <div className="flex gap-1">
                         <input type="number" placeholder="Min" value={filterCleaningMin} onChange={e => setFilterCleaningMin(e.target.value)}
-                          className="w-full px-2 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-aqua-500" />
+                          className="w-full px-2 py-2 bg-white/5 border border-white/10 rounded-xl text-sm outline-none focus:ring-2 focus:ring-aqua-500" />
                         <input type="number" placeholder="Max" value={filterCleaningMax} onChange={e => setFilterCleaningMax(e.target.value)}
-                          className="w-full px-2 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-aqua-500" />
+                          className="w-full px-2 py-2 bg-white/5 border border-white/10 rounded-xl text-sm outline-none focus:ring-2 focus:ring-aqua-500" />
                       </div>
                     </div>
                     {/* Total Anual */}
@@ -883,9 +883,9 @@ export const AnalystDashboard: React.FC<{ onNewProposal: () => void }> = ({ onNe
                       <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Total Anual ($)</label>
                       <div className="flex gap-1">
                         <input type="number" placeholder="Min" value={filterTotalMin} onChange={e => setFilterTotalMin(e.target.value)}
-                          className="w-full px-2 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-aqua-500" />
+                          className="w-full px-2 py-2 bg-white/5 border border-white/10 rounded-xl text-sm outline-none focus:ring-2 focus:ring-aqua-500" />
                         <input type="number" placeholder="Max" value={filterTotalMax} onChange={e => setFilterTotalMax(e.target.value)}
-                          className="w-full px-2 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-aqua-500" />
+                          className="w-full px-2 py-2 bg-white/5 border border-white/10 rounded-xl text-sm outline-none focus:ring-2 focus:ring-aqua-500" />
                       </div>
                     </div>
                   </div>
@@ -893,8 +893,8 @@ export const AnalystDashboard: React.FC<{ onNewProposal: () => void }> = ({ onNe
               </div>
 
               <div className="overflow-x-auto max-h-[520px] overflow-y-auto">
-                <table className="w-full min-w-[1100px] text-left text-sm text-slate-600">
-                  <thead className="bg-slate-50 text-xs uppercase font-bold text-slate-400 sticky top-0 z-10">
+                <table className="w-full min-w-[1100px] text-left text-sm text-slate-300">
+                  <thead className="bg-[#0A1E3F] text-xs uppercase font-bold text-slate-400 sticky top-0 z-10">
                     <tr>
                       <th className="px-4 py-3 whitespace-nowrap">Cliente</th>
                       <th className="px-4 py-3 whitespace-nowrap">Status</th>
@@ -909,14 +909,14 @@ export const AnalystDashboard: React.FC<{ onNewProposal: () => void }> = ({ onNe
                       <th className="px-4 py-3 text-right whitespace-nowrap">Ações</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-slate-100">
+                  <tbody className="divide-y divide-white/10">
                     {displayedLeads.map((lead) => {
                       const water = lead.water_consumption ?? (lead as any).water_consumption ?? 0;
                       const cleaning = lead.cleaning_consumption ?? (lead as any).cleaning_consumption ?? 0;
                       const totalAnnual = lead.total_annual_cost ?? (lead as any).total_annual_cost ?? ((water + cleaning) * 12 || 0);
                       return (
-                      <tr key={lead.id} className="hover:bg-slate-50 transition-colors">
-                        <td className="px-4 py-3 font-bold text-slate-900 whitespace-nowrap">{lead.name}</td>
+                      <tr key={lead.id} className="hover:bg-white/5 transition-colors">
+                        <td className="px-4 py-3 font-bold text-white whitespace-nowrap">{lead.name}</td>
                         <td className="px-4 py-3">
                           <select
                             value={lead.status}
@@ -934,7 +934,7 @@ export const AnalystDashboard: React.FC<{ onNewProposal: () => void }> = ({ onNe
                                 toast.error('Erro ao atualizar status: ' + err.message);
                               }
                             }}
-                            className="text-xs font-bold border border-slate-200 rounded-lg px-2 py-1 outline-none focus:border-aqua-500 bg-slate-50 cursor-pointer"
+                            className="text-xs font-bold border border-white/10 rounded-lg px-2 py-1 outline-none focus:border-aqua-500 bg-white/5 cursor-pointer"
                           >
                             <option value="LEAD">Lead</option>
                             <option value="PENDING">Pendente</option>
@@ -947,25 +947,25 @@ export const AnalystDashboard: React.FC<{ onNewProposal: () => void }> = ({ onNe
                           </select>
                         </td>
                         <td className="px-4 py-3 whitespace-nowrap">{new Date(lead.created_at).toLocaleDateString()}</td>
-                        <td className="px-4 py-3 text-slate-500 whitespace-nowrap">{lead.email || '-'}</td>
-                        <td className="px-4 py-3 text-slate-500 whitespace-nowrap">{lead.phone || '-'}</td>
-                        <td className="px-4 py-3 text-slate-500 whitespace-nowrap">{lead.zip_code || '-'}</td>
-                        <td className="px-4 py-3 text-slate-500 whitespace-nowrap text-xs">{lead.analyst || '-'}</td>
-                        <td className="px-4 py-3 text-right text-slate-500 whitespace-nowrap">{water ? `$${Number(water).toLocaleString()}` : '-'}</td>
-                        <td className="px-4 py-3 text-right text-slate-500 whitespace-nowrap">{cleaning ? `$${Number(cleaning).toLocaleString()}` : '-'}</td>
-                        <td className="px-4 py-3 text-right text-slate-700 font-bold whitespace-nowrap">{totalAnnual ? `$${Number(totalAnnual).toLocaleString()}` : '-'}</td>
+                        <td className="px-4 py-3 text-slate-400 whitespace-nowrap">{lead.email || '-'}</td>
+                        <td className="px-4 py-3 text-slate-400 whitespace-nowrap">{lead.phone || '-'}</td>
+                        <td className="px-4 py-3 text-slate-400 whitespace-nowrap">{lead.zip_code || '-'}</td>
+                        <td className="px-4 py-3 text-slate-400 whitespace-nowrap text-xs">{lead.analyst || '-'}</td>
+                        <td className="px-4 py-3 text-right text-slate-400 whitespace-nowrap">{water ? `$${Number(water).toLocaleString()}` : '-'}</td>
+                        <td className="px-4 py-3 text-right text-slate-400 whitespace-nowrap">{cleaning ? `$${Number(cleaning).toLocaleString()}` : '-'}</td>
+                        <td className="px-4 py-3 text-right text-slate-200 font-bold whitespace-nowrap">{totalAnnual ? `$${Number(totalAnnual).toLocaleString()}` : '-'}</td>
                         <td className="px-4 py-3 text-right">
                           <div className="flex items-center justify-end gap-2">
                             <button
                               onClick={() => setShareTarget({ id: lead.proposal_token || lead.id, dbId: lead.id, name: lead.name })}
-                              className="p-1.5 text-slate-400 hover:text-aqua-600 hover:bg-aqua-50 rounded-lg transition-colors"
+                              className="p-1.5 text-slate-400 hover:text-cyan-300 hover:bg-cyan-500/10 rounded-lg transition-colors"
                               title="Compartilhar proposta"
                             >
                               <Share2 size={15} />
                             </button>
                             <button
                               onClick={() => navigate(`/proposal?id=${lead.proposal_token || lead.id}`)}
-                              className="text-aqua-600 hover:text-aqua-500 font-bold text-xs uppercase whitespace-nowrap"
+                              className="text-cyan-300 hover:text-aqua-500 font-bold text-xs uppercase whitespace-nowrap"
                             >
                               Proposta
                             </button>
@@ -987,10 +987,10 @@ export const AnalystDashboard: React.FC<{ onNewProposal: () => void }> = ({ onNe
                 </table>
               </div>
               {!showAllLeads && filteredLeads.length > 5 && (
-                <div className="p-4 border-t border-slate-100 text-center">
+                <div className="p-4 border-t border-white/10 text-center">
                   <button
                     onClick={() => setShowAllLeads(true)}
-                    className="text-sm text-aqua-600 font-bold hover:text-aqua-500"
+                    className="text-sm text-cyan-300 font-bold hover:text-aqua-500"
                   >
                     Ver todos {filteredLeads.length} leads →
                   </button>
@@ -1004,52 +1004,52 @@ export const AnalystDashboard: React.FC<{ onNewProposal: () => void }> = ({ onNe
 
         {showProfileModal && (
           <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4">
-            <div className="bg-white rounded-3xl p-6 md:p-8 w-full max-w-md shadow-2xl relative animate-in zoom-in-95 duration-300">
+            <div className="bg-white/[0.04] rounded-3xl p-6 md:p-8 w-full max-w-md shadow-2xl relative animate-in zoom-in-95 duration-300">
               <button
                 onClick={() => setShowProfileModal(false)}
-                className="absolute top-4 right-4 text-slate-400 hover:text-slate-600 bg-slate-100 p-2 rounded-full"
+                className="absolute top-4 right-4 text-slate-400 hover:text-slate-300 bg-white/10 p-2 rounded-full"
               >
                 <X size={20} />
               </button>
 
               <div className="flex items-center gap-3 mb-6">
-                <div className="w-12 h-12 bg-aqua-100 text-aqua-600 rounded-full flex items-center justify-center">
+                <div className="w-12 h-12 bg-cyan-500/20 text-cyan-300 rounded-full flex items-center justify-center">
                   <UserCog size={24} />
                 </div>
                 <div>
-                  <h3 className="text-xl font-bold text-slate-800">Editar Perfil</h3>
-                  <p className="text-sm text-slate-500">Altere sua foto e nome de exibição.</p>
+                  <h3 className="text-xl font-bold text-slate-100">Editar Perfil</h3>
+                  <p className="text-sm text-slate-400">Altere sua foto e nome de exibição.</p>
                 </div>
               </div>
 
               <form onSubmit={handleSaveProfile} className="space-y-4">
                 <div>
-                  <label className="block text-sm font-bold text-slate-700 mb-1">Nome de Exibição / Nickname</label>
+                  <label className="block text-sm font-bold text-slate-200 mb-1">Nome de Exibição / Nickname</label>
                   <input
                     type="text"
                     value={profileData.full_name}
                     onChange={(e) => setProfileData({ ...profileData, full_name: e.target.value })}
-                    className="w-full bg-slate-50 border border-slate-200 text-slate-900 text-sm rounded-xl focus:ring-aqua-500 focus:border-aqua-500 block p-3 outline-none"
+                    className="w-full bg-white/5 border border-white/10 text-white text-sm rounded-xl focus:ring-aqua-500 focus:border-aqua-500 block p-3 outline-none"
                     placeholder="Seu nome"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-bold text-slate-700 mb-1">URL da Foto de Perfil (Opcional)</label>
+                  <label className="block text-sm font-bold text-slate-200 mb-1">URL da Foto de Perfil (Opcional)</label>
                   <input
                     type="url"
                     value={profileData.avatar_url}
                     onChange={(e) => setProfileData({ ...profileData, avatar_url: e.target.value })}
-                    className="w-full bg-slate-50 border border-slate-200 text-slate-900 text-sm rounded-xl focus:ring-aqua-500 focus:border-aqua-500 block p-3 outline-none"
+                    className="w-full bg-white/5 border border-white/10 text-white text-sm rounded-xl focus:ring-aqua-500 focus:border-aqua-500 block p-3 outline-none"
                     placeholder="https://suafoto.com/imagem.jpg"
                   />
                   <p className="text-xs text-slate-400 mt-1">Cole o link (URL) de uma imagem para ser seu avatar circular.</p>
                 </div>
 
                 <div className="flex justify-end gap-3 mt-8">
-                  <button type="button" onClick={() => setShowProfileModal(false)} className="px-5 py-2.5 text-sm font-bold text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-xl">
+                  <button type="button" onClick={() => setShowProfileModal(false)} className="px-5 py-2.5 text-sm font-bold text-slate-300 bg-white/10 hover:bg-white/10 rounded-xl">
                     Cancelar
                   </button>
-                  <button type="submit" disabled={isSavingProfile} className="px-5 py-2.5 text-sm font-bold text-white bg-aqua-600 hover:bg-aqua-500 rounded-xl disabled:opacity-50 flex items-center gap-2">
+                  <button type="submit" disabled={isSavingProfile} className="px-5 py-2.5 text-sm font-bold text-white bg-aqua-600 hover:bg-cyan-500/100 rounded-xl disabled:opacity-50 flex items-center gap-2">
                     {isSavingProfile ? 'Salvando...' : 'Salvar Perfil'}
                   </button>
                 </div>
@@ -1063,15 +1063,15 @@ export const AnalystDashboard: React.FC<{ onNewProposal: () => void }> = ({ onNe
       {/* Lead Detail Modal */}
       {selectedLead && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl shadow-xl max-w-md w-full p-6 animate-in fade-in zoom-in duration-200">
+          <div className="bg-white/[0.04] rounded-2xl shadow-xl max-w-md w-full p-6 animate-in fade-in zoom-in duration-200">
             <div className="flex justify-between items-start mb-6">
               <div>
-                <h3 className="text-xl font-black text-slate-900">{selectedLead.name}</h3>
+                <h3 className="text-xl font-black text-white">{selectedLead.name}</h3>
                 <StatusBadge status={selectedLead.status} />
               </div>
               <button
                 onClick={() => { setSelectedLead(null); setIsScheduling(false); }}
-                className="p-2 hover:bg-slate-100 rounded-full transition-colors"
+                className="p-2 hover:bg-white/10 rounded-full transition-colors"
               >
                 <X size={20} className="text-slate-400" />
               </button>
@@ -1079,47 +1079,47 @@ export const AnalystDashboard: React.FC<{ onNewProposal: () => void }> = ({ onNe
             <div className="space-y-3">
               {selectedLead.email && (
                 <div className="flex items-center gap-3 text-sm">
-                  <div className="w-8 h-8 rounded-full bg-blue-50 flex items-center justify-center">
+                  <div className="w-8 h-8 rounded-full bg-blue-500/10 flex items-center justify-center">
                     <Mail size={14} className="text-blue-500" />
                   </div>
-                  <span className="text-slate-600">{selectedLead.email}</span>
+                  <span className="text-slate-300">{selectedLead.email}</span>
                 </div>
               )}
               {selectedLead.phone && (
                 <div className="flex items-center gap-3 text-sm">
-                  <div className="w-8 h-8 rounded-full bg-emerald-50 flex items-center justify-center">
+                  <div className="w-8 h-8 rounded-full bg-emerald-500/10 flex items-center justify-center">
                     <Phone size={14} className="text-emerald-500" />
                   </div>
-                  <span className="text-slate-600">{selectedLead.phone}</span>
+                  <span className="text-slate-300">{selectedLead.phone}</span>
                 </div>
               )}
               {selectedLead.zip_code && (
                 <div className="flex items-center gap-3 text-sm">
-                  <div className="w-8 h-8 rounded-full bg-amber-50 flex items-center justify-center">
+                  <div className="w-8 h-8 rounded-full bg-amber-500/10 flex items-center justify-center">
                     <MapPin size={14} className="text-amber-500" />
                   </div>
-                  <span className="text-slate-600">ZIP: {selectedLead.zip_code}</span>
+                  <span className="text-slate-300">ZIP: {selectedLead.zip_code}</span>
                 </div>
               )}
               <div className="flex items-center gap-3 text-sm">
-                <div className="w-8 h-8 rounded-full bg-slate-50 flex items-center justify-center">
-                  <Clock size={14} className="text-slate-500" />
+                <div className="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center">
+                  <Clock size={14} className="text-slate-400" />
                 </div>
-                <span className="text-slate-600">Added {new Date(selectedLead.created_at).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</span>
+                <span className="text-slate-300">Added {new Date(selectedLead.created_at).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</span>
               </div>
             </div>
 
             {isScheduling ? (
-              <div className="mt-6 pt-6 border-t border-slate-100 animate-in fade-in slide-in-from-top-4">
-                <h4 className="text-sm font-bold text-slate-900 mb-4">Schedule Follow-up</h4>
+              <div className="mt-6 pt-6 border-t border-white/10 animate-in fade-in slide-in-from-top-4">
+                <h4 className="text-sm font-bold text-white mb-4">Schedule Follow-up</h4>
                 <div className="space-y-3">
                   <div>
-                    <label className="block text-xs font-bold text-slate-500 mb-1">Date</label>
-                    <input type="date" value={taskForm.date} onChange={e => setTaskForm({ ...taskForm, date: e.target.value })} className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm outline-none focus:border-aqua-500" />
+                    <label className="block text-xs font-bold text-slate-400 mb-1">Date</label>
+                    <input type="date" value={taskForm.date} onChange={e => setTaskForm({ ...taskForm, date: e.target.value })} className="w-full px-3 py-2 border border-white/10 rounded-lg text-sm outline-none focus:border-aqua-500" />
                   </div>
                   <div>
-                    <label className="block text-xs font-bold text-slate-500 mb-1">Type</label>
-                    <select value={taskForm.type} onChange={e => setTaskForm({ ...taskForm, type: e.target.value as any })} className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm outline-none focus:border-aqua-500">
+                    <label className="block text-xs font-bold text-slate-400 mb-1">Type</label>
+                    <select value={taskForm.type} onChange={e => setTaskForm({ ...taskForm, type: e.target.value as any })} className="w-full px-3 py-2 border border-white/10 rounded-lg text-sm outline-none focus:border-aqua-500">
                       <option value="MESSAGE">WhatsApp / SMS</option>
                       <option value="EMAIL">Email</option>
                       <option value="CALL">Phone Call</option>
@@ -1127,17 +1127,17 @@ export const AnalystDashboard: React.FC<{ onNewProposal: () => void }> = ({ onNe
                     </select>
                   </div>
                   <div>
-                    <label className="block text-xs font-bold text-slate-500 mb-1">Objective / Notes for AI</label>
-                    <textarea value={taskForm.notes} onChange={e => setTaskForm({ ...taskForm, notes: e.target.value })} placeholder="Ex: Perguntar sobre o bônus de dezembro" className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm outline-none focus:border-aqua-500 h-20 resize-none"></textarea>
+                    <label className="block text-xs font-bold text-slate-400 mb-1">Objective / Notes for AI</label>
+                    <textarea value={taskForm.notes} onChange={e => setTaskForm({ ...taskForm, notes: e.target.value })} placeholder="Ex: Perguntar sobre o bônus de dezembro" className="w-full px-3 py-2 border border-white/10 rounded-lg text-sm outline-none focus:border-aqua-500 h-20 resize-none"></textarea>
                   </div>
                   <div className="flex gap-2 pt-2">
-                    <button onClick={() => setIsScheduling(false)} className="flex-1 py-2 text-sm font-bold text-slate-500 hover:bg-slate-50 rounded-lg border border-slate-200">Cancel</button>
-                    <button onClick={handleScheduleTask} className="flex-1 py-2 text-sm font-bold bg-aqua-600 text-white rounded-lg hover:bg-aqua-500 shadow-md">Salvar</button>
+                    <button onClick={() => setIsScheduling(false)} className="flex-1 py-2 text-sm font-bold text-slate-400 hover:bg-white/5 rounded-lg border border-white/10">Cancel</button>
+                    <button onClick={handleScheduleTask} className="flex-1 py-2 text-sm font-bold bg-aqua-600 text-white rounded-lg hover:bg-cyan-500/100 shadow-md">Salvar</button>
                   </div>
                 </div>
               </div>
             ) : (
-              <div className="mt-6 pt-4 border-t border-slate-100 flex flex-col gap-3">
+              <div className="mt-6 pt-4 border-t border-white/10 flex flex-col gap-3">
                 {/* ── Close Sale CTA —  only shown for non-sale statuses ── */}
                 {!['SALE', 'INSTALLED', 'ACTIVE'].includes(selectedLead.status) ? (
                   <button
@@ -1179,21 +1179,21 @@ export const AnalystDashboard: React.FC<{ onNewProposal: () => void }> = ({ onNe
 
                 <button
                   onClick={() => setIsScheduling(true)}
-                  className="w-full py-3 text-sm font-bold bg-slate-50 border border-slate-200 text-slate-700 rounded-xl hover:bg-slate-100 transition-colors flex items-center justify-center gap-2"
+                  className="w-full py-3 text-sm font-bold bg-white/5 border border-white/10 text-slate-200 rounded-xl hover:bg-white/10 transition-colors flex items-center justify-center gap-2"
                 >
-                  <CalendarCheck size={16} className="text-aqua-600" />
+                  <CalendarCheck size={16} className="text-cyan-300" />
                   Agendar Follow-up
                 </button>
                 <div className="flex gap-3">
                   <button
                     onClick={() => setSelectedLead(null)}
-                    className="flex-1 py-2 text-sm font-bold text-slate-600 hover:bg-slate-100 rounded-xl transition-colors"
+                    className="flex-1 py-2 text-sm font-bold text-slate-300 hover:bg-white/10 rounded-xl transition-colors"
                   >
                     Close
                   </button>
                   <button
                     onClick={() => { onNewProposal(); setSelectedLead(null); }}
-                    className="flex-1 py-2 text-sm font-bold bg-aqua-600 text-white rounded-xl hover:bg-aqua-500 transition-colors"
+                    className="flex-1 py-2 text-sm font-bold bg-aqua-600 text-white rounded-xl hover:bg-cyan-500/100 transition-colors"
                   >
                     New Proposal
                   </button>
@@ -1206,23 +1206,23 @@ export const AnalystDashboard: React.FC<{ onNewProposal: () => void }> = ({ onNe
 
       {executingTask && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl shadow-xl max-w-lg w-full p-6 animate-in fade-in zoom-in duration-200">
+          <div className="bg-white/[0.04] rounded-2xl shadow-xl max-w-lg w-full p-6 animate-in fade-in zoom-in duration-200">
             <div className="flex justify-between items-center mb-6">
-              <h3 className="text-xl font-black text-slate-900 flex items-center gap-2">
-                <MessageSquare className="text-aqua-600" /> AI Draft Ready
+              <h3 className="text-xl font-black text-white flex items-center gap-2">
+                <MessageSquare className="text-cyan-300" /> AI Draft Ready
               </h3>
-              <button onClick={() => setExecutingTask(null)} className="p-2 hover:bg-slate-100 rounded-full transition-colors">
+              <button onClick={() => setExecutingTask(null)} className="p-2 hover:bg-white/10 rounded-full transition-colors">
                 <X size={20} className="text-slate-400" />
               </button>
             </div>
-            <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 mb-6">
-              <p className="text-sm text-slate-700 whitespace-pre-wrap">{generatedDraft}</p>
+            <div className="bg-white/5 border border-white/10 rounded-xl p-4 mb-6">
+              <p className="text-sm text-slate-200 whitespace-pre-wrap">{generatedDraft}</p>
             </div>
-            <div className="text-xs text-slate-500 mb-6 px-2 text-center bg-amber-50 text-amber-700 p-3 rounded-lg border border-amber-200">
+            <div className="text-xs text-slate-400 mb-6 px-2 text-center bg-amber-500/10 text-amber-300 p-3 rounded-lg border border-amber-200">
               This message will be sent to the client (simulation). In production, this connects to WhatsApp/Twilio API.
             </div>
             <div className="flex gap-3">
-              <button onClick={() => setExecutingTask(null)} className="flex-1 py-3 text-sm font-bold text-slate-600 hover:bg-slate-100 rounded-xl transition-colors">
+              <button onClick={() => setExecutingTask(null)} className="flex-1 py-3 text-sm font-bold text-slate-300 hover:bg-white/10 rounded-xl transition-colors">
                 Cancel
               </button>
               <button
@@ -1234,7 +1234,7 @@ export const AnalystDashboard: React.FC<{ onNewProposal: () => void }> = ({ onNe
                     fetchDashboardData();
                   } catch (e) { }
                 }}
-                className="flex-1 py-3 text-sm font-bold bg-aqua-600 text-white rounded-xl hover:bg-aqua-500 shadow-lg shadow-aqua-500/30 transition-all flex items-center justify-center gap-2"
+                className="flex-1 py-3 text-sm font-bold bg-aqua-600 text-white rounded-xl hover:bg-cyan-500/100 shadow-lg shadow-aqua-500/30 transition-all flex items-center justify-center gap-2"
               >
                 <Play size={16} /> Authorize & Send
               </button>
@@ -1257,41 +1257,41 @@ export const AnalystDashboard: React.FC<{ onNewProposal: () => void }> = ({ onNe
       {/* Signup Link Modal */}
       {showSignupLinkModal && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4">
-          <div className="bg-white rounded-2xl max-w-sm w-full p-6 shadow-2xl animate-in zoom-in-95 duration-200">
+          <div className="bg-white/[0.04] rounded-2xl max-w-sm w-full p-6 shadow-2xl animate-in zoom-in-95 duration-200">
             <div className="flex items-center gap-3 mb-4">
-              <div className="w-10 h-10 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center shrink-0">
+              <div className="w-10 h-10 bg-emerald-500/20 text-emerald-300 rounded-full flex items-center justify-center shrink-0">
                 <UserPlus size={20} />
               </div>
               <div>
-                <h3 className="font-black text-slate-800">Enviar Cadastro via WhatsApp</h3>
-                <p className="text-slate-500 text-xs">O cliente recebe o link de cadastro direto no WhatsApp</p>
+                <h3 className="font-black text-slate-100">Enviar Cadastro via WhatsApp</h3>
+                <p className="text-slate-400 text-xs">O cliente recebe o link de cadastro direto no WhatsApp</p>
               </div>
             </div>
 
-            <div className="flex items-center bg-slate-50 border border-slate-200 rounded-xl overflow-hidden mb-4 focus-within:ring-2 focus-within:ring-emerald-400 transition-all">
-              <span className="pl-4 pr-2 flex items-center gap-1.5 text-slate-500 font-bold text-sm shrink-0">+1</span>
+            <div className="flex items-center bg-white/5 border border-white/10 rounded-xl overflow-hidden mb-4 focus-within:ring-2 focus-within:ring-emerald-400 transition-all">
+              <span className="pl-4 pr-2 flex items-center gap-1.5 text-slate-400 font-bold text-sm shrink-0">+1</span>
               <input
                 type="tel" placeholder="215-000-0000" value={signupPhone}
                 onChange={e => setSignupPhone(e.target.value.replace(/\D/g, '').slice(0, 10))}
-                className="flex-1 bg-transparent pr-4 py-3 text-slate-900 text-sm focus:outline-none"
+                className="flex-1 bg-transparent pr-4 py-3 text-white text-sm focus:outline-none"
                 autoFocus
               />
             </div>
 
             {/* Preview message */}
             {signupPhone.length >= 7 && (
-              <div className="bg-slate-50 border border-slate-100 rounded-xl p-3 mb-4 text-xs text-slate-600 leading-relaxed">
+              <div className="bg-white/5 border border-white/10 rounded-xl p-3 mb-4 text-xs text-slate-300 leading-relaxed">
                 <p className="font-bold text-slate-400 uppercase tracking-widest text-[10px] mb-1">Mensagem que será enviada:</p>
                 Ola! Aqui e da Aquafeel Philly.<br />
                 Clique no link para criar sua conta gratuita no Portal VIP e acompanhar seus pontos:<br />
-                <span className="text-emerald-600 font-bold">https://aquafeelphilly.com/login?tab=client</span>
+                <span className="text-emerald-300 font-bold">https://aquafeelphilly.com/login?tab=client</span>
               </div>
             )}
 
             <div className="flex gap-3">
               <button
                 onClick={() => { setShowSignupLinkModal(false); setSignupPhone(''); }}
-                className="flex-1 py-3 border border-slate-200 rounded-xl text-slate-500 font-bold text-sm hover:bg-slate-50 transition-colors"
+                className="flex-1 py-3 border border-white/10 rounded-xl text-slate-400 font-bold text-sm hover:bg-white/5 transition-colors"
               >
                 Cancelar
               </button>
@@ -1304,7 +1304,7 @@ export const AnalystDashboard: React.FC<{ onNewProposal: () => void }> = ({ onNe
                 onClick={() => { if (signupPhone.length >= 7) { setShowSignupLinkModal(false); setSignupPhone(''); } }}
                 className={`flex-[2] flex items-center justify-center gap-2 py-3 rounded-xl font-black text-sm transition-all ${signupPhone.length >= 7
                     ? 'bg-[#25D366] text-white hover:bg-[#1ebe5d] cursor-pointer'
-                    : 'bg-slate-100 text-slate-400 cursor-not-allowed pointer-events-none'
+                    : 'bg-white/10 text-slate-400 cursor-not-allowed pointer-events-none'
                   }`}
               >
                 <MessageCircle size={16} /> Enviar no WhatsApp
@@ -1316,9 +1316,9 @@ export const AnalystDashboard: React.FC<{ onNewProposal: () => void }> = ({ onNe
       {/* APPLY Status Popup */}
       {applyPopupLead && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[200] p-4">
-          <div className="bg-white rounded-2xl shadow-2xl max-w-sm w-full p-6 animate-in zoom-in-95 duration-200">
-            <h3 className="text-lg font-black text-slate-900 mb-2">Iniciar Aplicacao</h3>
-            <p className="text-slate-500 text-sm mb-6">
+          <div className="bg-white/[0.04] rounded-2xl shadow-2xl max-w-sm w-full p-6 animate-in zoom-in-95 duration-200">
+            <h3 className="text-lg font-black text-white mb-2">Iniciar Aplicacao</h3>
+            <p className="text-slate-400 text-sm mb-6">
               {applyPopupLead.name} sera redirecionado para preencher o formulario de aplicacao financeira.
             </p>
             <a
@@ -1332,7 +1332,7 @@ export const AnalystDashboard: React.FC<{ onNewProposal: () => void }> = ({ onNe
             </a>
             <button
               onClick={() => setApplyPopupLead(null)}
-              className="w-full py-2 text-slate-500 text-sm font-bold hover:bg-slate-50 rounded-xl transition-colors"
+              className="w-full py-2 text-slate-400 text-sm font-bold hover:bg-white/5 rounded-xl transition-colors"
             >
               Cancelar
             </button>
@@ -1343,43 +1343,43 @@ export const AnalystDashboard: React.FC<{ onNewProposal: () => void }> = ({ onNe
       {/* Analyst Signup Modal */}
       {showAnalystSignupModal && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4">
-          <div className="bg-white rounded-2xl max-w-sm w-full p-6 shadow-2xl animate-in zoom-in-95 duration-200">
+          <div className="bg-white/[0.04] rounded-2xl max-w-sm w-full p-6 shadow-2xl animate-in zoom-in-95 duration-200">
             <div className="flex items-center gap-3 mb-4">
-              <div className="w-10 h-10 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center shrink-0">
+              <div className="w-10 h-10 bg-blue-500/20 text-blue-300 rounded-full flex items-center justify-center shrink-0">
                 <UserPlus size={20} />
               </div>
               <div>
-                <h3 className="font-black text-slate-800">Enviar Convite de {profile?.first_name || profile?.full_name || 'Analista'}</h3>
-                <p className="text-slate-500 text-xs">Candidato recebe link da landing page de recrutamento</p>
+                <h3 className="font-black text-slate-100">Enviar Convite de {profile?.first_name || profile?.full_name || 'Analista'}</h3>
+                <p className="text-slate-400 text-xs">Candidato recebe link da landing page de recrutamento</p>
               </div>
             </div>
 
-            <div className="flex items-center bg-slate-50 border border-slate-200 rounded-xl overflow-hidden mb-4 focus-within:ring-2 focus-within:ring-blue-400 transition-all">
-              <span className="pl-4 pr-2 flex items-center gap-1.5 text-slate-500 font-bold text-sm shrink-0">+1</span>
+            <div className="flex items-center bg-white/5 border border-white/10 rounded-xl overflow-hidden mb-4 focus-within:ring-2 focus-within:ring-blue-400 transition-all">
+              <span className="pl-4 pr-2 flex items-center gap-1.5 text-slate-400 font-bold text-sm shrink-0">+1</span>
               <input
                 type="tel"
                 placeholder="215-000-0000"
                 value={analystSignupPhone}
                 onChange={e => setAnalystSignupPhone(e.target.value.replace(/\D/g, '').slice(0, 10))}
-                className="flex-1 bg-transparent pr-4 py-3 text-slate-900 text-sm focus:outline-none"
+                className="flex-1 bg-transparent pr-4 py-3 text-white text-sm focus:outline-none"
                 autoFocus
               />
             </div>
 
             {analystSignupPhone.length >= 7 && (
-              <div className="bg-slate-50 border border-slate-100 rounded-xl p-3 mb-4 text-xs text-slate-600 leading-relaxed">
+              <div className="bg-white/5 border border-white/10 rounded-xl p-3 mb-4 text-xs text-slate-300 leading-relaxed">
                 <p className="font-bold text-slate-400 uppercase tracking-widest text-[10px] mb-1">Mensagem:</p>
                 Ola! Aqui e da Aquafeel Philly.<br/>
                 Vi que voce tem o perfil ideal para fazer parte da nossa equipe!<br/>
                 Acesse a pagina abaixo para conhecer nossa oportunidade e agendar uma entrevista:<br/>
-                <span className="text-blue-600 font-bold">https://aquafeelphilly.com/referral?ref={profile?.first_name || 'Analista'}</span>
+                <span className="text-blue-300 font-bold">https://aquafeelphilly.com/referral?ref={profile?.first_name || 'Analista'}</span>
               </div>
             )}
 
             <div className="flex gap-3">
               <button
                 onClick={() => { setShowAnalystSignupModal(false); setAnalystSignupPhone(''); }}
-                className="flex-1 py-3 border border-slate-200 rounded-xl text-slate-500 font-bold text-sm hover:bg-slate-50 transition-colors"
+                className="flex-1 py-3 border border-white/10 rounded-xl text-slate-400 font-bold text-sm hover:bg-white/5 transition-colors"
               >
                 Cancelar
               </button>
@@ -1392,8 +1392,8 @@ export const AnalystDashboard: React.FC<{ onNewProposal: () => void }> = ({ onNe
                 onClick={() => { if (analystSignupPhone.length >= 7) { setShowAnalystSignupModal(false); setAnalystSignupPhone(''); } }}
                 className={`flex-[2] flex items-center justify-center gap-2 py-3 rounded-xl font-black text-sm transition-all ${
                   analystSignupPhone.length >= 7
-                    ? 'bg-blue-600 hover:bg-blue-500 text-white cursor-pointer'
-                    : 'bg-slate-100 text-slate-300 pointer-events-none'
+                    ? 'bg-blue-600 hover:bg-blue-500/100 text-white cursor-pointer'
+                    : 'bg-white/10 text-slate-300 pointer-events-none'
                 }`}
               >
                 Enviar via WhatsApp
@@ -1406,42 +1406,55 @@ export const AnalystDashboard: React.FC<{ onNewProposal: () => void }> = ({ onNe
   );
 };
 
-const KpiCard = ({ title, value, icon: Icon, color, trend }: any) => {
-  const colorClasses: any = {
-    blue: 'bg-blue-50 text-blue-600',
-    amber: 'bg-amber-50 text-amber-600',
-    emerald: 'bg-emerald-50 text-emerald-600',
-    purple: 'bg-purple-50 text-purple-600',
+export const KpiCard = ({ title, value, icon: Icon, color, trend }: any) => {
+  const accents: Record<string, string> = {
+    blue: '#38BDF8',
+    amber: '#FBBF24',
+    emerald: '#34D399',
+    purple: '#A78BFA',
   };
+  const accent = accents[color] || '#22D3EE';
 
   return (
-    <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 flex items-start justify-between">
-      <div>
-        <p className="text-slate-500 text-xs font-bold uppercase tracking-wider mb-1">{title}</p>
-        <h3 className="text-3xl font-black text-slate-900 mb-2">{value}</h3>
-        <p className="text-xs font-medium text-slate-400 flex items-center gap-1">
-          <TrendingUp size={12} className="text-emerald-500" />
-          {trend}
-        </p>
-      </div>
-      <div className={`p-3 rounded-xl ${colorClasses[color]}`}>
-        <Icon size={24} />
+    <div
+      className="group relative overflow-hidden rounded-2xl border border-white/10 bg-white/[0.04] p-6 backdrop-blur-xl transition-all hover:border-white/20"
+      style={{ boxShadow: '0 24px 50px -30px rgba(2,6,23,0.9)' }}
+    >
+      <div
+        className="pointer-events-none absolute -right-10 -top-10 h-32 w-32 rounded-full opacity-25 blur-3xl transition-opacity group-hover:opacity-45"
+        style={{ background: accent }}
+      />
+      <div className="relative flex items-start justify-between">
+        <div>
+          <p className="mb-1 text-[0.7rem] font-bold uppercase tracking-wider text-slate-400">{title}</p>
+          <h3 className="mb-2 font-serif text-4xl font-black text-white">{value}</h3>
+          <p className="flex items-center gap-1 text-xs font-medium text-slate-400">
+            <TrendingUp size={12} style={{ color: accent }} />
+            {trend}
+          </p>
+        </div>
+        <div
+          className="rounded-xl p-3"
+          style={{ background: `${accent}1f`, color: accent, boxShadow: `0 0 22px ${accent}33` }}
+        >
+          <Icon size={24} />
+        </div>
       </div>
     </div>
   );
 };
 
-const StatusBadge = ({ status }: { status: string }) => {
+export const StatusBadge = ({ status }: { status: string }) => {
   const styles: any = {
-    LEAD: 'bg-slate-100 text-slate-600',
-    PRESENTATION: 'bg-blue-100 text-blue-700',
-    SALE: 'bg-emerald-100 text-emerald-700',
-    'NO SALE': 'bg-slate-200 text-slate-800',
-    LOST: 'bg-red-100 text-red-700',
-    SCHEDULED: 'bg-amber-100 text-amber-700',
-    INSTALLED: 'bg-green-100 text-green-700',
-    ACTIVE: 'bg-teal-100 text-teal-700',
-    QUALIFIED: 'bg-purple-100 text-purple-700',
+    LEAD: 'bg-white/10 text-slate-300',
+    PRESENTATION: 'bg-blue-500/20 text-blue-300',
+    SALE: 'bg-emerald-500/20 text-emerald-300',
+    'NO SALE': 'bg-white/10 text-slate-100',
+    LOST: 'bg-red-500/20 text-red-300',
+    SCHEDULED: 'bg-amber-500/20 text-amber-300',
+    INSTALLED: 'bg-green-500/20 text-green-300',
+    ACTIVE: 'bg-teal-500/20 text-teal-300',
+    QUALIFIED: 'bg-purple-500/20 text-purple-300',
   };
 
   return (
