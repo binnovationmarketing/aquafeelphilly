@@ -32,6 +32,17 @@ machine**, install it into the user-level Claude config:
 ./scripts/agency/agency.sh install --global
 ```
 
+From a machine that does not have this repo cloned, the same install is one
+command:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/binnovationmarketing/aquafeelphilly/main/scripts/agency/bootstrap.sh | bash
+```
+
+`bootstrap.sh` also takes `--project .` to install into the current directory
+only, and `--profile <name>` to install a narrowed set. Point it at a different
+source with `AGENCY_SOURCE` / `AGENCY_REF`.
+
 That copies the 270 agents to `~/.claude/agents/`, the routing skill to
 `~/.claude/skills/agency/`, and inserts the policy block into `~/.claude/CLAUDE.md`
 (existing content is preserved — the block sits between the `agency-agents`
