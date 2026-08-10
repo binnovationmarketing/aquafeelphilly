@@ -5,10 +5,15 @@ description: 'Route any substantial task through the 270-specialist Agency catal
 
 # The Agency — specialist routing
 
-270 specialist subagents live in `.claude/agents/`, indexed by
-`.claude/agency/manifest.tsv` (`slug <TAB> division <TAB> human name`).
-This skill is how work gets assigned to them. Installing the catalog is not the
-point — routing through it is.
+A 270-specialist catalog is indexed in `.claude/agency/manifest.tsv`
+(`slug <TAB> division <TAB> human name`); the ones loaded right now live in
+`.claude/agents/`, and a profile decides how many that is. This skill is how
+work gets assigned to them. Installing the catalog is not the point — routing
+through it is.
+
+An agent in the manifest but not in `.claude/agents/` is parked by the active
+profile, not missing: `./scripts/agency/agency.sh profile full` brings the whole
+catalog back.
 
 ## The loop
 

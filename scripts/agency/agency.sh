@@ -241,6 +241,32 @@ cmd_install() {
 # --------------------------------------------------------------------------
 # profile
 # --------------------------------------------------------------------------
+
+# resolve_profile <name> [<ancestors>...] — print a profile's slugs, expanding
+# `@include <other-profile>` lines recursively so profiles can compose.
+resolve_profile() {
+  local name="$1"; shift
+  local ancestors=" $* "
+  case "$ancestors" in *" $name "*) return 0 ;; esac   # cycle guard
+
+  local plist="$AGENCY_DIR/profiles/$name.txt"
+  [[ -f "$plist" ]] || die "no such profile: $name (try: $0 profile list)"
+
+  local line
+  while IFS= read -r line || [[ -n "$line" ]]; do
+    line="${line%$'\r'}"
+    line="${line%%#*}"
+    line="${line#"${line%%[![:space:]]*}"}"
+    line="${line%"${line##*[![:space:]]}"}"
+    [[ -n "$line" ]] || continue
+    if [[ "$line" == "@include "* ]]; then
+      resolve_profile "${line#@include }" "$@" "$name"
+    else
+      printf '%s\n' "$line"
+    fi
+  done < "$plist"
+}
+
 cmd_profile() {
   local name="${1:-list}"
   local pdir="$AGENCY_DIR/profiles"
@@ -251,7 +277,7 @@ cmd_profile() {
     for p in "$pdir"/*.txt; do
       [[ -f "$p" ]] || continue
       local base; base="$(basename "$p" .txt)"
-      local c; c="$(grep -cvE '^\s*(#|$)' "$p" || true)"
+      local c; c="$(resolve_profile "$base" | LC_ALL=C sort -u | wc -l | tr -d ' ')"
       printf '  %-14s %s agents\n' "$base" "$c"
     done
     printf '  %-14s %s agents (everything)\n' "full" "$(wc -l < "$MANIFEST" | tr -d ' ')"
@@ -270,11 +296,8 @@ cmd_profile() {
     return 0
   fi
 
-  local plist="$pdir/$name.txt"
-  [[ -f "$plist" ]] || die "no such profile: $name (try: $0 profile list)"
-
   local keep; keep="$(mktemp)"
-  grep -vE '^\s*(#|$)' "$plist" | tr -d '\r' | LC_ALL=C sort -u > "$keep"
+  resolve_profile "$name" | LC_ALL=C sort -u > "$keep"
 
   # Warn about profile entries that do not exist in the catalog.
   local missing

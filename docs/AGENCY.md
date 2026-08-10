@@ -1,8 +1,9 @@
 # The Agency — specialist catalog
 
-270 specialist subagents from [msitarzewski/agency-agents][upstream] (MIT),
-vendored into this repository and wired so that work is _routed_ through them
-rather than merely having them installed.
+A 270-specialist catalog from [msitarzewski/agency-agents][upstream] (MIT),
+vendored into this repository and wired so that work is _routed_ through it
+rather than merely having it installed. This repo loads the 81 of them that its
+profile selects; the rest stay in the catalog, one command away.
 
 [upstream]: https://github.com/msitarzewski/agency-agents
 
@@ -10,7 +11,7 @@ rather than merely having them installed.
 
 | Path                             | What it is                                                                                            |
 | -------------------------------- | ----------------------------------------------------------------------------------------------------- |
-| `.claude/agents/*.md`            | The 270 agents Claude Code loads. Flat, one file per agent, named by slug.                            |
+| `.claude/agents/*.md`            | The agents Claude Code loads — the active profile’s set, flat, one file per agent, named by slug.     |
 | `.claude/skills/agency/SKILL.md` | The routing skill — how a task gets assigned to a specialist and which reviewers must follow.         |
 | `.claude/agency/POLICY.md`       | The mandatory routing rule, mirrored into `CLAUDE.md` between `<!-- agency-agents:start -->` markers. |
 | `.claude/agency/manifest.tsv`    | `slug <TAB> division <TAB> human name` — the index to grep.                                           |
@@ -19,6 +20,8 @@ rather than merely having them installed.
 | `.claude/agency/inactive/`       | Agents parked by a profile. Kept in git, not deleted.                                                 |
 | `.claude/agency/UPSTREAM`        | The pinned upstream commit and sync timestamp.                                                        |
 | `scripts/agency/agency.sh`       | Sync, install, profile, list, doctor. Bash + awk, no dependencies.                                    |
+| `scripts/agency/bootstrap.sh`    | One-command install on a machine or project, no clone needed.                                         |
+| `scripts/agency/make-matriz.sh`  | Builds and publishes the standalone matriz repository.                                                |
 
 Because the agents are committed, every session in this repository — local,
 web, or CI — loads them with no install step and no network.
@@ -32,18 +35,7 @@ machine**, install it into the user-level Claude config:
 ./scripts/agency/agency.sh install --global
 ```
 
-From a machine that does not have this repo cloned, the same install is one
-command:
-
-```bash
-curl -fsSL https://raw.githubusercontent.com/binnovationmarketing/aquafeelphilly/main/scripts/agency/bootstrap.sh | bash
-```
-
-`bootstrap.sh` also takes `--project .` to install into the current directory
-only, and `--profile <name>` to install a narrowed set. Point it at a different
-source with `AGENCY_SOURCE` / `AGENCY_REF`.
-
-That copies the 270 agents to `~/.claude/agents/`, the routing skill to
+That copies the agents to `~/.claude/agents/`, the routing skill to
 `~/.claude/skills/agency/`, and inserts the policy block into `~/.claude/CLAUDE.md`
 (existing content is preserved — the block sits between the `agency-agents`
 markers and is replaced in place on re-runs). User-level config applies to every
@@ -56,29 +48,73 @@ To seed one specific other project instead:
 ./scripts/agency/agency.sh install --project ~/code/other-project
 ```
 
-Both commands are idempotent — re-run after a `sync` to push updates out.
+From a machine that has no clone at all, `bootstrap.sh` does the same in one
+command:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/binnovationmarketing/aquafeelphilly/main/scripts/agency/bootstrap.sh | bash
+```
+
+It takes `--project .` for the current directory only and `--profile <name>` for
+a narrowed set, and honours `AGENCY_SOURCE` / `AGENCY_REF` to install from
+somewhere else — which is how the matriz below becomes the source of truth.
+
+All of these are idempotent — re-run after a `sync` to push updates out.
 
 > Note: on ephemeral environments (Claude Code on the web, CI containers)
 > `~/.claude` is discarded when the container is reclaimed, so `--global` has to
 > be re-run per session there. Committed project-level agents are what actually
 > persists — which is why this repo vendors them.
 
+## The matriz repository
+
+Installing from an application repo does not scale — the catalog would have a
+different owner in every project. `make-matriz.sh` builds a standalone central
+repository that every project installs from instead:
+
+```bash
+gh repo create binnovationmarketing/agency-matriz --public   # empty, no README
+./scripts/agency/make-matriz.sh --push git@github.com:binnovationmarketing/agency-matriz.git
+```
+
+It exports the full 270-agent catalog (regardless of the profile active here),
+the routing skill, the policy, the profiles, the strategy playbooks and both
+scripts, then rewrites the generated `bootstrap.sh` so the matriz points at
+itself. After that, every install anywhere comes from the matriz:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/binnovationmarketing/agency-matriz/main/scripts/agency/bootstrap.sh | bash
+```
+
+Re-run `make-matriz.sh --push ...` after a `sync` to publish catalog updates.
+Build without publishing by omitting `--push`.
+
 ## Profiles
 
-All 270 agents are active by default. Their frontmatter descriptions cost
-roughly 70 KB (~18k tokens) of context in every session. If that overhead
-matters more than reach, narrow the loaded set:
+The full catalog costs roughly 70 KB (~18k tokens) of context in every session,
+because Claude Code loads every agent's description. Profiles trade reach for
+that overhead:
 
 ```bash
 ./scripts/agency/agency.sh profile list          # what is available
-./scripts/agency/agency.sh profile web-product   # 70 agents — this app's stack
-./scripts/agency/agency.sh profile growth        # 63 agents — marketing/sales/paid media
-./scripts/agency/agency.sh profile full          # back to all 270
+./scripts/agency/agency.sh profile aquafeel      # 81 — what this repo runs on
+./scripts/agency/agency.sh profile web-product   # 70 — React/TS/Supabase apps
+./scripts/agency/agency.sh profile growth        # 63 — marketing/sales/paid media
+./scripts/agency/agency.sh profile full          # all 270
 ```
 
+This repository runs the `aquafeel` profile: the `web-product` engineering set
+plus the go-to-market specialists that own the landing page, the proposal flow
+and the funnel.
+
+Profiles compose — a profile file may start with `@include <other-profile>` and
+list only what it adds on top, which is how `aquafeel` is built. Includes nest
+and cycles are ignored. Add your own by dropping a `<name>.txt` of slugs into
+`.claude/agency/profiles/`.
+
 Deactivated agents move to `.claude/agency/inactive/` — nothing is lost, and the
-choice is committed so the whole team loads the same set. Add your own profile
-by dropping a `<name>.txt` of slugs into `.claude/agency/profiles/`.
+choice is committed so the whole team loads the same set. `agency.sh sync`
+re-applies the active profile after pulling a new catalog.
 
 ## Updating the catalog
 

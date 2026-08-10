@@ -28,9 +28,9 @@ Before calling a change done: `npm run type-check && npm run lint && npm test`.
 ## The Agency — mandatory specialist routing
 
 Every non-trivial task goes through the agency before it goes through you.
-The catalog is the 270 specialist subagents in `agents/` under this config
-directory — index at `agency/manifest.tsv`, routing playbook in the `agency`
-skill.
+The specialists live in `agents/` under this config directory; the full
+270-agent catalog is indexed in `agency/manifest.tsv` (a profile decides how
+many of them are loaded here). The routing playbook is the `agency` skill.
 
 **Before starting work, classify the request and name the specialist(s) that own
 it.** State the pick in one line, then do the work as that specialist — either by
