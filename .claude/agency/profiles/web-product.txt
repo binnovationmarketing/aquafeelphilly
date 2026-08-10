@@ -1,0 +1,87 @@
+# Profile: web-product
+# Specialists that actually apply to a React + TypeScript + Vite + Tailwind
+# front end on Supabase, deployed to Vercel. Activate with:
+#   ./scripts/agency/agency.sh profile web-product
+# Everything not listed here is parked in .claude/agency/inactive/, not deleted.
+
+# --- engineering ---
+frontend-developer
+backend-architect
+software-architect
+senior-developer
+code-reviewer
+minimal-change-engineer
+rapid-prototyper
+api-platform-engineer
+database-optimizer
+database-reliability-engineer
+devops-automator
+sre-site-reliability-engineer
+incident-response-commander
+payments-billing-engineer
+identity-access-engineer
+privacy-engineer
+internationalization-engineer
+realtime-collaboration-engineer
+search-relevance-engineer
+data-visualization-engineer
+email-intelligence-engineer
+mobile-app-builder
+ai-engineer
+prompt-engineer
+codebase-onboarding-engineer
+developer-tooling-engineer
+git-workflow-master
+technical-writer
+finops-engineer
+
+# --- testing ---
+test-automation-engineer
+accessibility-auditor
+api-tester
+performance-benchmarker
+test-results-analyzer
+reality-checker
+
+# --- security ---
+security-architect
+application-security-engineer
+secrets-credential-hygiene-engineer
+cloud-security-architect
+ai-generated-code-security-auditor
+compliance-auditor
+incident-responder
+
+# --- design ---
+ui-designer
+ux-architect
+ux-researcher
+brand-guardian
+ui-finish-gate-reviewer
+visual-storyteller
+whimsy-injector
+
+# --- product / delivery ---
+product-manager
+sprint-prioritizer
+feedback-synthesizer
+trend-researcher
+project-shepherd
+senior-project-manager
+experiment-tracker
+studio-producer
+
+# --- ops / business ---
+analytics-reporter
+infrastructure-maintainer
+support-responder
+legal-compliance-checker
+business-strategist
+customer-success-manager
+data-privacy-officer
+pricing-analyst
+document-generator
+workflow-architect
+agents-orchestrator
+codebase-archaeologist
+mcp-builder

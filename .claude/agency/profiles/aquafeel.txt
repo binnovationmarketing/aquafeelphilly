@@ -1,0 +1,21 @@
+# Profile: aquafeel — the set this repository runs on.
+# The product is a React/Supabase app AND a sales instrument, so it needs the
+# web-product engineering set plus the go-to-market specialists that own the
+# public landing page, the proposal flow and the conversion funnel.
+#
+#   ./scripts/agency/agency.sh profile aquafeel
+
+@include web-product
+
+# --- go-to-market: landing page, proposal, funnel ---
+seo-specialist
+content-creator
+aeo-foundations-architect
+email-marketing-strategist
+social-media-strategist
+tracking-measurement-specialist
+persona-walkthrough-specialist
+proposal-strategist
+discovery-coach
+sales-coach
+offer-lead-gen-strategist
