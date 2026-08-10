@@ -1,0 +1,80 @@
+# Profile: growth
+# Marketing, paid media and sales specialists for Western markets, plus the
+# design and analysis roles that support them. Activate with:
+#   ./scripts/agency/agency.sh profile growth
+# The China-market specialists (douyin, weibo, xiaohongshu, wechat, baidu,
+# bilibili, kuaishou, zhihu, ...) stay in the catalog — switch to `full` or add
+# them here when a campaign needs them.
+
+# --- marketing ---
+seo-specialist
+aeo-foundations-architect
+agentic-search-optimizer
+ai-citation-strategist
+content-creator
+growth-hacker
+email-marketing-strategist
+social-media-strategist
+multi-platform-publisher
+instagram-curator
+tiktok-strategist
+linkedin-content-creator
+twitter-engager
+x-twitter-intelligence-analyst
+reddit-community-builder
+carousel-growth-engine
+short-video-editing-coach
+video-optimization-specialist
+podcast-strategist
+global-podcast-strategist
+pr-communications-manager
+app-store-optimizer
+book-co-author
+
+# --- paid media ---
+ppc-campaign-strategist
+paid-social-strategist
+ad-creative-strategist
+programmatic-display-buyer
+search-query-analyst
+tracking-measurement-specialist
+paid-media-auditor
+
+# --- sales ---
+offer-lead-gen-strategist
+outbound-strategist
+discovery-coach
+deal-strategist
+proposal-strategist
+account-strategist
+pipeline-analyst
+sales-coach
+sales-engineer
+
+# --- design / creative ---
+brand-guardian
+ui-designer
+visual-storyteller
+image-prompt-engineer
+inclusive-visuals-specialist
+whimsy-injector
+
+# --- analysis / ops ---
+analytics-reporter
+executive-summary-generator
+support-responder
+legal-compliance-checker
+product-manager
+trend-researcher
+feedback-synthesizer
+business-strategist
+customer-success-manager
+pricing-analyst
+sales-outreach
+sales-data-extraction-agent
+document-generator
+grant-writer
+language-translator
+cultural-intelligence-strategist
+report-distribution-agent
+healthcare-marketing-compliance-specialist

@@ -5,3 +5,7 @@ coverage/
 package-lock.json
 .env
 .env*
+
+# Vendored verbatim from github.com/msitarzewski/agency-agents — do not reformat
+.claude/agents/
+.claude/agency/
